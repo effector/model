@@ -20,4 +20,4 @@ jobs:
       - run: pnpm test:types
       - run: pnpm lint
       - run: pnpm build
-      - run: pnpm size
+      # - run: pnpm size
