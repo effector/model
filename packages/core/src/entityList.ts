@@ -28,13 +28,13 @@ type ToPlainShape<Shape> = {
     [P in keyof Shape]: Shape[P] extends Store<unknown>
       ? P
       : Shape[P] extends StoreDef<unknown>
-      ? P
-      : never;
+        ? P
+        : never;
   }[keyof Shape]]: Shape[K] extends Store<infer V>
     ? V
     : Shape[K] extends StoreDef<infer V>
-    ? V
-    : never;
+      ? V
+      : never;
 };
 
 // export function entityList<Input, Enriched>(options: {
@@ -65,17 +65,12 @@ export function entityList<Input, ModelEnhance, Api, Shape>(options: {
       [K in keyof Input]?: Store<Input[K]> | StoreDef<Input[K]>;
     },
     {
-      [K in keyof ModelEnhance]: Store<ModelEnhance[K]>
+      [K in keyof ModelEnhance]: Store<ModelEnhance[K]>;
     },
     Api,
     Shape
   >;
-}): EntityList<
-  Input,
-  Show<Input & ModelEnhance>,
-  Api,
-  Shape
->;
+}): EntityList<Input, Show<Input & ModelEnhance>, Api, Shape>;
 export function entityList<T, Shape>(options: {
   getKey: (entity: T) => string | number;
   shape: Shape;
@@ -164,7 +159,7 @@ export function entityList<Input, ModelEnhance, Api, Shape>({
   function runNewItemInstance(
     freshState: ListState,
     key: string | number,
-    inputItem: Input
+    inputItem: Input,
   ) {
     freshState.keys.push(key);
     if (model) {
@@ -223,7 +218,7 @@ export function entityList<Input, ModelEnhance, Api, Shape>({
   function runUpdatesForInstance(
     freshState: ListState,
     idx: number,
-    inputUpdate: Partial<Input>
+    inputUpdate: Partial<Input>,
   ) {
     const oldItem = freshState.items[idx];
     const newItem: Enriched = {

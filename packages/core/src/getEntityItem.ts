@@ -10,7 +10,12 @@ import {
 
 import type { EntityList } from './types';
 
-export function getEntityItem<T, Api, Key extends string | number, Shape>(config: {
+export function getEntityItem<
+  T,
+  Api,
+  Key extends string | number,
+  Shape,
+>(config: {
   source: EntityList<any, T, Api, Shape>;
   key: Store<string | number> | string | number;
   defaultValue: (key: Key) => T;
@@ -30,7 +35,7 @@ export function getEntityItem<T, Api, Shape>({
 }) {
   const $key = is.store(key) ? key : createStore(key);
   const $defaultValue = combine($key, (key) =>
-    defaultValue ? defaultValue(key) : null
+    defaultValue ? defaultValue(key) : null,
   );
   const $item = combine(
     source.$keys,
@@ -41,7 +46,7 @@ export function getEntityItem<T, Api, Shape>({
       const idx = keys.findIndex((e) => e === key);
       if (idx === -1) return defValue;
       return items[idx];
-    }
+    },
   );
   const api = {} as any;
   for (const key in source.api) {
@@ -63,15 +68,15 @@ export function getEntityItem<T, Api, Shape>({
 
 type IsNever<T> = [T] extends [never] ? true : false;
 
+// @link https://ghaiklor.github.io/type-challenges-solutions/en/medium-isunion.html
 type InternalIsUnion<T, U = T> = (
-  // @link https://ghaiklor.github.io/type-challenges-solutions/en/medium-isunion.html
   IsNever<T> extends true
     ? false
     : T extends any
-    ? [U] extends [T]
-      ? false
-      : true
-    : never
+      ? [U] extends [T]
+        ? false
+        : true
+      : never
 ) extends infer Result
   ? // In some cases `Result` will return `false | true` which is `boolean`,
     // that means `T` has at least two types and it's a union type,
@@ -83,6 +88,5 @@ type InternalIsUnion<T, U = T> = (
 
 type IsUnion<T> = InternalIsUnion<T>;
 
-type SingleKeyObject<ObjectType> = IsUnion<keyof ObjectType> extends true
-  ? never
-  : ObjectType;
+type SingleKeyObject<ObjectType> =
+  IsUnion<keyof ObjectType> extends true ? never : ObjectType;

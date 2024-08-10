@@ -4,7 +4,7 @@ import { model } from './model';
 import { spawn } from './spawn';
 import { define } from './define';
 import { entityList } from './entityList';
-import { lens } from './lens'
+import { lens } from './lens';
 
 const $email = createStore('');
 
@@ -58,7 +58,7 @@ const fieldList1 = entityList({
       value: define.store<string>(),
     },
     create({ value }) {
-      const submit = createEvent()
+      const submit = createEvent();
       const $isValid = combine(value, (value) => value.length > 0);
       return {
         state: {
@@ -66,18 +66,15 @@ const fieldList1 = entityList({
         },
         api: {
           submit,
-        }
+        },
       };
     },
   }),
 });
 
+fieldList1.api.submit;
 
-fieldList1.api.submit
-
-
-
-lens(fieldList1, $email).isValid.store
+lens(fieldList1, $email).isValid.store;
 
 /** model has partial type, so we use explicit generics */
 const fieldList2 = entityList<Field, { isValid: boolean }, {}, {}>({

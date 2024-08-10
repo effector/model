@@ -78,16 +78,16 @@ export function ModelProvider<
       | (T[K] extends Store<infer V>
           ? T[K] | V
           : T[K] extends Event<unknown>
-          ? T[K]
-          : T[K] extends Effect<infer V, infer Res, unknown>
-          ? T[K] | ((params: V) => Res | Promise<Res>)
-          : T[K] extends (params: infer V) => infer Res
-          ?
-              | ((params: V) => Awaited<Res> | Promise<Awaited<Res>>)
-              | Effect<V, Awaited<Res>, unknown>
-          : Store<T[K]> | T[K])
+            ? T[K]
+            : T[K] extends Effect<infer V, infer Res, unknown>
+              ? T[K] | ((params: V) => Res | Promise<Res>)
+              : T[K] extends (params: infer V) => infer Res
+                ?
+                    | ((params: V) => Awaited<Res> | Promise<Awaited<Res>>)
+                    | Effect<V, Awaited<Res>, unknown>
+                : Store<T[K]> | T[K])
       | undefined;
-  }
+  },
 >({
   model,
   value,
@@ -100,10 +100,10 @@ export function ModelProvider<
     }[keyof T]]: T[K] extends StoreDef<infer V>
       ? Store<V> | V
       : T[K] extends EventDef<infer V>
-      ? Event<V>
-      : T[K] extends EffectDef<infer V, infer Res, infer Err>
-      ? Effect<V, Res, Err> | ((params: V) => Res | Promise<Res>)
-      : never;
+        ? Event<V>
+        : T[K] extends EffectDef<infer V, infer Res, infer Err>
+          ? Effect<V, Res, Err> | ((params: V) => Res | Promise<Res>)
+          : never;
   };
   children: ReactNode;
 }) {
@@ -130,25 +130,25 @@ export function ModelProvider<
 }
 
 export function useModel<Input, T, Api, Shape>(
-  model: Model<Input, T, Api, Shape>
+  model: Model<Input, T, Api, Shape>,
 ): [
   state: Show<
     {
       [K in keyof Input]: Input[K] extends Store<infer V>
         ? V
         : Input[K] extends StoreDef<infer V>
-        ? V
-        : Input[K] extends Event<infer V>
-        ? (params: V) => V
-        : Input[K] extends EventDef<infer V>
-        ? (params: V) => V
-        : Input[K] extends Effect<infer V, infer D, unknown>
-        ? (params: V) => Promise<D>
-        : Input[K] extends EffectDef<infer V, infer D, unknown>
-        ? (params: V) => Promise<D>
-        : Input[K] extends (params: infer V) => infer D
-        ? (params: V) => Promise<Awaited<D>>
-        : Input[K];
+          ? V
+          : Input[K] extends Event<infer V>
+            ? (params: V) => V
+            : Input[K] extends EventDef<infer V>
+              ? (params: V) => V
+              : Input[K] extends Effect<infer V, infer D, unknown>
+                ? (params: V) => Promise<D>
+                : Input[K] extends EffectDef<infer V, infer D, unknown>
+                  ? (params: V) => Promise<D>
+                  : Input[K] extends (params: infer V) => infer D
+                    ? (params: V) => Promise<Awaited<D>>
+                    : Input[K];
     } & {
       [K in keyof T]: T[K] extends Store<infer V> ? V : never;
     }
@@ -157,9 +157,9 @@ export function useModel<Input, T, Api, Shape>(
     [K in keyof Api]: Api[K] extends Event<infer V>
       ? (params: V) => V
       : Api[K] extends Effect<infer V, infer D, unknown>
-      ? (params: V) => Promise<D>
-      : never;
-  }
+        ? (params: V) => Promise<D>
+        : never;
+  },
 ] {
   const stack = useContext(ModelStackContext);
   let currentStack = stack;
@@ -178,7 +178,7 @@ export function useModel<Input, T, Api, Shape>(
 }
 
 export function useEntityItem<T>(
-  entityList: EntityList<unknown, T, unknown, unknown>
+  entityList: EntityList<unknown, T, unknown, unknown>,
 ) {
   const stack = useContext(ModelStackContext);
   let currentStack = stack;
@@ -206,7 +206,7 @@ export function useEntityItem<T>(
 
 export function useEntityList<T>(
   entityList: EntityList<unknown, T, unknown, unknown>,
-  View: () => JSX.Element
+  View: () => JSX.Element,
 ) {
   return useList(entityList.$keys, (key) => (
     <EntityProvider model={entityList} value={key}>

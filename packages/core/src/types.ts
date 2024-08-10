@@ -16,18 +16,18 @@ export type Model<Props, Output, Api, Shape> = {
       [K in keyof Props]: Props[K] extends Store<infer V>
         ? StoreDef<V>
         : Props[K] extends StoreDef<unknown>
-        ? Props[K]
-        : Props[K] extends Event<infer V>
-        ? EventDef<V>
-        : Props[K] extends EventDef<unknown>
-        ? Props[K]
-        : Props[K] extends Effect<infer V, infer D, infer E>
-        ? EffectDef<V, D, E>
-        : Props[K] extends EffectDef<unknown, unknown, unknown>
-        ? Props[K]
-        : Props[K] extends (params: infer V) => infer D
-        ? EffectDef<V, Awaited<D>, any>
-        : StoreDef<Props[K]>;
+          ? Props[K]
+          : Props[K] extends Event<infer V>
+            ? EventDef<V>
+            : Props[K] extends EventDef<unknown>
+              ? Props[K]
+              : Props[K] extends Effect<infer V, infer D, infer E>
+                ? EffectDef<V, D, E>
+                : Props[K] extends EffectDef<unknown, unknown, unknown>
+                  ? Props[K]
+                  : Props[K] extends (params: infer V) => infer D
+                    ? EffectDef<V, Awaited<D>, any>
+                    : StoreDef<Props[K]>;
     } & {
       [K in keyof Output]: Output[K] extends Store<infer V>
         ? StoreDef<V>
@@ -36,8 +36,8 @@ export type Model<Props, Output, Api, Shape> = {
       [K in keyof Api]: Api[K] extends Event<infer V>
         ? EventDef<V>
         : Api[K] extends Effect<infer V, infer D, infer E>
-        ? EffectDef<V, D, E>
-        : never;
+          ? EffectDef<V, D, E>
+          : never;
     }
   >;
   // private
@@ -92,7 +92,9 @@ export type EntityItemDef<T> = {
 };
 
 export type InstanceOf<T extends Model<unknown, unknown, unknown, unknown>> =
-  T extends Model<any, infer Output, infer Api, any> ? Instance<Output, Api> : never;
+  T extends Model<any, infer Output, infer Api, any>
+    ? Instance<Output, Api>
+    : never;
 
 export type KeyOrKeys = string | number | Array<string | number>;
 
@@ -102,12 +104,12 @@ export type LensShape<Shape> = {
 
 export type LensItem<T> = {
   __type: 'lensItem';
-  store: Store<T>
+  store: Store<T>;
 };
 
 export type LensStore<T> = {
   __type: 'lensStore';
-  store: Store<T>
+  store: Store<T>;
 };
 
 export type LensEvent<T> = {
@@ -121,18 +123,18 @@ export type ConvertToLensShape<Shape> = {
   [K in keyof Shape]: Shape[K] extends StoreDef<infer V>
     ? LensStore<V>
     : Shape[K] extends EventDef<infer V>
-    ? LensEvent<V>
-    : Shape[K] extends EntityShapeDef<infer ChildShape>
-    ? (key: KeyStore) => LensShape<ConvertToLensShape<ChildShape>>
-    : Shape[K] extends EntityItemDef<infer V>
-    ? (key: KeyStore) => LensItem<V>
-    : Shape[K] extends Store<infer V>
-    ? LensStore<V>
-    : Shape[K] extends Event<infer V>
-    ? LensEvent<V>
-    : Shape[K] extends EntityList<any, any, any, infer ChildShape>
-    ? (key: KeyStore) => LensShape<ChildShape>
-    : never;
+      ? LensEvent<V>
+      : Shape[K] extends EntityShapeDef<infer ChildShape>
+        ? (key: KeyStore) => LensShape<ConvertToLensShape<ChildShape>>
+        : Shape[K] extends EntityItemDef<infer V>
+          ? (key: KeyStore) => LensItem<V>
+          : Shape[K] extends Store<infer V>
+            ? LensStore<V>
+            : Shape[K] extends Event<infer V>
+              ? LensEvent<V>
+              : Shape[K] extends EntityList<any, any, any, infer ChildShape>
+                ? (key: KeyStore) => LensShape<ChildShape>
+                : never;
 };
 
 export type EntityList<Input, Enriched extends Input, Api, Shape> = {
@@ -174,7 +176,7 @@ export type EntityList<Input, Enriched extends Input, Api, Shape> = {
 export type StoreContext<T> = {
   type: 'storeContext';
   readonly __: T;
-}
+};
 
 type BuiltInObject =
   | Error

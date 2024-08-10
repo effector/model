@@ -40,8 +40,8 @@ export const define = {
     return {
       type: 'entityItemDefinition',
       __: null as T,
-    }
-  }
+    };
+  },
 };
 
 export const isDefine = {
@@ -71,9 +71,8 @@ export const isDefine = {
   },
 };
 
-
 export function isEntityList(
-  value: any
+  value: any,
 ): value is EntityList<any, any, any, any> {
   return (
     typeof value === 'object' && value !== null && value.type === 'entityList'

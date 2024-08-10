@@ -30,7 +30,7 @@ export function model<
   },
   Api extends {
     [key: string]: Event<unknown> | Effect<unknown, unknown, unknown>;
-  } = {}
+  } = {},
 >({
   props,
   create,
@@ -44,14 +44,14 @@ export function model<
         | Effect<unknown, unknown, unknown>
         ? Input[K]
         : Input[K] extends StoreDef<infer V>
-        ? Store<V>
-        : Input[K] extends EventDef<infer V>
-        ? Event<V>
-        : Input[K] extends EffectDef<infer V, infer D, infer E>
-        ? Effect<V, D, E>
-        : Input[K] extends (params: infer P) => infer R
-        ? Effect<P, Awaited<R>>
-        : Store<Input[K]>;
+          ? Store<V>
+          : Input[K] extends EventDef<infer V>
+            ? Event<V>
+            : Input[K] extends EffectDef<infer V, infer D, infer E>
+              ? Effect<V, D, E>
+              : Input[K] extends (params: infer P) => infer R
+                ? Effect<P, Awaited<R>>
+                : Store<Input[K]>;
     } & {
       [K in {
         [P in keyof Input]: Input[P] extends Store<unknown> | StoreDef<unknown>
@@ -62,10 +62,10 @@ export function model<
         : never]: Input[K] extends Store<unknown>
         ? Input[K]
         : Input[K] extends StoreDef<infer V>
-        ? Store<V>
-        : never;
+          ? Store<V>
+          : never;
     },
-    config: { onMount: Event<void> }
+    config: { onMount: Event<void> },
   ) =>
     | { state: Output; api: Api }
     | { state?: never; api: Api }

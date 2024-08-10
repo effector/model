@@ -32,26 +32,26 @@ type ParamsNormalize<
       | EventDef<unknown>
       | EffectDef<unknown, unknown, unknown>
       | unknown;
-  }
+  },
 > = {
   [K in keyof T]: T[K] extends Store<infer V>
     ? T[K] | V
     : T[K] extends Event<unknown>
-    ? T[K]
-    : T[K] extends Effect<infer V, infer Res, unknown>
-    ? T[K] | ((params: V) => Res | Promise<Res>)
-    : T[K] extends StoreDef<infer V>
-    ? Store<V> | V
-    : T[K] extends EventDef<infer V>
-    ? Event<V>
-    : T[K] extends EffectDef<infer V, infer Res, infer Err>
-    ? Effect<V, Res, Err> | ((params: V) => Res | Promise<Res>)
-    : T[K] extends (params: infer V) => infer Res
-    ?
-        | Effect<V, Awaited<Res>, unknown>
-        | T[K]
-        | ((params: V) => Awaited<Res> | Promise<Awaited<Res>>)
-    : Store<T[K]> | T[K];
+      ? T[K]
+      : T[K] extends Effect<infer V, infer Res, unknown>
+        ? T[K] | ((params: V) => Res | Promise<Res>)
+        : T[K] extends StoreDef<infer V>
+          ? Store<V> | V
+          : T[K] extends EventDef<infer V>
+            ? Event<V>
+            : T[K] extends EffectDef<infer V, infer Res, infer Err>
+              ? Effect<V, Res, Err> | ((params: V) => Res | Promise<Res>)
+              : T[K] extends (params: infer V) => infer Res
+                ?
+                    | Effect<V, Awaited<Res>, unknown>
+                    | T[K]
+                    | ((params: V) => Awaited<Res> | Promise<Awaited<Res>>)
+                : Store<T[K]> | T[K];
 };
 
 let childInstancesTracking: Instance<any, any>[] | null = null;
@@ -82,17 +82,17 @@ export function spawn<
       | (T[K] extends Store<infer V>
           ? T[K] | V
           : T[K] extends Event<unknown>
-          ? T[K]
-          : T[K] extends Effect<infer V, infer Res, unknown>
-          ? T[K] | ((params: V) => Res | Promise<Res>)
-          : T[K] extends (params: infer V) => infer Res
-          ?
-              | ((params: V) => Awaited<Res> | Promise<Awaited<Res>>)
-              | Effect<V, Awaited<Res>, unknown>
-          : Store<T[K]> | T[K])
+            ? T[K]
+            : T[K] extends Effect<infer V, infer Res, unknown>
+              ? T[K] | ((params: V) => Res | Promise<Res>)
+              : T[K] extends (params: infer V) => infer Res
+                ?
+                    | ((params: V) => Awaited<Res> | Promise<Awaited<Res>>)
+                    | Effect<V, Awaited<Res>, unknown>
+                : Store<T[K]> | T[K])
       | undefined;
   },
-  Api
+  Api,
 >(
   model: Model<T, Output, Api, any>,
   params: Params & {
@@ -101,11 +101,11 @@ export function spawn<
     }[keyof T]]: T[K] extends StoreDef<infer V>
       ? Store<V> | V
       : T[K] extends EventDef<infer V>
-      ? Event<V>
-      : T[K] extends EffectDef<infer V, infer Res, infer Err>
-      ? Effect<V, Res, Err> | ((params: V) => Res | Promise<Res>)
-      : never;
-  }
+        ? Event<V>
+        : T[K] extends EffectDef<infer V, infer Res, infer Err>
+          ? Effect<V, Res, Err> | ((params: V) => Res | Promise<Res>)
+          : never;
+  },
 ): Instance<Output, Api> {
   const region = createNode();
   const normProps = {} as {
@@ -115,14 +115,14 @@ export function spawn<
       | Effect<unknown, unknown, unknown>
       ? T[K]
       : T[K] extends StoreDef<infer V>
-      ? Store<V>
-      : T[K] extends EventDef<infer V>
-      ? Event<V>
-      : T[K] extends EffectDef<infer V, infer D, infer E>
-      ? Effect<V, D, E>
-      : T[K] extends (params: infer P) => infer R
-      ? Effect<P, Awaited<R>>
-      : Store<T[K]>;
+        ? Store<V>
+        : T[K] extends EventDef<infer V>
+          ? Event<V>
+          : T[K] extends EffectDef<infer V, infer D, infer E>
+            ? Effect<V, D, E>
+            : T[K] extends (params: infer P) => infer R
+              ? Effect<P, Awaited<R>>
+              : Store<T[K]>;
   };
   let onMount: Event<void>;
   withRegion(region, () => {
@@ -234,7 +234,7 @@ export function spawn<
       const value = apiOutputs[key];
       if (!is.event(value) && !is.effect(value)) {
         throw Error(
-          `model body in api key "${key}" should return event or effect`
+          `model body in api key "${key}" should return event or effect`,
         );
       }
     }

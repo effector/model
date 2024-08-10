@@ -8,7 +8,7 @@ const { logger } = require('@nrwl/devkit');
 
 module.exports = async function sizeLimitExecutor(
   { outputPath, limit },
-  context
+  context,
 ) {
   const files = await glob(path.join(context.cwd, outputPath, '**/*.js'));
 
