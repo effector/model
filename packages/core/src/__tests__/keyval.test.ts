@@ -152,4 +152,10 @@ describe('keyval.edit', () => {
       ]);
     });
   });
+  test('edit.replaceAll', () => {
+    const entities = createEntities();
+    entities.edit.add([{ id: 'foo' }, { id: 'ba' }]);
+    entities.edit.replaceAll([{ id: 'baz' }]);
+    expect(entities.$items.getState()).toEqual([{ id: 'baz', idSize: 3 }]);
+  });
 });
