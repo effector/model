@@ -354,7 +354,9 @@ export function keyval<Input, ModelEnhance, Api, Shape>({
         }
       }
     }
-    for (const idx of indexesToRemove) {
+    /** delete in reverse order to prevent drift of following indexes after splice */
+    for (let i = indexesToRemove.length - 1; i >= 0; i--) {
+      const idx = indexesToRemove[i];
       state = refresh();
       state.items.splice(idx, 1);
       state.keys.splice(idx, 1);
