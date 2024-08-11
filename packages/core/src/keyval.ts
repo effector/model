@@ -59,7 +59,7 @@ type ToPlainShape<Shape> = {
 // >
 
 export function keyval<Input, ModelEnhance, Api, Shape>(options: {
-  getKey: (entity: Input) => string | number;
+  getKey: ((entity: Input) => string | number) | keyof Input;
   model: Model<
     {
       [K in keyof Input]?: Store<Input[K]> | StoreDef<Input[K]>;
@@ -72,18 +72,18 @@ export function keyval<Input, ModelEnhance, Api, Shape>(options: {
   >;
 }): Keyval<Input, Show<Input & ModelEnhance>, Api, Shape>;
 export function keyval<T, Shape>(options: {
-  getKey: (entity: T) => string | number;
+  getKey: ((entity: T) => string | number) | keyof T;
   shape: Shape;
 }): Keyval<T, T, {}, ConvertToLensShape<Shape>>;
 export function keyval<T>(options: {
-  getKey: (entity: T) => string | number;
+  getKey: ((entity: T) => string | number) | keyof T;
 }): Keyval<T, T, {}, {}>;
 export function keyval<Input, ModelEnhance, Api, Shape>({
-  getKey,
+  getKey: getKeyRaw,
   model,
   shape = {} as Shape,
 }: {
-  getKey: (entity: Input) => string | number;
+  getKey: ((entity: Input) => string | number) | keyof Input;
   model?: Model<
     {
       [K in keyof Input]?: Store<Input[K]> | StoreDef<Input[K]>;
@@ -104,6 +104,10 @@ export function keyval<Input, ModelEnhance, Api, Shape>({
     instances: Array<InstanceOf<NonNullable<typeof model>>>;
     keys: Array<string | number>;
   };
+  const getKey =
+    typeof getKeyRaw === 'function'
+      ? getKeyRaw
+      : (entity: Input) => entity[getKeyRaw] as string | number;
   const $entities = createStore<ListState>({
     items: [],
     instances: [],
