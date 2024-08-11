@@ -62,6 +62,17 @@ describe('edit.add', () => {
       { id: 'ba', idSize: 2 },
     ]);
   });
+  test('do nothing on re-add', () => {
+    const entities = createUpdatableEntities([
+      { id: 'foo', count: 0, tag: 'x' },
+      { id: 'bar', count: 0, tag: 'y' },
+    ]);
+    entities.edit.add({ id: 'foo', count: 1, tag: 'x' });
+    expect(entities.$items.getState()).toEqual([
+      { id: 'foo', count: 0, tag: 'x' },
+      { id: 'bar', count: 0, tag: 'y' },
+    ]);
+  });
 });
 
 describe('edit.remove', () => {
@@ -83,6 +94,37 @@ describe('edit.remove', () => {
     const entities = createEntities([{ id: 'foo' }, { id: 'ba' }]);
     entities.edit.remove((entity) => entity.id === 'foo');
     expect(entities.$items.getState()).toEqual([{ id: 'ba', idSize: 2 }]);
+  });
+});
+
+describe('edit.set', () => {
+  test('set one', () => {
+    const entities = createEntities();
+    entities.edit.set({ id: 'foo' });
+    entities.edit.set({ id: 'ba' });
+    expect(entities.$items.getState()).toEqual([
+      { id: 'foo', idSize: 3 },
+      { id: 'ba', idSize: 2 },
+    ]);
+  });
+  test('set many', () => {
+    const entities = createEntities();
+    entities.edit.set([{ id: 'foo' }, { id: 'ba' }]);
+    expect(entities.$items.getState()).toEqual([
+      { id: 'foo', idSize: 3 },
+      { id: 'ba', idSize: 2 },
+    ]);
+  });
+  test('replace on re-add', () => {
+    const entities = createUpdatableEntities([
+      { id: 'foo', count: 0, tag: 'x' },
+      { id: 'bar', count: 0, tag: 'y' },
+    ]);
+    entities.edit.set({ id: 'foo', count: 1, tag: 'x' });
+    expect(entities.$items.getState()).toEqual([
+      { id: 'foo', count: 1, tag: 'x' },
+      { id: 'bar', count: 0, tag: 'y' },
+    ]);
   });
 });
 
@@ -112,6 +154,15 @@ describe('edit.update', () => {
       { id: 'foo', count: 1, tag: 'x' },
       { id: 'bar', count: 0, tag: 'y' },
       { id: 'baz', count: 2, tag: 'z' },
+    ]);
+  });
+  test('do nothing if entity not exists', () => {
+    const entities = createUpdatableEntities([
+      { id: 'foo', count: 0, tag: 'x' },
+    ]);
+    entities.edit.update({ id: 'bar', count: 0, tag: 'y' });
+    expect(entities.$items.getState()).toEqual([
+      { id: 'foo', count: 0, tag: 'x' },
     ]);
   });
 });
