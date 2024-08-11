@@ -1,8 +1,8 @@
-import { EntityList, KeyStore } from './types';
+import { Keyval, KeyStore } from './types';
 
 export function lens<Shape>(
-  entityList: EntityList<any, any, any, Shape>,
+  keyval: Keyval<any, any, any, Shape>,
   key: KeyStore,
 ) {
-  return entityList.__lens;
+  return keyval.__lens;
 }

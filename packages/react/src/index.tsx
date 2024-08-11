@@ -11,7 +11,7 @@ import { useList, useStoreMap, useUnit } from 'effector-react';
 import type {
   Model,
   Instance,
-  EntityList,
+  Keyval,
   StoreDef,
   EventDef,
   EffectDef,
@@ -23,7 +23,7 @@ import { spawn } from '@effector/model';
 type ModelStack =
   | {
       type: 'entity';
-      model: EntityList<unknown, any, unknown, unknown>;
+      model: Keyval<unknown, any, unknown, unknown>;
       value: string | number;
       parent: ModelStack | null;
     }
@@ -41,7 +41,7 @@ export function EntityProvider<T>({
   value,
   children,
 }: {
-  model: EntityList<unknown, T, unknown, unknown>;
+  model: Keyval<unknown, T, unknown, unknown>;
   value: string | number;
   children: ReactNode;
 }) {
@@ -177,14 +177,12 @@ export function useModel<Input, T, Api, Shape>(
   return [state as any, api as any];
 }
 
-export function useEntityItem<T>(
-  entityList: EntityList<unknown, T, unknown, unknown>,
-) {
+export function useEntityItem<T>(keyval: Keyval<unknown, T, unknown, unknown>) {
   const stack = useContext(ModelStackContext);
   let currentStack = stack;
   let value: string | number | undefined;
   while (value === undefined && currentStack) {
-    if (currentStack.model === entityList) {
+    if (currentStack.model === keyval) {
       value = currentStack.value as string | number;
     }
     currentStack = currentStack.parent;
@@ -192,24 +190,24 @@ export function useEntityItem<T>(
   if (value === undefined)
     throw Error('model not found, add EntityProvider first');
   const idx = useStoreMap({
-    store: entityList.$keys,
+    store: keyval.$keys,
     keys: [value],
     fn: (keys, [value]) => keys.indexOf(value),
   });
   if (idx === -1) throw Error(`instance with key "${value}" not found`);
   return useStoreMap({
-    store: entityList.$items,
+    store: keyval.$items,
     keys: [idx, value],
     fn: (values, [idx]) => values[idx],
   });
 }
 
 export function useEntityList<T>(
-  entityList: EntityList<unknown, T, unknown, unknown>,
+  keyval: Keyval<unknown, T, unknown, unknown>,
   View: () => JSX.Element,
 ) {
-  return useList(entityList.$keys, (key) => (
-    <EntityProvider model={entityList} value={key}>
+  return useList(keyval.$keys, (key) => (
+    <EntityProvider model={keyval} value={key}>
       <View />
     </EntityProvider>
   ));

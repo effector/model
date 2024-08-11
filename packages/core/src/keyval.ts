@@ -14,7 +14,7 @@ import {
 } from 'effector';
 
 import type {
-  EntityList,
+  Keyval,
   Model,
   StoreDef,
   InstanceOf,
@@ -37,28 +37,28 @@ type ToPlainShape<Shape> = {
       : never;
 };
 
-// export function entityList<Input, Enriched>(options: {
+// export function keyval<Input, Enriched>(options: {
 //   getKey: (entity: ToPlainShape<Input>) => string | number;
 //   model: Model<Input, Enriched>;
-// }): EntityList<
+// }): Keyval<
 //   Show<ToPlainShape<Input>>,
 //   Show<ToPlainShape<Input> & ToPlainShape<Enriched>>
 // >;
-// export function entityList<T>(options: {
+// export function keyval<T>(options: {
 //   getKey: (entity: T) => string | number;
-// }): EntityList<T, T>;
-// export function entityList<Input, Enriched>({
+// }): Keyval<T, T>;
+// export function keyval<Input, Enriched>({
 //   getKey: getKeyRaw,
 //   model,
 // }: {
 //   getKey: (entity: ToPlainShape<Input>) => string | number;
 //   model?: Model<Input, Enriched>;
-// }): EntityList<
+// }): Keyval<
 //   ToPlainShape<Input>,
 //   ToPlainShape<Input> & ToPlainShape<Enriched>
 // >
 
-export function entityList<Input, ModelEnhance, Api, Shape>(options: {
+export function keyval<Input, ModelEnhance, Api, Shape>(options: {
   getKey: (entity: Input) => string | number;
   model: Model<
     {
@@ -70,15 +70,15 @@ export function entityList<Input, ModelEnhance, Api, Shape>(options: {
     Api,
     Shape
   >;
-}): EntityList<Input, Show<Input & ModelEnhance>, Api, Shape>;
-export function entityList<T, Shape>(options: {
+}): Keyval<Input, Show<Input & ModelEnhance>, Api, Shape>;
+export function keyval<T, Shape>(options: {
   getKey: (entity: T) => string | number;
   shape: Shape;
-}): EntityList<T, T, {}, ConvertToLensShape<Shape>>;
-export function entityList<T>(options: {
+}): Keyval<T, T, {}, ConvertToLensShape<Shape>>;
+export function keyval<T>(options: {
   getKey: (entity: T) => string | number;
-}): EntityList<T, T, {}, {}>;
-export function entityList<Input, ModelEnhance, Api, Shape>({
+}): Keyval<T, T, {}, {}>;
+export function keyval<Input, ModelEnhance, Api, Shape>({
   getKey,
   model,
   shape = {} as Shape,
@@ -91,13 +91,13 @@ export function entityList<Input, ModelEnhance, Api, Shape>({
     {
       [K in keyof ModelEnhance]:
         | Store<ModelEnhance[K]>
-        | EntityList<any, ModelEnhance[K], any, any>;
+        | Keyval<any, ModelEnhance[K], any, any>;
     },
     Api,
     Shape
   >;
   shape?: Shape;
-}): EntityList<Input, Input & ModelEnhance, Api, Shape> {
+}): Keyval<Input, Input & ModelEnhance, Api, Shape> {
   type Enriched = Input & ModelEnhance;
   type ListState = {
     items: Enriched[];
@@ -397,7 +397,7 @@ export function entityList<Input, ModelEnhance, Api, Shape>({
   });
 
   return {
-    type: 'entityList',
+    type: 'keyval',
     api: api as any,
     __lens: shape,
     $items: $entities.map(({ items }) => items),

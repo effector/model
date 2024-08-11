@@ -3,7 +3,7 @@ import { createStore, createEvent, createEffect, combine } from 'effector';
 import { model } from './model';
 import { spawn } from './spawn';
 import { define } from './define';
-import { entityList } from './entityList';
+import { keyval } from './keyval';
 import { lens } from './lens';
 
 const $email = createStore('');
@@ -50,7 +50,7 @@ type Field = {
 };
 
 /** type is inferred from model props */
-const fieldList1 = entityList({
+const fieldList1 = keyval({
   getKey: ({ name }) => name,
   model: model({
     props: {
@@ -77,7 +77,7 @@ fieldList1.api.submit;
 lens(fieldList1, $email).isValid.store;
 
 /** model has partial type, so we use explicit generics */
-const fieldList2 = entityList<Field, { isValid: boolean }, {}, {}>({
+const fieldList2 = keyval<Field, { isValid: boolean }, {}, {}>({
   getKey: ({ name }) => name,
   model: model({
     props: {

@@ -8,7 +8,7 @@ import {
   sample,
 } from 'effector';
 
-import type { EntityList } from './types';
+import type { Keyval } from './types';
 
 export function getEntityItem<
   T,
@@ -16,12 +16,12 @@ export function getEntityItem<
   Key extends string | number,
   Shape,
 >(config: {
-  source: EntityList<any, T, Api, Shape>;
+  source: Keyval<any, T, Api, Shape>;
   key: Store<string | number> | string | number;
   defaultValue: (key: Key) => T;
 }): [Store<T>, Api];
 export function getEntityItem<T, Api, Shape>(config: {
-  source: EntityList<any, T, Api, Shape>;
+  source: Keyval<any, T, Api, Shape>;
   key: Store<string | number> | string | number;
 }): [Store<T | null>, Api];
 export function getEntityItem<T, Api, Shape>({
@@ -29,7 +29,7 @@ export function getEntityItem<T, Api, Shape>({
   key,
   defaultValue,
 }: {
-  source: EntityList<any, T, Api, Shape>;
+  source: Keyval<any, T, Api, Shape>;
   key: Store<string | number> | string | number;
   defaultValue?: (key: string | number) => T;
 }) {

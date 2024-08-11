@@ -20,7 +20,7 @@ import type {
   EffectDef,
   AnyDef,
 } from './types';
-import { define, isDefine, isEntityList } from './define';
+import { define, isDefine, isKeyval } from './define';
 
 type ParamsNormalize<
   T extends {
@@ -226,7 +226,7 @@ export function spawn<
     }
     for (const key in storeOutputs) {
       const value = storeOutputs[key];
-      if (!is.store(value) && !isEntityList(value)) {
+      if (!is.store(value) && !isKeyval(value)) {
         throw Error(`model body in state key "${key}" should return store`);
       }
     }

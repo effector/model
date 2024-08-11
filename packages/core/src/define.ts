@@ -5,7 +5,7 @@ import type {
   AnyDef,
   EntityShapeDef,
   EntityItemDef,
-  EntityList,
+  Keyval,
   Instance,
 } from './types';
 
@@ -71,12 +71,8 @@ export const isDefine = {
   },
 };
 
-export function isEntityList(
-  value: any,
-): value is EntityList<any, any, any, any> {
-  return (
-    typeof value === 'object' && value !== null && value.type === 'entityList'
-  );
+export function isKeyval(value: any): value is Keyval<any, any, any, any> {
+  return typeof value === 'object' && value !== null && value.type === 'keyval';
 }
 
 export function isInstance(val: any): val is Instance<any, any> {

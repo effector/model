@@ -5,7 +5,7 @@ import type {
   StoreDef,
   EventDef,
   EffectDef,
-  EntityList,
+  Keyval,
   Show,
   ConvertToLensShape,
 } from './types';
@@ -25,7 +25,7 @@ export function model<
   Output extends {
     [key: string]:
       | Store<unknown>
-      | EntityList<unknown, unknown, unknown, unknown>
+      | Keyval<unknown, unknown, unknown, unknown>
       | unknown;
   },
   Api extends {
@@ -74,7 +74,7 @@ export function model<
 }): Model<
   Input,
   Show<{
-    [K in keyof Output]: Output[K] extends EntityList<any, infer V, any, any>
+    [K in keyof Output]: Output[K] extends Keyval<any, infer V, any, any>
       ? Store<V[]>
       : Output[K];
   }>,
@@ -82,7 +82,7 @@ export function model<
   Show<ConvertToLensShape<Input & Output & Api>>
   // {
   //   [K in {
-  //     [L in keyof Output]: Output[K] extends EntityList<any, any, any, any>
+  //     [L in keyof Output]: Output[K] extends Keyval<any, any, any, any>
   //       ? L
   //       : never;
   //   }[keyof Output]]: Output[K];

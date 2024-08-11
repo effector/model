@@ -132,13 +132,13 @@ export type ConvertToLensShape<Shape> = {
             ? LensStore<V>
             : Shape[K] extends Event<infer V>
               ? LensEvent<V>
-              : Shape[K] extends EntityList<any, any, any, infer ChildShape>
+              : Shape[K] extends Keyval<any, any, any, infer ChildShape>
                 ? (key: KeyStore) => LensShape<ChildShape>
                 : never;
 };
 
-export type EntityList<Input, Enriched extends Input, Api, Shape> = {
-  type: 'entityList';
+export type Keyval<Input, Enriched extends Input, Api, Shape> = {
+  type: 'keyval';
   api: {
     [K in keyof Api]: Api[K] extends EventCallable<infer V>
       ? EventCallable<
