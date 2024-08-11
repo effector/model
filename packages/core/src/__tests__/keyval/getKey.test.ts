@@ -1,4 +1,4 @@
-import { expect, test, describe } from 'vitest';
+import { expect, test } from 'vitest';
 import { model, keyval, define } from '@effector/model';
 
 test('getKey function', () => {

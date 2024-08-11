@@ -172,3 +172,56 @@ test('edit.replaceAll', () => {
   entities.edit.replaceAll([{ id: 'baz' }]);
   expect(entities.$items.getState()).toEqual([{ id: 'baz', idSize: 3 }]);
 });
+
+describe('edit.map', () => {
+  test('map one', () => {
+    const entities = createUpdatableEntities([
+      { id: 'foo', count: 0, tag: 'x' },
+      { id: 'bar', count: 0, tag: 'y' },
+    ]);
+
+    entities.edit.map({
+      keys: 'foo',
+      map: ({ count }) => ({ count: count + 1 }),
+    });
+
+    expect(entities.$items.getState()).toEqual([
+      { id: 'foo', count: 1, tag: 'x' },
+      { id: 'bar', count: 0, tag: 'y' },
+    ]);
+  });
+  test('map many', () => {
+    const entities = createUpdatableEntities([
+      { id: 'foo', count: 0, tag: 'x' },
+      { id: 'bar', count: 0, tag: 'y' },
+      { id: 'baz', count: 1, tag: 'z' },
+    ]);
+
+    entities.edit.map({
+      keys: ['foo', 'baz'],
+      map: ({ count }) => ({ count: count + 1 }),
+    });
+
+    expect(entities.$items.getState()).toEqual([
+      { id: 'foo', count: 1, tag: 'x' },
+      { id: 'bar', count: 0, tag: 'y' },
+      { id: 'baz', count: 2, tag: 'z' },
+    ]);
+  });
+  test('do nothing if entity not exists', () => {
+    const entities = createUpdatableEntities([
+      { id: 'foo', count: 0, tag: 'x' },
+      { id: 'bar', count: 0, tag: 'y' },
+    ]);
+
+    entities.edit.map({
+      keys: 'baz',
+      map: ({ count }) => ({ count: count + 1 }),
+    });
+
+    expect(entities.$items.getState()).toEqual([
+      { id: 'foo', count: 0, tag: 'x' },
+      { id: 'bar', count: 0, tag: 'y' },
+    ]);
+  });
+});
