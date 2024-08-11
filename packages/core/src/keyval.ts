@@ -20,8 +20,10 @@ import type {
   InstanceOf,
   Show,
   ConvertToLensShape,
+  StructKeyval,
 } from './types';
 import { spawn } from './spawn';
+import { isDefine } from './define';
 
 type ToPlainShape<Shape> = {
   [K in {
@@ -402,10 +404,39 @@ export function keyval<Input, ModelEnhance, Api, Shape>({
     return state;
   });
 
+  let structShape: any = null;
+
+  if (model) {
+    const initShape = {} as Record<string, any>;
+    /** for in leads to typescript errors */
+    Object.entries(model.shape).forEach(([key, def]) => {
+      if (isDefine.store(def)) {
+        initShape[key] = createStore({});
+      } else if (isDefine.event(def)) {
+        initShape[key] = createEvent();
+      } else if (isDefine.effect(def)) {
+        initShape[key] = createEffect(() => {});
+      }
+    });
+    const consoleError = console.error;
+    console.error = () => {};
+    // @ts-expect-error type issues
+    const instance = spawn(model, initShape);
+    console.error = consoleError;
+    instance.unmount();
+    structShape = {
+      type: 'structKeyval',
+      getKey,
+      shape: model.__struct!.shape,
+    } as StructKeyval;
+  }
+
   return {
     type: 'keyval',
     api: api as any,
     __lens: shape,
+    __struct: structShape,
+    __getKey: getKey,
     $items: $entities.map(({ items }) => items),
     $keys: $entities.map(({ keys }) => keys),
     edit: {

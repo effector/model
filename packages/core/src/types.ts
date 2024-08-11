@@ -42,6 +42,8 @@ export type Model<Props, Output, Api, Shape> = {
   >;
   // private
   shapeInited: boolean;
+  // private
+  __struct?: StructShape;
 };
 
 export type Instance<Output, Api> = {
@@ -117,6 +119,25 @@ export type LensEvent<T> = {
   __value: T;
 };
 
+/** internal representation of model structure, unit leaf */
+export type StructUnit = {
+  type: 'structUnit';
+  unit: 'store' | 'event' | 'effect';
+};
+
+/** internal representation of model structure, model shape */
+export type StructShape = {
+  type: 'structShape';
+  shape: Record<string, StructUnit | StructKeyval>;
+};
+
+/** internal representation of model structure, keyval shape */
+export type StructKeyval = {
+  type: 'structKeyval';
+  getKey: (input: any) => string | number;
+  shape: Record<string, StructUnit | StructKeyval>;
+};
+
 export type KeyStore = Store<string | number>;
 
 export type ConvertToLensShape<Shape> = {
@@ -171,6 +192,10 @@ export type Keyval<Input, Enriched extends Input, Api, Shape> = {
   };
   // private
   __lens: Shape;
+  // private
+  __struct: StructKeyval;
+  // private
+  __getKey: (input: Input) => string | number;
 };
 
 export type StoreContext<T> = {

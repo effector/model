@@ -19,6 +19,8 @@ import type {
   EventDef,
   EffectDef,
   AnyDef,
+  StructUnit,
+  StructShape,
 } from './types';
 import { define, isDefine, isKeyval } from './define';
 
@@ -241,9 +243,26 @@ export function spawn<
   }
   if (!model.shapeInited) {
     model.shapeInited = true;
+    const structShape: StructShape = {
+      type: 'structShape',
+      shape: {},
+    };
+    for (const key in normProps) {
+      const unit = normProps[key];
+      structShape.shape[key] = {
+        type: 'structUnit',
+        unit: is.store(unit) ? 'store' : is.event(unit) ? 'event' : 'effect',
+      };
+    }
     for (const key in storeOutputs) {
       // @ts-expect-error
       model.shape[key] = define.store<any>();
+      structShape.shape[key] = isKeyval(storeOutputs[key])
+        ? storeOutputs[key].__struct
+        : {
+            type: 'structUnit',
+            unit: 'store',
+          };
     }
     for (const key in apiOutputs) {
       const value = apiOutputs[key];
@@ -251,7 +270,12 @@ export function spawn<
       model.shape[key] = is.event(value)
         ? define.event<any>()
         : define.effect<any, any, any>();
+      structShape.shape[key] = {
+        type: 'structUnit',
+        unit: is.event(value) ? 'event' : 'effect',
+      };
     }
+    model.__struct = structShape;
   }
   const result: Instance<Output, Api> = {
     type: 'instance',
