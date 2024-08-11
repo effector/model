@@ -54,7 +54,7 @@ describe('getKey', () => {
 describe('keyval.edit', () => {
   function createEntities() {
     return keyval({
-      getKey: ({ id }) => id,
+      getKey: 'id',
       model: model({
         props: {
           id: define.store<string>(),
@@ -104,6 +104,52 @@ describe('keyval.edit', () => {
       entities.edit.add([{ id: 'foo' }, { id: 'ba' }]);
       entities.edit.remove((entity) => entity.id === 'foo');
       expect(entities.$items.getState()).toEqual([{ id: 'ba', idSize: 2 }]);
+    });
+  });
+  describe('edit.update', () => {
+    function createUpdatableEntities() {
+      return keyval({
+        getKey: 'id',
+        model: model({
+          props: {
+            id: define.store<string>(),
+            count: define.store<number>(),
+            tag: define.store<string>(),
+          },
+          create() {
+            return {};
+          },
+        }),
+      });
+    }
+    test('update one', () => {
+      const entities = createUpdatableEntities();
+      entities.edit.add([
+        { id: 'foo', count: 0, tag: 'x' },
+        { id: 'bar', count: 0, tag: 'y' },
+      ]);
+      entities.edit.update({ id: 'foo', count: 1 });
+      expect(entities.$items.getState()).toEqual([
+        { id: 'foo', count: 1, tag: 'x' },
+        { id: 'bar', count: 0, tag: 'y' },
+      ]);
+    });
+    test('update many', () => {
+      const entities = createUpdatableEntities();
+      entities.edit.add([
+        { id: 'foo', count: 0, tag: 'x' },
+        { id: 'bar', count: 0, tag: 'y' },
+        { id: 'baz', count: 0, tag: 'z' },
+      ]);
+      entities.edit.update([
+        { id: 'foo', count: 1 },
+        { id: 'baz', count: 2 },
+      ]);
+      expect(entities.$items.getState()).toEqual([
+        { id: 'foo', count: 1, tag: 'x' },
+        { id: 'bar', count: 0, tag: 'y' },
+        { id: 'baz', count: 2, tag: 'z' },
+      ]);
     });
   });
 });
