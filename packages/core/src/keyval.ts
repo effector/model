@@ -5,6 +5,7 @@ import {
   attach,
   sample,
   Store,
+  StoreWritable,
   withRegion,
   combine,
   clearNode,
@@ -80,8 +81,7 @@ export function keyval<
       | Store<unknown>
       | Keyval<unknown, unknown, unknown, unknown>
       | unknown;
-  },
-  Shape,
+  } = {},
   Api extends {
     [key: string]: Event<unknown> | Effect<unknown, unknown, unknown>;
   } = {},
@@ -164,7 +164,15 @@ export function keyval<
     | { state: Output; api?: never }
     | Output;
 }): Keyval<
-  InputPlain,
+  Show<
+    InputPlain & {
+      [K in keyof Output]?: Output[K] extends Keyval<any, infer V, any, any>
+        ? V[]
+        : Output[K] extends StoreWritable<infer V>
+          ? V
+          : never;
+    }
+  >,
   Show<InputPlain & OutputPlain>,
   Api,
   Show<ConvertToLensShape<Input & Output & Api>>

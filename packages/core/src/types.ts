@@ -158,7 +158,7 @@ export type ConvertToLensShape<Shape> = {
                 : never;
 };
 
-export type Keyval<Input, Enriched extends Input, Api, Shape> = {
+export type Keyval<Input, Enriched, Api, Shape> = {
   type: 'keyval';
   api: {
     [K in keyof Api]: Api[K] extends EventCallable<infer V>

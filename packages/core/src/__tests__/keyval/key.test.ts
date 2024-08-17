@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest';
 import { keyval, define } from '@effector/model';
 
-test('getKey function', () => {
+test('key function', () => {
   const entities = keyval({
     key: ({ id }) => id,
     props: {
@@ -23,7 +23,7 @@ test('getKey function', () => {
   ]);
 });
 
-test('getKey string', () => {
+test('key string', () => {
   const entities = keyval({
     key: 'id',
     props: {
