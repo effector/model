@@ -301,7 +301,7 @@ export function keyval<Input, ModelEnhance, Api, Shape>({
 
   $entities.on(updateEnrichedItem, (state, { key, partial }) => {
     const refresh = refreshOnce(state);
-    const idx = state.keys.findIndex((e) => e === key);
+    const idx = state.keys.indexOf(key);
     if (idx !== -1) {
       state = refresh();
       state.items[idx] = {
@@ -355,7 +355,7 @@ export function keyval<Input, ModelEnhance, Api, Shape>({
             },
             fn: (upd) =>
               Array.isArray(upd.key)
-                ? upd.data[upd.key.findIndex((e) => e === key)]
+                ? upd.data[upd.key.indexOf(key)]
                 : upd.data,
             target: instance.api[key] as EventCallable<any>,
           });
@@ -425,7 +425,7 @@ export function keyval<Input, ModelEnhance, Api, Shape>({
       for (const item of updates) {
         const key = getKey(item);
         state = refresh();
-        const idx = state.keys.findIndex((e) => e === key);
+        const idx = state.keys.indexOf(key);
         if (idx !== -1) {
           runUpdatesForInstance(state, idx, item);
         } else {
@@ -506,7 +506,7 @@ export function keyval<Input, ModelEnhance, Api, Shape>({
     } else {
       payload = Array.isArray(payload) ? payload : [payload];
       for (const key of payload) {
-        const idx = state.keys.findIndex((e) => e === key);
+        const idx = state.keys.indexOf(key);
         if (idx !== -1) {
           indexesToRemove.push(idx);
         }
@@ -531,7 +531,7 @@ export function keyval<Input, ModelEnhance, Api, Shape>({
     const refresh = refreshOnce(state);
     for (const inputUpdate of updates) {
       const key = getKey(inputUpdate as Input);
-      const idx = state.keys.findIndex((e) => e === key);
+      const idx = state.keys.indexOf(key);
       if (idx !== -1) {
         state = refresh();
         runUpdatesForInstance(state, idx, inputUpdate);
@@ -543,7 +543,7 @@ export function keyval<Input, ModelEnhance, Api, Shape>({
     keys = Array.isArray(keys) ? keys : [keys];
     const refresh = refreshOnce(state);
     for (const key of keys) {
-      const idx = state.keys.findIndex((e) => e === key);
+      const idx = state.keys.indexOf(key);
       if (idx !== -1) {
         const originalItem = state.items[idx];
         const updatedItem = map(originalItem);
