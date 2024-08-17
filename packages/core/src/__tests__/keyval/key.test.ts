@@ -3,7 +3,7 @@ import { model, keyval, define } from '@effector/model';
 
 test('getKey function', () => {
   const entities = keyval({
-    getKey: ({ id }) => id,
+    key: ({ id }) => id,
     model: model({
       props: {
         id: define.store<string>(),
@@ -27,7 +27,7 @@ test('getKey function', () => {
 
 test('getKey string', () => {
   const entities = keyval({
-    getKey: 'id',
+    key: 'id',
     model: model({
       props: {
         id: define.store<string>(),

@@ -3,14 +3,14 @@ import { model, keyval, define } from '@effector/model';
 
 test.skip('support nested keyval', () => {
   const entities = keyval({
-    getKey: 'id',
+    key: 'id',
     model: model({
       props: {
         id: define.store<string>(),
       },
       create() {
         const childs = keyval({
-          getKey: 'id',
+          key: 'id',
           model: model({
             props: {
               id: define.store<string>(),

@@ -6,7 +6,7 @@ function createUpdatableEntities(
   fill?: Array<{ id: string; count: number; tag: string }>,
 ) {
   const entities = keyval({
-    getKey: 'id',
+    key: 'id',
     model: model({
       props: {
         id: define.store<string>(),
@@ -89,14 +89,14 @@ describe.skip('nested store lens', () => {
     }>,
   ) {
     const entities = keyval({
-      getKey: 'id',
+      key: 'id',
       model: model({
         props: {
           id: define.store<string>(),
         },
         create() {
           const childs = keyval({
-            getKey: 'id',
+            key: 'id',
             model: model({
               props: {
                 id: define.store<string>(),

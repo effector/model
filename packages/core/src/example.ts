@@ -51,7 +51,7 @@ type Field = {
 
 /** type is inferred from model props */
 const fieldList1 = keyval({
-  getKey: ({ name }) => name,
+  key: ({ name }) => name,
   model: model({
     props: {
       name: define.store<string>(),
@@ -78,7 +78,7 @@ lens(fieldList1, $email).isValid.store;
 
 /** model has partial type, so we use explicit generics */
 const fieldList2 = keyval<Field, { isValid: boolean }, {}, {}>({
-  getKey: ({ name }) => name,
+  key: ({ name }) => name,
   model: model({
     props: {
       value: define.store<string>(),

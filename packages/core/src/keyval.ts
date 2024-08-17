@@ -40,20 +40,20 @@ type ToPlainShape<Shape> = {
 };
 
 // export function keyval<Input, Enriched>(options: {
-//   getKey: (entity: ToPlainShape<Input>) => string | number;
+//   key: (entity: ToPlainShape<Input>) => string | number;
 //   model: Model<Input, Enriched>;
 // }): Keyval<
 //   Show<ToPlainShape<Input>>,
 //   Show<ToPlainShape<Input> & ToPlainShape<Enriched>>
 // >;
 // export function keyval<T>(options: {
-//   getKey: (entity: T) => string | number;
+//   key: (entity: T) => string | number;
 // }): Keyval<T, T>;
 // export function keyval<Input, Enriched>({
-//   getKey: getKeyRaw,
+//   key: getKeyRaw,
 //   model,
 // }: {
-//   getKey: (entity: ToPlainShape<Input>) => string | number;
+//   key: (entity: ToPlainShape<Input>) => string | number;
 //   model?: Model<Input, Enriched>;
 // }): Keyval<
 //   ToPlainShape<Input>,
@@ -61,7 +61,7 @@ type ToPlainShape<Shape> = {
 // >
 
 export function keyval<Input, ModelEnhance, Api, Shape>(options: {
-  getKey: ((entity: Input) => string | number) | keyof Input;
+  key: ((entity: Input) => string | number) | keyof Input;
   model: Model<
     {
       [K in keyof Input]?: Store<Input[K]> | StoreDef<Input[K]>;
@@ -74,18 +74,18 @@ export function keyval<Input, ModelEnhance, Api, Shape>(options: {
   >;
 }): Keyval<Input, Show<Input & ModelEnhance>, Api, Shape>;
 export function keyval<T, Shape>(options: {
-  getKey: ((entity: T) => string | number) | keyof T;
+  key: ((entity: T) => string | number) | keyof T;
   shape: Shape;
 }): Keyval<T, T, {}, ConvertToLensShape<Shape>>;
 export function keyval<T>(options: {
-  getKey: ((entity: T) => string | number) | keyof T;
+  key: ((entity: T) => string | number) | keyof T;
 }): Keyval<T, T, {}, {}>;
 export function keyval<Input, ModelEnhance, Api, Shape>({
-  getKey: getKeyRaw,
+  key: getKeyRaw,
   model,
   shape = {} as Shape,
 }: {
-  getKey: ((entity: Input) => string | number) | keyof Input;
+  key: ((entity: Input) => string | number) | keyof Input;
   model?: Model<
     {
       [K in keyof Input]?: Store<Input[K]> | StoreDef<Input[K]>;

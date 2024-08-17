@@ -4,7 +4,7 @@ import { model, keyval, define } from '@effector/model';
 
 function createEntities(fill?: Array<{ id: string }>) {
   const entities = keyval({
-    getKey: 'id',
+    key: 'id',
     model: model({
       props: {
         id: define.store<string>(),
@@ -26,7 +26,7 @@ function createUpdatableEntities(
   fill?: Array<{ id: string; count: number; tag: string }>,
 ) {
   const entities = keyval({
-    getKey: 'id',
+    key: 'id',
     model: model({
       props: {
         id: define.store<string>(),
