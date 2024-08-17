@@ -77,3 +77,79 @@ test('lens store change value when key changed', () => {
   changeKey('foo');
   expect($currentTag.getState()).toBe('x');
 });
+
+describe.skip('nested store lens', () => {
+  function createNestedEntities(
+    fill?: Array<{
+      id: string;
+      childs: {
+        id: string;
+        count: number;
+      }[];
+    }>,
+  ) {
+    const entities = keyval({
+      getKey: 'id',
+      model: model({
+        props: {
+          id: define.store<string>(),
+        },
+        create() {
+          const childs = keyval({
+            getKey: 'id',
+            model: model({
+              props: {
+                id: define.store<string>(),
+                count: define.store<number>(),
+              },
+              create() {
+                return {};
+              },
+            }),
+          });
+          return { childs };
+        },
+      }),
+    });
+    if (fill) {
+      entities.edit.add(fill);
+    }
+    return entities;
+  }
+  test('it fills correctly', () => {
+    const entities = createNestedEntities([
+      {
+        id: 'foo',
+        childs: [
+          { id: 'foo1', count: 0 },
+          { id: 'foo2', count: 0 },
+        ],
+      },
+      {
+        id: 'bar',
+        childs: [
+          { id: 'bar1', count: 0 },
+          { id: 'bar2', count: 0 },
+        ],
+      },
+    ]);
+    console.log(entities.$items.getState());
+    // expect(entities.$items.getState()).toEqual([
+    //   {
+    //     id: 'foo',
+    //     childs: [
+    //       { id: 'foo1', count: 0 },
+    //       { id: 'foo2', count: 0 },
+    //     ],
+    //   },
+    //   {
+    //     id: 'bar',
+    //     childs: [
+    //       { id: 'bar1', count: 0 },
+    //       { id: 'bar2', count: 1 },
+    //     ],
+    //   },
+    // ]);
+    console.log('bar');
+  });
+});
