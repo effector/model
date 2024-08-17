@@ -81,10 +81,10 @@ export function keyval<
       | Keyval<unknown, unknown, unknown, unknown>
       | unknown;
   },
+  Shape,
   Api extends {
     [key: string]: Event<unknown> | Effect<unknown, unknown, unknown>;
-  },
-  Shape,
+  } = {},
   InputPlain extends {
     [K in keyof Input]: Input[K] extends
       | Event<unknown>
