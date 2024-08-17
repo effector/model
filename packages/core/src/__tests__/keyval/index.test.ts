@@ -1,5 +1,5 @@
 import { expect, test, describe } from 'vitest';
-import { model, keyval, define } from '@effector/model';
+import { keyval, define } from '@effector/model';
 
 test.skip('support nested keyval', () => {
   const entities = keyval({

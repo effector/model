@@ -1,6 +1,6 @@
 import { expect, test, describe } from 'vitest';
 import { combine } from 'effector';
-import { model, keyval, define } from '@effector/model';
+import { keyval, define } from '@effector/model';
 
 function createEntities(fill?: Array<{ id: string }>) {
   const entities = keyval({

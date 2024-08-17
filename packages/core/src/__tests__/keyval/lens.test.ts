@@ -1,6 +1,6 @@
 import { expect, test, describe } from 'vitest';
 import { createStore, createEvent, sample } from 'effector';
-import { model, keyval, define, lens } from '@effector/model';
+import { keyval, define, lens } from '@effector/model';
 
 function createUpdatableEntities(
   fill?: Array<{ id: string; count: number; tag: string }>,

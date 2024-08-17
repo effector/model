@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { model, keyval, define } from '@effector/model';
+import { keyval, define } from '@effector/model';
 
 test('getKey function', () => {
   const entities = keyval({
