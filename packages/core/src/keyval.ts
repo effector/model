@@ -27,7 +27,7 @@ import type {
   StructKeyval,
 } from './types';
 import { spawn } from './spawn';
-import { isDefine } from './define';
+import { isDefine, isKeyval } from './define';
 import { model } from './model';
 
 type ToPlainShape<Shape> = {
@@ -291,7 +291,14 @@ export function keyval<Input, ModelEnhance, Api, Shape>({
       // @ts-expect-error some issues with types
       const instance = spawn(kvModel, item1);
       withRegion(instance.region, () => {
-        const $enriching = combine(instance.props);
+        const storeOutputs = {} as Record<string, Store<any>>;
+        for (const key in instance.props) {
+          const value = instance.props[key];
+          storeOutputs[key] = isKeyval(value)
+            ? value.$items
+            : (value as Store<any>);
+        }
+        const $enriching = combine(storeOutputs);
         // obviosly dirty hack, wont make it way to release
         const enriching = $enriching.getState();
         freshState.items.push({ ...inputItem, ...enriching } as Enriched);
