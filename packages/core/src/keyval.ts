@@ -85,23 +85,48 @@ export function keyval<
     [key: string]: Event<unknown> | Effect<unknown, unknown, unknown>;
   },
   Shape,
+  InputPlain extends {
+    [K in keyof Input]: Input[K] extends
+      | Event<unknown>
+      | Effect<unknown, unknown, unknown>
+      | EventDef<unknown>
+      | EffectDef<unknown, unknown, unknown>
+      | ((params: unknown) => unknown)
+      ? never
+      : Input[K] extends Store<infer V>
+        ? V
+        : Input[K] extends StoreDef<infer V>
+          ? V
+          : Input[K];
+  } = {
+    [K in keyof Input]: Input[K] extends
+      | Event<unknown>
+      | Effect<unknown, unknown, unknown>
+      | EventDef<unknown>
+      | EffectDef<unknown, unknown, unknown>
+      | ((params: unknown) => unknown)
+      ? never
+      : Input[K] extends Store<infer V>
+        ? V
+        : Input[K] extends StoreDef<infer V>
+          ? V
+          : Input[K];
+  },
+  OutputPlain extends {
+    [K in keyof Output]: Output[K] extends Keyval<any, infer V, any, any>
+      ? V[]
+      : Output[K] extends Store<infer V>
+        ? V
+        : never;
+  } = {
+    [K in keyof Output]: Output[K] extends Keyval<any, infer V, any, any>
+      ? V[]
+      : Output[K] extends Store<infer V>
+        ? V
+        : never;
+  },
 >(options: {
-  key:
-    | ((entity: {
-        [K in keyof Input]: Input[K] extends
-          | Event<unknown>
-          | Effect<unknown, unknown, unknown>
-          | EventDef<unknown>
-          | EffectDef<unknown, unknown, unknown>
-          | ((params: unknown) => unknown)
-          ? never
-          : Input[K] extends Store<infer V>
-            ? V
-            : Input[K] extends StoreDef<infer V>
-              ? V
-              : Input[K];
-      }) => string | number)
-    | keyof Input;
+  key: ((entity: InputPlain) => string | number) | keyof Input;
   props: Input;
   create: (
     props: {
@@ -139,40 +164,8 @@ export function keyval<
     | { state: Output; api?: never }
     | Output;
 }): Keyval<
-  {
-    [K in keyof Input]: Input[K] extends
-      | Event<unknown>
-      | Effect<unknown, unknown, unknown>
-      | EventDef<unknown>
-      | EffectDef<unknown, unknown, unknown>
-      | ((params: unknown) => unknown)
-      ? never
-      : Input[K] extends Store<infer V>
-        ? V
-        : Input[K] extends StoreDef<infer V>
-          ? V
-          : Input[K];
-  },
-  {
-    [K in keyof Input]: Input[K] extends
-      | Event<unknown>
-      | Effect<unknown, unknown, unknown>
-      | EventDef<unknown>
-      | EffectDef<unknown, unknown, unknown>
-      | ((params: unknown) => unknown)
-      ? never
-      : Input[K] extends Store<infer V>
-        ? V
-        : Input[K] extends StoreDef<infer V>
-          ? V
-          : Input[K];
-  } & {
-    [K in keyof Output]: Output[K] extends Keyval<any, infer V, any, any>
-      ? V[]
-      : Output[K] extends Store<infer V>
-        ? V
-        : never;
-  },
+  InputPlain,
+  Show<InputPlain & OutputPlain>,
   Api,
   Show<ConvertToLensShape<Input & Output & Api>>
 >;
