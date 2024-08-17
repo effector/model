@@ -49,45 +49,40 @@ type Field = {
   value: string;
 };
 
-/** type is inferred from model props */
 const fieldList1 = keyval({
-  key: ({ name }) => name,
-  model: model({
-    props: {
-      name: define.store<string>(),
-      value: define.store<string>(),
-    },
-    create({ value }) {
-      const submit = createEvent();
-      const $isValid = combine(value, (value) => value.length > 0);
-      return {
-        state: {
-          isValid: $isValid,
-        },
-        api: {
-          submit,
-        },
-      };
-    },
-  }),
+  key: 'name',
+  props: {
+    name: define.store<string>(),
+    value: define.store<string>(),
+  },
+  create({ value }) {
+    const submit = createEvent();
+    const $isValid = combine(value, (value) => value.length > 0);
+    return {
+      state: {
+        isValid: $isValid,
+      },
+      api: {
+        submit,
+      },
+    };
+  },
 });
 
 fieldList1.api.submit;
 
 lens(fieldList1, $email).isValid.store;
 
-/** model has partial type, so we use explicit generics */
-const fieldList2 = keyval<Field, { isValid: boolean }, {}, {}>({
-  key: ({ name }) => name,
-  model: model({
-    props: {
-      value: define.store<string>(),
-    },
-    create({ value }) {
-      const $isValid = combine(value, (value) => value.length > 0);
-      return {
-        isValid: $isValid,
-      };
-    },
-  }),
+const fieldList2 = keyval({
+  key: 'name',
+  props: {
+    name: define.store<string>(),
+    value: define.store<string>(),
+  },
+  create({ value }) {
+    const $isValid = combine(value, (value) => value.length > 0);
+    return {
+      isValid: $isValid,
+    };
+  },
 });

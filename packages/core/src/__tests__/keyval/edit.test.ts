@@ -5,16 +5,14 @@ import { model, keyval, define } from '@effector/model';
 function createEntities(fill?: Array<{ id: string }>) {
   const entities = keyval({
     key: 'id',
-    model: model({
-      props: {
-        id: define.store<string>(),
-      },
-      create({ id: $id }) {
-        return {
-          idSize: combine($id, (id) => id.length),
-        };
-      },
-    }),
+    props: {
+      id: define.store<string>(),
+    },
+    create({ id: $id }) {
+      return {
+        idSize: combine($id, (id) => id.length),
+      };
+    },
   });
   if (fill) {
     entities.edit.add(fill);
@@ -27,16 +25,14 @@ function createUpdatableEntities(
 ) {
   const entities = keyval({
     key: 'id',
-    model: model({
-      props: {
-        id: define.store<string>(),
-        count: define.store<number>(),
-        tag: define.store<string>(),
-      },
-      create() {
-        return {};
-      },
-    }),
+    props: {
+      id: define.store<string>(),
+      count: define.store<number>(),
+      tag: define.store<string>(),
+    },
+    create() {
+      return {};
+    },
   });
   if (fill) {
     entities.edit.add(fill);

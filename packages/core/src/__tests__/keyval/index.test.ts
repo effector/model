@@ -4,26 +4,22 @@ import { model, keyval, define } from '@effector/model';
 test.skip('support nested keyval', () => {
   const entities = keyval({
     key: 'id',
-    model: model({
-      props: {
-        id: define.store<string>(),
-      },
-      create() {
-        const childs = keyval({
-          key: 'id',
-          model: model({
-            props: {
-              id: define.store<string>(),
-              count: define.store<number>(),
-            },
-            create() {
-              return {};
-            },
-          }),
-        });
-        return { childs };
-      },
-    }),
+    props: {
+      id: define.store<string>(),
+    },
+    create() {
+      const childs = keyval({
+        key: 'id',
+        props: {
+          id: define.store<string>(),
+          count: define.store<number>(),
+        },
+        create() {
+          return {};
+        },
+      });
+      return { childs };
+    },
   });
   const data = [
     {

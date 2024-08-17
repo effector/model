@@ -10,13 +10,16 @@ import {
   clearNode,
   launch,
   EventCallable,
-  Unit,
+  Event,
+  Effect,
 } from 'effector';
 
 import type {
   Keyval,
   Model,
   StoreDef,
+  EventDef,
+  EffectDef,
   InstanceOf,
   Show,
   ConvertToLensShape,
@@ -24,6 +27,7 @@ import type {
 } from './types';
 import { spawn } from './spawn';
 import { isDefine } from './define';
+import { model } from './model';
 
 type ToPlainShape<Shape> = {
   [K in {
@@ -60,19 +64,131 @@ type ToPlainShape<Shape> = {
 //   ToPlainShape<Input> & ToPlainShape<Enriched>
 // >
 
-export function keyval<Input, ModelEnhance, Api, Shape>(options: {
-  key: ((entity: Input) => string | number) | keyof Input;
-  model: Model<
-    {
-      [K in keyof Input]?: Store<Input[K]> | StoreDef<Input[K]>;
+export function keyval<
+  Input extends {
+    [key: string]:
+      | Store<unknown>
+      | Event<unknown>
+      | Effect<unknown, unknown, unknown>
+      | StoreDef<unknown>
+      | EventDef<unknown>
+      | EffectDef<unknown, unknown, unknown>
+      | unknown;
+  },
+  Output extends {
+    [key: string]:
+      | Store<unknown>
+      | Keyval<unknown, unknown, unknown, unknown>
+      | unknown;
+  },
+  Api extends {
+    [key: string]: Event<unknown> | Effect<unknown, unknown, unknown>;
+  },
+  Shape,
+>(options: {
+  key:
+    | ((entity: {
+        [K in keyof Input]: Input[K] extends
+          | Event<unknown>
+          | Effect<unknown, unknown, unknown>
+          | EventDef<unknown>
+          | EffectDef<unknown, unknown, unknown>
+          | ((params: unknown) => unknown)
+          ? never
+          : Input[K] extends Store<infer V>
+            ? V
+            : Input[K] extends StoreDef<infer V>
+              ? V
+              : Input[K];
+      }) => string | number)
+    | keyof Input;
+  props: Input;
+  create: (
+    props: {
+      [K in keyof Input]: Input[K] extends
+        | Store<unknown>
+        | Event<unknown>
+        | Effect<unknown, unknown, unknown>
+        ? Input[K]
+        : Input[K] extends StoreDef<infer V>
+          ? Store<V>
+          : Input[K] extends EventDef<infer V>
+            ? Event<V>
+            : Input[K] extends EffectDef<infer V, infer D, infer E>
+              ? Effect<V, D, E>
+              : Input[K] extends (params: infer P) => infer R
+                ? Effect<P, Awaited<R>>
+                : Store<Input[K]>;
+    } & {
+      [K in {
+        [P in keyof Input]: Input[P] extends Store<unknown> | StoreDef<unknown>
+          ? P
+          : never;
+      }[keyof Input] as K extends string
+        ? `$${K}`
+        : never]: Input[K] extends Store<unknown>
+        ? Input[K]
+        : Input[K] extends StoreDef<infer V>
+          ? Store<V>
+          : never;
     },
-    {
-      [K in keyof ModelEnhance]: Store<ModelEnhance[K]>;
-    },
-    Api,
-    Shape
-  >;
-}): Keyval<Input, Show<Input & ModelEnhance>, Api, Shape>;
+    config: { onMount: Event<void> },
+  ) =>
+    | { state: Output; api: Api }
+    | { state?: never; api: Api }
+    | { state: Output; api?: never }
+    | Output;
+}): Keyval<
+  {
+    [K in keyof Input]: Input[K] extends
+      | Event<unknown>
+      | Effect<unknown, unknown, unknown>
+      | EventDef<unknown>
+      | EffectDef<unknown, unknown, unknown>
+      | ((params: unknown) => unknown)
+      ? never
+      : Input[K] extends Store<infer V>
+        ? V
+        : Input[K] extends StoreDef<infer V>
+          ? V
+          : Input[K];
+  },
+  {
+    [K in keyof Input]: Input[K] extends
+      | Event<unknown>
+      | Effect<unknown, unknown, unknown>
+      | EventDef<unknown>
+      | EffectDef<unknown, unknown, unknown>
+      | ((params: unknown) => unknown)
+      ? never
+      : Input[K] extends Store<infer V>
+        ? V
+        : Input[K] extends StoreDef<infer V>
+          ? V
+          : Input[K];
+  } & {
+    [K in keyof Output]: Output[K] extends Keyval<any, infer V, any, any>
+      ? V[]
+      : Output[K] extends Store<infer V>
+        ? V
+        : never;
+  },
+  Api,
+  Show<ConvertToLensShape<Input & Output & Api>>
+>;
+// export function keyval<Input, ModelEnhance, Api, Shape>(options: {
+//   key: ((entity: Input) => string | number) | keyof Input;
+//   model: Model<
+//     {
+//       [K in keyof Input]?: Store<Input[K]> | StoreDef<Input[K]>;
+//     },
+//     {
+//       [K in keyof ModelEnhance]: Store<ModelEnhance[K]>;
+//     },
+//     Api,
+//     Shape
+//   >;
+// }): Keyval<Input, Show<Input & ModelEnhance>, Api, Shape>;
 export function keyval<T, Shape>(options: {
   key: ((entity: T) => string | number) | keyof T;
   shape: Shape;
@@ -82,28 +198,37 @@ export function keyval<T>(options: {
 }): Keyval<T, T, {}, {}>;
 export function keyval<Input, ModelEnhance, Api, Shape>({
   key: getKeyRaw,
-  model,
   shape = {} as Shape,
+  props,
+  create,
 }: {
   key: ((entity: Input) => string | number) | keyof Input;
-  model?: Model<
-    {
-      [K in keyof Input]?: Store<Input[K]> | StoreDef<Input[K]>;
-    },
-    {
-      [K in keyof ModelEnhance]:
-        | Store<ModelEnhance[K]>
-        | Keyval<any, ModelEnhance[K], any, any>;
-    },
-    Api,
-    Shape
-  >;
   shape?: Shape;
+  props?: any;
+  create?: any;
 }): Keyval<Input, Input & ModelEnhance, Api, Shape> {
   type Enriched = Input & ModelEnhance;
+  let kvModel:
+    | Model<
+        {
+          [K in keyof Input]?: Store<Input[K]> | StoreDef<Input[K]>;
+        },
+        {
+          [K in keyof ModelEnhance]:
+            | Store<ModelEnhance[K]>
+            | Keyval<any, ModelEnhance[K], any, any>;
+        },
+        Api,
+        Shape
+      >
+    | undefined;
+  if (props && create) {
+    // @ts-expect-error typecast
+    kvModel = model({ props, create });
+  }
   type ListState = {
     items: Enriched[];
-    instances: Array<InstanceOf<NonNullable<typeof model>>>;
+    instances: Array<InstanceOf<NonNullable<typeof kvModel>>>;
     keys: Array<string | number>;
   };
   const getKey =
@@ -168,13 +293,13 @@ export function keyval<Input, ModelEnhance, Api, Shape>({
     inputItem: Input,
   ) {
     freshState.keys.push(key);
-    if (model) {
+    if (kvModel) {
       // typecast, ts cannot infer that types are indeed compatible
       const item1: {
         [K in keyof Input]: Store<Input[K]> | StoreDef<Input[K]> | Input[K];
       } = inputItem;
       // @ts-expect-error some issues with types
-      const instance = spawn(model, item1);
+      const instance = spawn(kvModel, item1);
       withRegion(instance.region, () => {
         const $enriching = combine(instance.props);
         // obviosly dirty hack, wont make it way to release
@@ -214,10 +339,12 @@ export function keyval<Input, ModelEnhance, Api, Shape>({
       // @ts-expect-error some issues with types
       freshState.instances.push(instance);
     } else {
-      // typecast, there is no model so Input === Enriched
+      // typecast, there is no kvModel so Input === Enriched
       freshState.items.push(inputItem as Enriched);
-      // dont use instances if there is no model
-      freshState.instances.push(null as InstanceOf<NonNullable<typeof model>>);
+      // dont use instances if there is no kvModel
+      freshState.instances.push(
+        null as InstanceOf<NonNullable<typeof kvModel>>,
+      );
     }
   }
 
@@ -232,7 +359,7 @@ export function keyval<Input, ModelEnhance, Api, Shape>({
       ...inputUpdate,
     };
     freshState.items[idx] = newItem;
-    if (model) {
+    if (kvModel) {
       const instance = freshState.instances[idx];
       for (const key in instance.inputs) {
         // @ts-expect-error cannot read newItem[key], but its ok
@@ -287,7 +414,7 @@ export function keyval<Input, ModelEnhance, Api, Shape>({
   const replaceAllFx = attach({
     source: $entities,
     effect(oldState, newItems: Input[]) {
-      if (model) {
+      if (kvModel) {
         for (const instance of oldState.instances) {
           clearNode(instance.region);
           instance.unmount();
@@ -406,10 +533,10 @@ export function keyval<Input, ModelEnhance, Api, Shape>({
 
   let structShape: any = null;
 
-  if (model) {
+  if (kvModel) {
     const initShape = {} as Record<string, any>;
     /** for in leads to typescript errors */
-    Object.entries(model.shape).forEach(([key, def]) => {
+    Object.entries(kvModel.shape).forEach(([key, def]) => {
       if (isDefine.store(def)) {
         initShape[key] = createStore({});
       } else if (isDefine.event(def)) {
@@ -421,13 +548,13 @@ export function keyval<Input, ModelEnhance, Api, Shape>({
     const consoleError = console.error;
     console.error = () => {};
     // @ts-expect-error type issues
-    const instance = spawn(model, initShape);
+    const instance = spawn(kvModel, initShape);
     console.error = consoleError;
     instance.unmount();
     structShape = {
       type: 'structKeyval',
       getKey,
-      shape: model.__struct!.shape,
+      shape: kvModel.__struct!.shape,
     } as StructKeyval;
   }
 

@@ -7,16 +7,14 @@ function createUpdatableEntities(
 ) {
   const entities = keyval({
     key: 'id',
-    model: model({
-      props: {
-        id: define.store<string>(),
-        count: define.store<number>(),
-        tag: define.store<string>(),
-      },
-      create() {
-        return {};
-      },
-    }),
+    props: {
+      id: define.store<string>(),
+      count: define.store<number>(),
+      tag: define.store<string>(),
+    },
+    create() {
+      return {};
+    },
   });
   if (fill) {
     entities.edit.add(fill);
@@ -90,26 +88,22 @@ describe.skip('nested store lens', () => {
   ) {
     const entities = keyval({
       key: 'id',
-      model: model({
-        props: {
-          id: define.store<string>(),
-        },
-        create() {
-          const childs = keyval({
-            key: 'id',
-            model: model({
-              props: {
-                id: define.store<string>(),
-                count: define.store<number>(),
-              },
-              create() {
-                return {};
-              },
-            }),
-          });
-          return { childs };
-        },
-      }),
+      props: {
+        id: define.store<string>(),
+      },
+      create() {
+        const childs = keyval({
+          key: 'id',
+          props: {
+            id: define.store<string>(),
+            count: define.store<number>(),
+          },
+          create() {
+            return {};
+          },
+        });
+        return { childs };
+      },
     });
     if (fill) {
       entities.edit.add(fill);

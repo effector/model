@@ -4,15 +4,13 @@ import { model, keyval, define } from '@effector/model';
 test('getKey function', () => {
   const entities = keyval({
     key: ({ id }) => id,
-    model: model({
-      props: {
-        id: define.store<string>(),
-        count: define.store<number>(),
-      },
-      create() {
-        return {};
-      },
-    }),
+    props: {
+      id: define.store<string>(),
+      count: define.store<number>(),
+    },
+    create() {
+      return {};
+    },
   });
   entities.edit.add([
     { id: 'foo', count: 0 },
@@ -28,15 +26,13 @@ test('getKey function', () => {
 test('getKey string', () => {
   const entities = keyval({
     key: 'id',
-    model: model({
-      props: {
-        id: define.store<string>(),
-        count: define.store<number>(),
-      },
-      create() {
-        return {};
-      },
-    }),
+    props: {
+      id: define.store<string>(),
+      count: define.store<number>(),
+    },
+    create() {
+      return {};
+    },
   });
   entities.edit.add([
     { id: 'foo', count: 0 },
