@@ -239,7 +239,39 @@ export function keyval<Input, ModelEnhance, Api, Shape>({
   const api = new Proxy({} as Record<string, EventCallable<any>>, {
     get(target, prop, receiver) {
       if (!(prop in target)) {
-        target[prop as string] = createEvent();
+        const evt = createEvent<
+          | {
+              key: string | number;
+              data: any;
+            }
+          | {
+              key: Array<string | number>;
+              data: any[];
+            }
+        >();
+        target[prop as string] = evt;
+        $entities.on(evt, (state, payload) => {
+          const [key, data] = Array.isArray(payload.key)
+            ? [payload.key, payload.data]
+            : [[payload.key], [payload.data]];
+          const targets = [] as any[];
+          const params = [] as any[];
+          for (let i = 0; i < key.length; i++) {
+            const idx = state.keys.indexOf(key[i]);
+            if (idx !== -1) {
+              const instance = state.instances[idx];
+              // @ts-expect-error typescript is broken here
+              targets.push(instance.api[prop]);
+              params.push(data[i]);
+            }
+          }
+          launch({
+            target: targets,
+            params,
+            defer: true,
+          });
+          return state;
+        });
       }
       return target[prop as string];
     },
