@@ -13,6 +13,7 @@ import {
   EventCallable,
   Event,
   Effect,
+  is,
 } from 'effector';
 
 import type {
@@ -425,6 +426,21 @@ export function keyval<Input, ModelEnhance, Api, Shape>({
       for (const item of newItems) {
         const key = getKey(item);
         runNewItemInstance(state, key, item);
+        /** new instance is always last */
+        const instance = state.instances[state.instances.length - 1];
+        for (const key in item) {
+          if (key in writableOutputs) {
+            launch({
+              target:
+                writableOutputs[key] === 'keyval'
+                  ? (instance.props[key] as any).edit.replaceAll
+                  : // @ts-expect-error typescript is broken here
+                    instance.props[key],
+              params: item[key],
+              defer: true,
+            });
+          }
+        }
       }
       return state;
     },
@@ -529,6 +545,7 @@ export function keyval<Input, ModelEnhance, Api, Shape>({
   });
 
   const api = {} as Record<string, EventCallable<any>>;
+  const writableOutputs = {} as Record<string, 'store' | 'keyval'>;
 
   let structShape: any = null;
 
@@ -588,6 +605,14 @@ export function keyval<Input, ModelEnhance, Api, Shape>({
         });
         return state;
       });
+    }
+    for (const key in instance.props) {
+      const value = instance.props[key];
+      if (isKeyval(value)) {
+        writableOutputs[key] = 'keyval';
+      } else if (is.store(value) && is.targetable(value)) {
+        writableOutputs[key] = 'store';
+      }
     }
   }
 

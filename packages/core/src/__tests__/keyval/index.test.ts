@@ -90,60 +90,6 @@ describe('support nested keyval', () => {
       { id: 'bar', childs: [] },
     ]);
   });
-  test.skip('support nested keyval', () => {
-    const entities = keyval({
-      key: 'id',
-      props: {
-        id: define.store<string>(),
-      },
-      create() {
-        const childs = keyval({
-          key: 'id',
-          props: {
-            id: define.store<string>(),
-            count: define.store<number>(),
-          },
-          create() {
-            return {};
-          },
-        });
-        return { childs };
-      },
-    });
-    entities.edit.add([
-      {
-        id: 'foo',
-        childs: [
-          { id: 'foo1', count: 0 },
-          { id: 'foo2', count: 0 },
-        ],
-      },
-      {
-        id: 'bar',
-        childs: [
-          { id: 'bar1', count: 0 },
-          { id: 'bar2', count: 0 },
-        ],
-      },
-    ]);
-    expect(entities.$items.getState()).toEqual([
-      {
-        id: 'foo',
-        childs: [
-          { id: 'foo1', count: 0 },
-          { id: 'foo2', count: 0 },
-        ],
-      },
-      {
-        id: 'bar',
-        childs: [
-          { id: 'bar1', count: 0 },
-          { id: 'bar2', count: 0 },
-        ],
-      },
-    ]);
-    console.log(entities.$items.getState());
-  });
 });
 
 test('api support', () => {

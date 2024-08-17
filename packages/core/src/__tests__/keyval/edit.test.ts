@@ -163,10 +163,40 @@ describe('edit.update', () => {
   });
 });
 
-test('edit.replaceAll', () => {
-  const entities = createEntities([{ id: 'foo' }, { id: 'ba' }]);
-  entities.edit.replaceAll([{ id: 'baz' }]);
-  expect(entities.$items.getState()).toEqual([{ id: 'baz', idSize: 3 }]);
+describe('edit.replaceAll', () => {
+  test('plain replaceAll', () => {
+    const entities = createEntities([{ id: 'foo' }, { id: 'ba' }]);
+    entities.edit.replaceAll([{ id: 'baz' }]);
+    expect(entities.$items.getState()).toEqual([{ id: 'baz', idSize: 3 }]);
+  });
+  test('nested replaceAll', () => {
+    const entities = keyval({
+      key: 'id',
+      props: {
+        id: define.store<string>(),
+      },
+      create() {
+        const childs = keyval({
+          key: 'id',
+          props: {
+            id: define.store<string>(),
+          },
+          create() {
+            return {};
+          },
+        });
+        return { childs };
+      },
+    });
+    entities.edit.replaceAll([
+      { id: 'foo', childs: [{ id: 'fooA' }] },
+      { id: 'bar' },
+    ]);
+    expect(entities.$items.getState()).toEqual([
+      { id: 'foo', childs: [{ id: 'fooA' }] },
+      { id: 'bar', childs: [] },
+    ]);
+  });
 });
 
 describe('edit.map', () => {
