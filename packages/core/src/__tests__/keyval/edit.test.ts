@@ -15,7 +15,7 @@ function createEntities(fill?: Array<{ id: string }>) {
     },
   });
   if (fill) {
-    entities.edit.add(fill);
+    entities.edit.replaceAll(fill);
   }
   return entities;
 }
@@ -35,7 +35,7 @@ function createUpdatableEntities(
     },
   });
   if (fill) {
-    entities.edit.add(fill);
+    entities.edit.replaceAll(fill);
   }
   return entities;
 }
