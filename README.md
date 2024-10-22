@@ -2,6 +2,8 @@
 
 Effector models with ease
 
+Work in progress, api may change
+
 ## Maintains
 
 ### Getting started
