@@ -78,11 +78,13 @@ export function keyval<
       | unknown;
   },
   Output extends {
-    [key: string]:
-      | Store<unknown>
-      | Keyval<unknown, unknown, unknown, unknown>
-      | unknown;
+    [key: string]: Store<unknown> | Keyval<any, any, any, any> | unknown;
   } = {},
+  OutputUnwrap = Output extends { state: infer T }
+    ? T
+    : Output extends { api: unknown }
+      ? {}
+      : Output,
   Api extends {
     [key: string]: Event<unknown> | Effect<unknown, unknown, unknown>;
   } = {},
@@ -114,15 +116,48 @@ export function keyval<
           : Input[K];
   },
   OutputPlain extends {
-    [K in keyof Output]: Output[K] extends Keyval<any, infer V, any, any>
+    [K in keyof OutputUnwrap]: OutputUnwrap[K] extends Keyval<
+      any,
+      infer V,
+      any,
+      any
+    >
       ? V[]
-      : Output[K] extends Store<infer V>
+      : OutputUnwrap[K] extends Store<infer V>
         ? V
         : never;
   } = {
-    [K in keyof Output]: Output[K] extends Keyval<any, infer V, any, any>
+    [K in keyof OutputUnwrap]: OutputUnwrap[K] extends Keyval<
+      any,
+      infer V,
+      any,
+      any
+    >
       ? V[]
-      : Output[K] extends Store<infer V>
+      : OutputUnwrap[K] extends Store<infer V>
+        ? V
+        : never;
+  },
+  OutputWritable = {
+    [K in {
+      [P in keyof OutputUnwrap]: OutputUnwrap[P] extends Keyval<
+        any,
+        any,
+        any,
+        any
+      >
+        ? P
+        : OutputUnwrap[P] extends StoreWritable<any>
+          ? P
+          : never;
+    }[keyof OutputUnwrap]]: OutputUnwrap[K] extends Keyval<
+      any,
+      infer V,
+      any,
+      any
+    >
+      ? V[]
+      : OutputUnwrap[K] extends StoreWritable<infer V>
         ? V
         : never;
   },
@@ -165,18 +200,10 @@ export function keyval<
     | { state: Output; api?: never }
     | Output;
 }): Keyval<
-  Show<
-    InputPlain & {
-      [K in keyof Output]?: Output[K] extends Keyval<any, infer V, any, any>
-        ? V[]
-        : Output[K] extends StoreWritable<infer V>
-          ? V
-          : never;
-    }
-  >,
+  Show<InputPlain & Partial<OutputWritable>>,
   Show<InputPlain & OutputPlain>,
   Api,
-  Show<ConvertToLensShape<Input & Output & Api>>
+  Show<ConvertToLensShape<Input & OutputUnwrap & Api>>
 >;
 // export function keyval<Input, ModelEnhance, Api, Shape>(options: {
 //   key: ((entity: Input) => string | number) | keyof Input;
