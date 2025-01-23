@@ -158,6 +158,8 @@ export type ConvertToLensShape<Shape> = {
                 : never;
 };
 
+type OneOrMany<T> = T | Array<T>;
+
 export type Keyval<Input, Enriched, Api, Shape> = {
   type: 'keyval';
   api: {
@@ -175,11 +177,11 @@ export type Keyval<Input, Enriched, Api, Shape> = {
   $keys: Store<Array<string | number>>;
   edit: {
     /** Add one or multiple entities to the collection */
-    add: EventCallable<Input | Input[]>;
+    add: EventCallable<OneOrMany<Input>>;
     /** Add or replace one or multiple entities in the collection */
-    set: EventCallable<Input | Input[]>;
+    set: EventCallable<OneOrMany<Input>>;
     /** Update one or multiple entities in the collection. Supports partial updates */
-    update: EventCallable<Partial<Input> | Partial<Input>[]>;
+    update: EventCallable<OneOrMany<Partial<Input>>>;
     /** Remove multiple entities from the collection, by id or by predicate */
     remove: EventCallable<KeyOrKeys | ((entity: Enriched) => boolean)>;
     /** Replace current collection with provided collection */
