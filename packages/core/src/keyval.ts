@@ -67,143 +67,75 @@ type ToPlainShape<Shape> = {
 // >
 
 export function keyval<
-  Input extends {
-    [key: string]:
-      | Store<unknown>
-      | Event<unknown>
-      | Effect<unknown, unknown, unknown>
-      | StoreDef<unknown>
-      | EventDef<unknown>
-      | EffectDef<unknown, unknown, unknown>
-      | unknown;
-  },
   Output extends {
     [key: string]: Store<unknown> | Keyval<any, any, any, any> | unknown;
   } = {},
-  OutputUnwrap = Output extends { state: infer T }
+  ReactiveState = Output extends { state: infer T }
     ? T
     : Output extends { api: unknown }
       ? {}
       : Output,
-  Api extends {
-    [key: string]: Event<unknown> | Effect<unknown, unknown, unknown>;
-  } = {},
-  InputPlain extends {
-    [K in keyof Input]: Input[K] extends
-      | Event<unknown>
-      | Effect<unknown, unknown, unknown>
-      | EventDef<unknown>
-      | EffectDef<unknown, unknown, unknown>
-      | ((params: unknown) => unknown)
-      ? never
-      : Input[K] extends Store<infer V>
-        ? V
-        : Input[K] extends StoreDef<infer V>
-          ? V
-          : Input[K];
-  } = {
-    [K in keyof Input]: Input[K] extends
-      | Event<unknown>
-      | Effect<unknown, unknown, unknown>
-      | EventDef<unknown>
-      | EffectDef<unknown, unknown, unknown>
-      | ((params: unknown) => unknown)
-      ? never
-      : Input[K] extends Store<infer V>
-        ? V
-        : Input[K] extends StoreDef<infer V>
-          ? V
-          : Input[K];
-  },
-  OutputPlain extends {
-    [K in keyof OutputUnwrap]: OutputUnwrap[K] extends Keyval<
+  Api = Output extends { api: infer T } ? T : {},
+  FullState extends {
+    [K in keyof ReactiveState]: ReactiveState[K] extends Keyval<
       any,
       infer V,
       any,
       any
     >
       ? V[]
-      : OutputUnwrap[K] extends Store<infer V>
+      : ReactiveState[K] extends Store<infer V>
         ? V
         : never;
   } = {
-    [K in keyof OutputUnwrap]: OutputUnwrap[K] extends Keyval<
+    [K in keyof ReactiveState]: ReactiveState[K] extends Keyval<
       any,
       infer V,
       any,
       any
     >
       ? V[]
-      : OutputUnwrap[K] extends Store<infer V>
+      : ReactiveState[K] extends Store<infer V>
         ? V
         : never;
   },
-  OutputWritable = {
+  WritableState = {
     [K in {
-      [P in keyof OutputUnwrap]: OutputUnwrap[P] extends Keyval<
+      [P in keyof ReactiveState]: ReactiveState[P] extends Keyval<
         any,
         any,
         any,
         any
       >
         ? P
-        : OutputUnwrap[P] extends StoreWritable<any>
+        : ReactiveState[P] extends StoreWritable<any>
           ? P
           : never;
-    }[keyof OutputUnwrap]]: OutputUnwrap[K] extends Keyval<
+    }[keyof ReactiveState]]: ReactiveState[K] extends Keyval<
       any,
       infer V,
       any,
       any
     >
       ? V[]
-      : OutputUnwrap[K] extends StoreWritable<infer V>
+      : ReactiveState[K] extends StoreWritable<infer V>
         ? V
         : never;
   },
 >(options: {
-  key: ((entity: InputPlain) => string | number) | keyof Input;
-  props: Input;
-  create: (
-    props: {
-      [K in keyof Input]: Input[K] extends
-        | Store<unknown>
-        | Event<unknown>
-        | Effect<unknown, unknown, unknown>
-        ? Input[K]
-        : Input[K] extends StoreDef<infer V>
-          ? Store<V>
-          : Input[K] extends EventDef<infer V>
-            ? Event<V>
-            : Input[K] extends EffectDef<infer V, infer D, infer E>
-              ? Effect<V, D, E>
-              : Input[K] extends (params: infer P) => infer R
-                ? Effect<P, Awaited<R>>
-                : Store<Input[K]>;
-    } & {
-      [K in {
-        [P in keyof Input]: Input[P] extends Store<unknown> | StoreDef<unknown>
-          ? P
-          : never;
-      }[keyof Input] as K extends string
-        ? `$${K}`
-        : never]: Input[K] extends Store<unknown>
-        ? Input[K]
-        : Input[K] extends StoreDef<infer V>
-          ? Store<V>
-          : never;
-    },
-    config: { onMount: Event<void> },
-  ) =>
+  key: ((entity: FullState) => string | number) | keyof FullState;
+  create: (config: {
+    onMount: Event<void>;
+  }) =>
     | { state: Output; api: Api }
     | { state?: never; api: Api }
     | { state: Output; api?: never }
     | Output;
 }): Keyval<
-  Show<InputPlain & Partial<OutputWritable>>,
-  Show<InputPlain & OutputPlain>,
+  Show<WritableState>,
+  Show<FullState>,
   Api,
-  Show<ConvertToLensShape<Input & OutputUnwrap & Api>>
+  Show<ConvertToLensShape<ReactiveState & Api>>
 >;
 // export function keyval<Input, ModelEnhance, Api, Shape>(options: {
 //   key: ((entity: Input) => string | number) | keyof Input;

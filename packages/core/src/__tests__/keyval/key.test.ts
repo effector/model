@@ -1,15 +1,14 @@
 import { expect, test } from 'vitest';
-import { keyval, define } from '@effector/model';
+import { createStore } from 'effector';
+import { keyval } from '@effector/model';
 
 test('key function', () => {
   const entities = keyval({
     key: ({ id }) => id,
-    props: {
-      id: define.store<string>(),
-      count: define.store<number>(),
-    },
     create() {
-      return {};
+      const $id = createStore('');
+      const $count = createStore(0);
+      return { id: $id, count: $count };
     },
   });
   entities.edit.add([
@@ -26,12 +25,10 @@ test('key function', () => {
 test('key string', () => {
   const entities = keyval({
     key: 'id',
-    props: {
-      id: define.store<string>(),
-      count: define.store<number>(),
-    },
     create() {
-      return {};
+      const $id = createStore('');
+      const $count = createStore(0);
+      return { id: $id, count: $count };
     },
   });
   entities.edit.add([

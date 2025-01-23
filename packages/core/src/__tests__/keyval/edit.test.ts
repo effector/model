@@ -1,15 +1,14 @@
 import { expect, test, describe } from 'vitest';
-import { combine } from 'effector';
-import { keyval, define } from '@effector/model';
+import { createStore, combine } from 'effector';
+import { keyval } from '@effector/model';
 
 function createEntities(fill?: Array<{ id: string }>) {
   const entities = keyval({
     key: 'id',
-    props: {
-      id: define.store<string>(),
-    },
-    create({ id: $id }) {
+    create() {
+      const $id = createStore('');
       return {
+        id: $id,
         idSize: combine($id, (id) => id.length),
       };
     },
@@ -25,13 +24,11 @@ function createUpdatableEntities(
 ) {
   const entities = keyval({
     key: 'id',
-    props: {
-      id: define.store<string>(),
-      count: define.store<number>(),
-      tag: define.store<string>(),
-    },
     create() {
-      return {};
+      const $id = createStore('');
+      const $count = createStore(0);
+      const $tag = createStore('');
+      return { id: $id, count: $count, tag: $tag };
     },
   });
   if (fill) {
@@ -172,20 +169,16 @@ describe('edit.replaceAll', () => {
   test('nested replaceAll', () => {
     const entities = keyval({
       key: 'id',
-      props: {
-        id: define.store<string>(),
-      },
       create() {
+        const $id = createStore('');
         const childs = keyval({
           key: 'id',
-          props: {
-            id: define.store<string>(),
-          },
           create() {
-            return {};
+            const $id = createStore('');
+            return { id: $id };
           },
         });
-        return { childs };
+        return { id: $id, childs };
       },
     });
     entities.edit.replaceAll([

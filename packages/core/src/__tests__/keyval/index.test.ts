@@ -1,26 +1,26 @@
 import { expect, test, describe } from 'vitest';
-import { keyval, define } from '@effector/model';
+import { keyval } from '@effector/model';
 import { createEvent, createStore } from 'effector';
+import { readonly } from 'patronum';
 
 describe('support nested keyval', () => {
   test('nested keyval becomes an array', () => {
     const entities = keyval({
       key: 'id',
-      props: {
-        id: define.store<string>(),
-      },
       create() {
+        const $id = createStore('');
         const childs = keyval({
           key: 'id',
-          props: {
-            id: define.store<string>(),
-            count: define.store<number>(),
-          },
           create() {
-            return {};
+            const $id = createStore('');
+            const $count = createStore(0);
+            return {
+              id: $id,
+              count: $count,
+            };
           },
         });
-        return { childs };
+        return { id: $id, childs };
       },
     });
     entities.edit.add({ id: 'baz' });
@@ -29,27 +29,26 @@ describe('support nested keyval', () => {
   test('updates nested keyval', () => {
     const entities = keyval({
       key: 'id',
-      props: {
-        id: define.store<string>(),
-      },
       create() {
         const childs = keyval({
           key: 'id',
-          props: {
-            id: define.store<string>(),
-          },
           create() {
+            const $id = createStore('');
             const sum = createEvent<number>();
             const $count = createStore(0);
             $count.on(sum, (x, y) => x + y);
             return {
-              state: { count: $count },
+              state: {
+                id: $id,
+                count: readonly($count),
+              },
               api: { sum },
             };
           },
         });
+        const $id = createStore('');
         return {
-          state: { childs },
+          state: { id: $id, childs },
           api: {
             sum: childs.api.sum,
             addChild: childs.edit.add,
@@ -95,15 +94,13 @@ describe('support nested keyval', () => {
 test('api support', () => {
   const entities = keyval({
     key: 'id',
-    props: {
-      id: define.store<string>(),
-    },
     create() {
+      const $id = createStore('');
       const incBy = createEvent<number>();
       const $count = createStore(0);
       $count.on(incBy, (x, y) => x + y);
       return {
-        state: { count: $count },
+        state: { id: $id, count: readonly($count) },
         api: { incBy },
       };
     },

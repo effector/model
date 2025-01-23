@@ -51,15 +51,15 @@ type Field = {
 
 const fieldList1 = keyval({
   key: 'name',
-  props: {
-    name: define.store<string>(),
-    value: define.store<string>(),
-  },
-  create({ value }) {
+  create() {
+    const $name = createStore('');
+    const $value = createStore('');
     const submit = createEvent();
-    const $isValid = combine(value, (value) => value.length > 0);
+    const $isValid = combine($value, (value) => value.length > 0);
     return {
       state: {
+        name: $name,
+        value: $value,
         isValid: $isValid,
       },
       api: {
@@ -75,13 +75,13 @@ lens(fieldList1, $email).isValid.store;
 
 const fieldList2 = keyval({
   key: 'name',
-  props: {
-    name: define.store<string>(),
-    value: define.store<string>(),
-  },
-  create({ value }) {
-    const $isValid = combine(value, (value) => value.length > 0);
+  create() {
+    const $name = createStore('');
+    const $value = createStore('');
+    const $isValid = combine($value, (value) => value.length > 0);
     return {
+      name: $name,
+      value: $value,
       isValid: $isValid,
     };
   },
