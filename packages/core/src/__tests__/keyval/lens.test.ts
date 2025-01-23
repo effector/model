@@ -5,14 +5,14 @@ import { keyval, lens } from '@effector/model';
 function createUpdatableEntities(
   fill?: Array<{ id: string; count: number; tag: string }>,
 ) {
-  const entities = keyval({
-    key: 'id',
-    create() {
-      const $id = createStore('');
-      const $count = createStore(0);
-      const $tag = createStore('');
-      return { id: $id, count: $count, tag: $tag };
-    },
+  const entities = keyval(() => {
+    const $id = createStore('');
+    const $count = createStore(0);
+    const $tag = createStore('');
+    return {
+      key: 'id',
+      state: { id: $id, count: $count, tag: $tag },
+    };
   });
   if (fill) {
     entities.edit.replaceAll(fill);
@@ -29,28 +29,24 @@ function createNestedEntities(
     }[];
   }>,
 ) {
-  const entities = keyval({
-    key: 'id',
-    create() {
+  const entities = keyval(() => {
+    const $id = createStore('');
+    const childs = keyval(() => {
       const $id = createStore('');
-      const childs = keyval({
-        key: 'id',
-        create() {
-          const $id = createStore('');
-          const updateCount = createEvent<number>();
-          const $count = createStore(0);
-          $count.on(updateCount, (_, upd) => upd);
-          return {
-            state: { id: $id, count: $count },
-            api: { updateCount },
-          };
-        },
-      });
+      const updateCount = createEvent<number>();
+      const $count = createStore(0);
+      $count.on(updateCount, (_, upd) => upd);
       return {
-        state: { id: $id, childs },
-        api: { updateCount: childs.api.updateCount },
+        key: 'id',
+        state: { id: $id, count: $count },
+        api: { updateCount },
       };
-    },
+    });
+    return {
+      key: 'id',
+      state: { id: $id, childs },
+      api: { updateCount: childs.api.updateCount },
+    };
   });
   if (fill) {
     entities.edit.replaceAll(fill);

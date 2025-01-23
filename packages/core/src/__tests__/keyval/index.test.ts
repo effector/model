@@ -5,56 +5,52 @@ import { readonly } from 'patronum';
 
 describe('support nested keyval', () => {
   test('nested keyval becomes an array', () => {
-    const entities = keyval({
-      key: 'id',
-      create() {
+    const entities = keyval(() => {
+      const $id = createStore('');
+      const childs = keyval(() => {
         const $id = createStore('');
-        const childs = keyval({
+        const $count = createStore(0);
+        return {
           key: 'id',
-          create() {
-            const $id = createStore('');
-            const $count = createStore(0);
-            return {
-              id: $id,
-              count: $count,
-            };
+          state: {
+            id: $id,
+            count: $count,
           },
-        });
-        return { id: $id, childs };
-      },
+        };
+      });
+      return {
+        key: 'id',
+        state: { id: $id, childs },
+      };
     });
     entities.edit.add({ id: 'baz' });
     expect(entities.$items.getState()).toEqual([{ id: 'baz', childs: [] }]);
   });
   test('updates nested keyval', () => {
-    const entities = keyval({
-      key: 'id',
-      create() {
-        const childs = keyval({
-          key: 'id',
-          create() {
-            const $id = createStore('');
-            const sum = createEvent<number>();
-            const $count = createStore(0);
-            $count.on(sum, (x, y) => x + y);
-            return {
-              state: {
-                id: $id,
-                count: readonly($count),
-              },
-              api: { sum },
-            };
-          },
-        });
+    const entities = keyval(() => {
+      const childs = keyval(() => {
         const $id = createStore('');
+        const sum = createEvent<number>();
+        const $count = createStore(0);
+        $count.on(sum, (x, y) => x + y);
         return {
-          state: { id: $id, childs },
-          api: {
-            sum: childs.api.sum,
-            addChild: childs.edit.add,
+          key: 'id',
+          state: {
+            id: $id,
+            count: readonly($count),
           },
+          api: { sum },
         };
-      },
+      });
+      const $id = createStore('');
+      return {
+        key: 'id',
+        state: { id: $id, childs },
+        api: {
+          sum: childs.api.sum,
+          addChild: childs.edit.add,
+        },
+      };
     });
     entities.edit.add([{ id: 'foo' }, { id: 'bar' }]);
     entities.api.addChild({
@@ -92,18 +88,16 @@ describe('support nested keyval', () => {
 });
 
 test('api support', () => {
-  const entities = keyval({
-    key: 'id',
-    create() {
-      const $id = createStore('');
-      const incBy = createEvent<number>();
-      const $count = createStore(0);
-      $count.on(incBy, (x, y) => x + y);
-      return {
-        state: { id: $id, count: readonly($count) },
-        api: { incBy },
-      };
-    },
+  const entities = keyval(() => {
+    const $id = createStore('');
+    const incBy = createEvent<number>();
+    const $count = createStore(0);
+    $count.on(incBy, (x, y) => x + y);
+    return {
+      key: 'id',
+      state: { id: $id, count: readonly($count) },
+      api: { incBy },
+    };
   });
   entities.edit.add([{ id: 'foo' }, { id: 'bar' }]);
   entities.api.incBy({ key: 'foo', data: 2 });

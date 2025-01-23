@@ -3,15 +3,15 @@ import { createStore, combine } from 'effector';
 import { keyval } from '@effector/model';
 
 function createEntities(fill?: Array<{ id: string }>) {
-  const entities = keyval({
-    key: 'id',
-    create() {
-      const $id = createStore('');
-      return {
+  const entities = keyval(() => {
+    const $id = createStore('');
+    return {
+      key: 'id',
+      state: {
         id: $id,
         idSize: combine($id, (id) => id.length),
-      };
-    },
+      },
+    };
   });
   if (fill) {
     entities.edit.replaceAll(fill);
@@ -22,14 +22,14 @@ function createEntities(fill?: Array<{ id: string }>) {
 function createUpdatableEntities(
   fill?: Array<{ id: string; count: number; tag: string }>,
 ) {
-  const entities = keyval({
-    key: 'id',
-    create() {
-      const $id = createStore('');
-      const $count = createStore(0);
-      const $tag = createStore('');
-      return { id: $id, count: $count, tag: $tag };
-    },
+  const entities = keyval(() => {
+    const $id = createStore('');
+    const $count = createStore(0);
+    const $tag = createStore('');
+    return {
+      key: 'id',
+      state: { id: $id, count: $count, tag: $tag },
+    };
   });
   if (fill) {
     entities.edit.replaceAll(fill);
@@ -167,19 +167,19 @@ describe('edit.replaceAll', () => {
     expect(entities.$items.getState()).toEqual([{ id: 'baz', idSize: 3 }]);
   });
   test('nested replaceAll', () => {
-    const entities = keyval({
-      key: 'id',
-      create() {
+    const entities = keyval(() => {
+      const $id = createStore('');
+      const childs = keyval(() => {
         const $id = createStore('');
-        const childs = keyval({
+        return {
           key: 'id',
-          create() {
-            const $id = createStore('');
-            return { id: $id };
-          },
-        });
-        return { id: $id, childs };
-      },
+          state: { id: $id },
+        };
+      });
+      return {
+        key: 'id',
+        state: { id: $id, childs },
+      };
     });
     entities.edit.replaceAll([
       { id: 'foo', childs: [{ id: 'fooA' }] },

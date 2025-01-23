@@ -49,40 +49,38 @@ type Field = {
   value: string;
 };
 
-const fieldList1 = keyval({
-  key: 'name',
-  create() {
-    const $name = createStore('');
-    const $value = createStore('');
-    const submit = createEvent();
-    const $isValid = combine($value, (value) => value.length > 0);
-    return {
-      state: {
-        name: $name,
-        value: $value,
-        isValid: $isValid,
-      },
-      api: {
-        submit,
-      },
-    };
-  },
+const fieldList1 = keyval(() => {
+  const $name = createStore('');
+  const $value = createStore('');
+  const submit = createEvent();
+  const $isValid = combine($value, (value) => value.length > 0);
+  return {
+    key: 'name',
+    state: {
+      name: $name,
+      value: $value,
+      isValid: $isValid,
+    },
+    api: {
+      submit,
+    },
+  };
 });
 
 fieldList1.api.submit;
 
 lens(fieldList1, $email).isValid.store;
 
-const fieldList2 = keyval({
-  key: 'name',
-  create() {
-    const $name = createStore('');
-    const $value = createStore('');
-    const $isValid = combine($value, (value) => value.length > 0);
-    return {
+const fieldList2 = keyval(() => {
+  const $name = createStore('');
+  const $value = createStore('');
+  const $isValid = combine($value, (value) => value.length > 0);
+  return {
+    key: 'name',
+    state: {
       name: $name,
       value: $value,
       isValid: $isValid,
-    };
-  },
+    },
+  };
 });

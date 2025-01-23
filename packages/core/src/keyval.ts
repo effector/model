@@ -122,16 +122,13 @@ export function keyval<
         ? V
         : never;
   },
->(options: {
-  key: ((entity: FullState) => string | number) | keyof FullState;
+>(
   create: (config: {
     onMount: Event<void>;
   }) =>
-    | { state: Output; api: Api }
-    | { state?: never; api: Api }
-    | { state: Output; api?: never }
-    | Output;
-}): Keyval<
+    | { state: Output; api: Api; key: keyof FullState }
+    | { state: Output; api?: never; key: keyof FullState },
+): Keyval<
   Show<WritableState>,
   Show<FullState>,
   Api,
@@ -157,17 +154,25 @@ export function keyval<T, Shape>(options: {
 export function keyval<T>(options: {
   key: ((entity: T) => string | number) | keyof T;
 }): Keyval<T, T, {}, {}>;
-export function keyval<Input, ModelEnhance, Api, Shape>({
-  key: getKeyRaw,
-  shape = {} as Shape,
-  props,
-  create,
-}: {
-  key: ((entity: Input) => string | number) | keyof Input;
-  shape?: Shape;
-  props?: any;
-  create?: any;
-}): Keyval<Input, Input & ModelEnhance, Api, Shape> {
+export function keyval<Input, ModelEnhance, Api, Shape>(
+  options:
+    | {
+        key: ((entity: Input) => string | number) | keyof Input;
+        shape?: Shape;
+        props?: any;
+        create?: any;
+      }
+    | Function,
+): Keyval<Input, Input & ModelEnhance, Api, Shape> {
+  let create;
+  // @ts-expect-error bad implementation
+  let getKeyRaw;
+  let shape, props;
+  if (typeof options === 'function') {
+    create = options;
+  } else {
+    ({ key: getKeyRaw, shape = {} as Shape, props, create } = options);
+  }
   type Enriched = Input & ModelEnhance;
   let kvModel:
     | Model<
@@ -195,7 +200,8 @@ export function keyval<Input, ModelEnhance, Api, Shape>({
   const getKey =
     typeof getKeyRaw === 'function'
       ? getKeyRaw
-      : (entity: Input) => entity[getKeyRaw] as string | number;
+      : // @ts-expect-error bad implementation
+        (entity: Input) => entity[getKeyRaw] as string | number;
   const $entities = createStore<ListState>({
     items: [],
     instances: [],
@@ -578,6 +584,7 @@ export function keyval<Input, ModelEnhance, Api, Shape>({
   return {
     type: 'keyval',
     api: api as any,
+    // @ts-expect-error bad implementation
     __lens: shape,
     __struct: structShape,
     __getKey: getKey,
