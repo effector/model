@@ -21,6 +21,7 @@ describe('support nested keyval', () => {
       return {
         key: 'id',
         state: { id: $id, childs },
+        optional: ['childs'],
       };
     });
     entities.edit.add({ id: 'baz' });
@@ -50,6 +51,7 @@ describe('support nested keyval', () => {
           sum: childs.api.sum,
           addChild: childs.edit.add,
         },
+        optional: ['childs'],
       };
     });
     entities.edit.add([{ id: 'foo' }, { id: 'bar' }]);

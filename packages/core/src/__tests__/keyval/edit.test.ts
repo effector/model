@@ -179,8 +179,11 @@ describe('edit.replaceAll', () => {
       return {
         key: 'id',
         state: { id: $id, childs },
+        optional: ['childs'],
       };
     });
+    entities.edit.replaceAll([{ id: 'foo', childs: [{ id: 'fooA' }] }]);
+    entities.edit.replaceAll([{ id: 'bar' }]);
     entities.edit.replaceAll([
       { id: 'foo', childs: [{ id: 'fooA' }] },
       { id: 'bar' },

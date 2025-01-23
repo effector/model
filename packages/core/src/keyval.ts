@@ -30,6 +30,7 @@ import type {
 import { spawn } from './spawn';
 import { isDefine, isKeyval } from './define';
 import { model } from './model';
+import type { SetOptional } from './setOptional';
 
 type ToPlainShape<Shape> = {
   [K in {
@@ -67,15 +68,7 @@ type ToPlainShape<Shape> = {
 // >
 
 export function keyval<
-  Output extends {
-    [key: string]: Store<unknown> | Keyval<any, any, any, any> | unknown;
-  } = {},
-  ReactiveState = Output extends { state: infer T }
-    ? T
-    : Output extends { api: unknown }
-      ? {}
-      : Output,
-  Api = Output extends { api: infer T } ? T : {},
+  ReactiveState,
   FullState extends {
     [K in keyof ReactiveState]: ReactiveState[K] extends Keyval<
       any,
@@ -87,19 +80,8 @@ export function keyval<
       : ReactiveState[K] extends Store<infer V>
         ? V
         : never;
-  } = {
-    [K in keyof ReactiveState]: ReactiveState[K] extends Keyval<
-      any,
-      infer V,
-      any,
-      any
-    >
-      ? V[]
-      : ReactiveState[K] extends Store<infer V>
-        ? V
-        : never;
   },
-  WritableState = {
+  WritableState extends {
     [K in {
       [P in keyof ReactiveState]: ReactiveState[P] extends Keyval<
         any,
@@ -112,8 +94,8 @@ export function keyval<
           ? P
           : never;
     }[keyof ReactiveState]]: ReactiveState[K] extends Keyval<
-      any,
       infer V,
+      any,
       any,
       any
     >
@@ -122,15 +104,18 @@ export function keyval<
         ? V
         : never;
   },
+  Api = {},
+  OptionalFields extends keyof WritableState = never,
 >(
-  create: (config: {
-    onMount: Event<void>;
-  }) =>
-    | { state: Output; api: Api; key: keyof FullState }
-    | { state: Output; api?: never; key: keyof FullState },
+  create: (config: { onMount: Event<void> }) => {
+    state: ReactiveState;
+    api?: Api;
+    key: keyof ReactiveState;
+    optional?: ReadonlyArray<OptionalFields>;
+  },
 ): Keyval<
-  Show<WritableState>,
-  Show<FullState>,
+  SetOptional<WritableState, OptionalFields>,
+  FullState,
   Api,
   Show<ConvertToLensShape<ReactiveState & Api>>
 >;
