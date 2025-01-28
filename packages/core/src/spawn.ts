@@ -207,7 +207,7 @@ export function spawn<
   });
   const parentTracking = childInstancesTracking;
   childInstancesTracking = [];
-  const outputs = model.create(normProps, { onMount: onMount! });
+  const outputs = model.create({ onMount: onMount! });
   const childInstances = childInstancesTracking;
   childInstancesTracking = parentTracking;
   let storeOutputs = {} as any;

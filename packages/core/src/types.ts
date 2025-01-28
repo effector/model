@@ -3,14 +3,14 @@ import type { Store, Event, Effect, EventCallable, Node } from 'effector';
 export type Model<Props, Output, Api, Shape> = {
   type: 'model';
   // private
-  create: (props: any, config: { onMount: Event<void> }) => any;
+  create: (config: { onMount: Event<void> }) => any;
   // private
   readonly propsConfig: Props;
   readonly output: Output;
   // private
   readonly __lens: Shape;
   // private
-  readonly api: Api;
+  // readonly api: Api;
   shape: Show<
     {
       [K in keyof Props]: Props[K] extends Store<infer V>

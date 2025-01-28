@@ -36,41 +36,12 @@ export function model<
   create,
 }: {
   props: Input;
-  create: (
-    props: {
-      [K in keyof Input]: Input[K] extends
-        | Store<unknown>
-        | Event<unknown>
-        | Effect<unknown, unknown, unknown>
-        ? Input[K]
-        : Input[K] extends StoreDef<infer V>
-          ? Store<V>
-          : Input[K] extends EventDef<infer V>
-            ? Event<V>
-            : Input[K] extends EffectDef<infer V, infer D, infer E>
-              ? Effect<V, D, E>
-              : Input[K] extends (params: infer P) => infer R
-                ? Effect<P, Awaited<R>>
-                : Store<Input[K]>;
-    } & {
-      [K in {
-        [P in keyof Input]: Input[P] extends Store<unknown> | StoreDef<unknown>
-          ? P
-          : never;
-      }[keyof Input] as K extends string
-        ? `$${K}`
-        : never]: Input[K] extends Store<unknown>
-        ? Input[K]
-        : Input[K] extends StoreDef<infer V>
-          ? Store<V>
-          : never;
-    },
-    config: { onMount: Event<void> },
-  ) =>
-    | { state: Output; api: Api }
-    | { state?: never; api: Api }
-    | { state: Output; api?: never }
-    | Output;
+  create: (config: { onMount: Event<void> }) => {
+    state: Output;
+    api?: Api;
+    key: string;
+    optional?: string[];
+  };
 }): Model<
   Input,
   Show<{
@@ -108,7 +79,7 @@ export function model<
     create,
     propsConfig: props,
     output: null as unknown as any,
-    api: null as unknown as any,
+    // api: null as unknown as any,
     shape,
     shapeInited: false,
     __lens: {} as any,

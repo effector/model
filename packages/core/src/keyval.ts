@@ -149,12 +149,20 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
       }
     | Function,
 ): Keyval<Input, Input & ModelEnhance, Api, Shape> {
-  let create;
+  let create:
+    | void
+    | ((config: { onMount: Event<void> }) => {
+        state: unknown;
+        api?: unknown;
+        key: string;
+        optional?: string[];
+      });
   // @ts-expect-error bad implementation
   let getKeyRaw;
-  let shape, props;
+  let shape: Shape;
+  let props;
   if (typeof options === 'function') {
-    create = options;
+    create = options as any;
   } else {
     ({ key: getKeyRaw, shape = {} as Shape, props, create } = options);
   }
