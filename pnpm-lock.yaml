@@ -15,14 +15,14 @@ importers:
         specifier: ^8.0.1
         version: 8.0.1(eslint@9.9.0(jiti@1.21.6))(typescript@5.5.4)
       effector:
-        specifier: ^23.2.2
-        version: 23.2.2
+        specifier: ^23.3.0
+        version: 23.3.0
       effector-react:
         specifier: ^23.2.1
-        version: 23.2.1(effector@23.2.2)(react@18.3.1)
+        version: 23.2.1(effector@23.3.0)(react@18.3.1)
       patronum:
         specifier: ^2.3.0
-        version: 2.3.0(effector@23.2.2)
+        version: 2.3.0(effector@23.3.0)
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -217,8 +217,8 @@ importers:
   packages/core:
     dependencies:
       effector:
-        specifier: ^23.2.2
-        version: 23.2.2
+        specifier: ^23.3.0
+        version: 23.3.0
 
   packages/react:
     dependencies:
@@ -2795,6 +2795,10 @@ packages:
 
   effector@23.2.2:
     resolution: {integrity: sha512-gzwATi9pgZQx0TNhM2LESmoUpEO+vhibLZPCvVzi7spMvKFwKnfJV2PFj4xqNFFSC35TXaznx30ne62dCQ6ZRQ==}
+    engines: {node: '>=11.0.0'}
+
+  effector@23.3.0:
+    resolution: {integrity: sha512-ZnQ3POaNARlxT9+kxrK58PO/xmStBdxfPq0rceglENg8Ryxx/yx+1RsV/ziznrFPhLkZYc7NdDA1OKxnMW98/g==}
     engines: {node: '>=11.0.0'}
 
   ejs@3.1.9:
@@ -9591,13 +9595,15 @@ snapshots:
 
   duplexer@0.1.2: {}
 
-  effector-react@23.2.1(effector@23.2.2)(react@18.3.1):
+  effector-react@23.2.1(effector@23.3.0)(react@18.3.1):
     dependencies:
-      effector: 23.2.2
+      effector: 23.3.0
       react: 18.3.1
       use-sync-external-store: 1.2.0(react@18.3.1)
 
   effector@23.2.2: {}
+
+  effector@23.3.0: {}
 
   ejs@3.1.9:
     dependencies:
@@ -11811,9 +11817,9 @@ snapshots:
 
   pathval@2.0.0: {}
 
-  patronum@2.3.0(effector@23.2.2):
+  patronum@2.3.0(effector@23.3.0):
     dependencies:
-      effector: 23.2.2
+      effector: 23.3.0
 
   picocolors@0.2.1: {}
 
@@ -11896,13 +11902,13 @@ snapshots:
     dependencies:
       htmlparser2: 3.10.1
       postcss: 7.0.39
-      postcss-syntax: 0.36.2(postcss-html@0.36.0(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39))(postcss-jsx@0.36.4(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39))(postcss-less@3.1.4)(postcss-markdown@0.36.0)(postcss-scss@2.1.1)(postcss@7.0.39)
+      postcss-syntax: 0.36.2(postcss-html@0.36.0(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39))(postcss-jsx@0.36.4(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39))(postcss-less@3.1.4)(postcss-markdown@0.36.0(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39))(postcss-scss@2.1.1)(postcss@7.0.39)
 
   postcss-jsx@0.36.4(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39):
     dependencies:
       '@babel/core': 7.25.2
       postcss: 7.0.39
-      postcss-syntax: 0.36.2(postcss-html@0.36.0(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39))(postcss-jsx@0.36.4(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39))(postcss-less@3.1.4)(postcss-markdown@0.36.0)(postcss-scss@2.1.1)(postcss@7.0.39)
+      postcss-syntax: 0.36.2(postcss-html@0.36.0(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39))(postcss-jsx@0.36.4(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39))(postcss-less@3.1.4)(postcss-markdown@0.36.0(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39))(postcss-scss@2.1.1)(postcss@7.0.39)
     transitivePeerDependencies:
       - supports-color
 
@@ -11921,7 +11927,7 @@ snapshots:
   postcss-markdown@0.36.0(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39):
     dependencies:
       postcss: 7.0.39
-      postcss-syntax: 0.36.2(postcss-html@0.36.0(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39))(postcss-jsx@0.36.4(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39))(postcss-less@3.1.4)(postcss-markdown@0.36.0)(postcss-scss@2.1.1)(postcss@7.0.39)
+      postcss-syntax: 0.36.2(postcss-html@0.36.0(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39))(postcss-jsx@0.36.4(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39))(postcss-less@3.1.4)(postcss-markdown@0.36.0(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39))(postcss-scss@2.1.1)(postcss@7.0.39)
       remark: 10.0.1
       unist-util-find-all-after: 1.0.5
 
@@ -12127,7 +12133,7 @@ snapshots:
       postcss-value-parser: 4.2.0
       svgo: 2.8.0
 
-  postcss-syntax@0.36.2(postcss-html@0.36.0(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39))(postcss-jsx@0.36.4(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39))(postcss-less@3.1.4)(postcss-markdown@0.36.0)(postcss-scss@2.1.1)(postcss@7.0.39):
+  postcss-syntax@0.36.2(postcss-html@0.36.0(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39))(postcss-jsx@0.36.4(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39))(postcss-less@3.1.4)(postcss-markdown@0.36.0(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39))(postcss-scss@2.1.1)(postcss@7.0.39):
     dependencies:
       postcss: 7.0.39
     optionalDependencies:
@@ -13058,7 +13064,7 @@ snapshots:
       postcss-sass: 0.3.5
       postcss-scss: 2.1.1
       postcss-selector-parser: 3.1.2
-      postcss-syntax: 0.36.2(postcss-html@0.36.0(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39))(postcss-jsx@0.36.4(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39))(postcss-less@3.1.4)(postcss-markdown@0.36.0)(postcss-scss@2.1.1)(postcss@7.0.39)
+      postcss-syntax: 0.36.2(postcss-html@0.36.0(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39))(postcss-jsx@0.36.4(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39))(postcss-less@3.1.4)(postcss-markdown@0.36.0(postcss-syntax@0.36.2(postcss@8.4.41))(postcss@7.0.39))(postcss-scss@2.1.1)(postcss@7.0.39)
       postcss-value-parser: 3.3.1
       resolve-from: 4.0.0
       signal-exit: 3.0.7
