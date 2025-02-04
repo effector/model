@@ -1,18 +1,17 @@
 import { expect, test, describe } from 'vitest';
-import { combine } from 'effector';
-import { keyval, define } from '@effector/model';
+import { createStore, combine } from 'effector';
+import { keyval } from '@effector/model';
 
 function createEntities(fill?: Array<{ id: string }>) {
-  const entities = keyval({
-    key: 'id',
-    props: {
-      id: define.store<string>(),
-    },
-    create({ id: $id }) {
-      return {
+  const entities = keyval(() => {
+    const $id = createStore('');
+    return {
+      key: 'id',
+      state: {
+        id: $id,
         idSize: combine($id, (id) => id.length),
-      };
-    },
+      },
+    };
   });
   if (fill) {
     entities.edit.replaceAll(fill);
@@ -23,16 +22,14 @@ function createEntities(fill?: Array<{ id: string }>) {
 function createUpdatableEntities(
   fill?: Array<{ id: string; count: number; tag: string }>,
 ) {
-  const entities = keyval({
-    key: 'id',
-    props: {
-      id: define.store<string>(),
-      count: define.store<number>(),
-      tag: define.store<string>(),
-    },
-    create() {
-      return {};
-    },
+  const entities = keyval(() => {
+    const $id = createStore('');
+    const $count = createStore(0);
+    const $tag = createStore('');
+    return {
+      key: 'id',
+      state: { id: $id, count: $count, tag: $tag },
+    };
   });
   if (fill) {
     entities.edit.replaceAll(fill);
@@ -170,24 +167,23 @@ describe('edit.replaceAll', () => {
     expect(entities.$items.getState()).toEqual([{ id: 'baz', idSize: 3 }]);
   });
   test('nested replaceAll', () => {
-    const entities = keyval({
-      key: 'id',
-      props: {
-        id: define.store<string>(),
-      },
-      create() {
-        const childs = keyval({
+    const entities = keyval(() => {
+      const $id = createStore('');
+      const childs = keyval(() => {
+        const $id = createStore('');
+        return {
           key: 'id',
-          props: {
-            id: define.store<string>(),
-          },
-          create() {
-            return {};
-          },
-        });
-        return { childs };
-      },
+          state: { id: $id },
+        };
+      });
+      return {
+        key: 'id',
+        state: { id: $id, childs },
+        optional: ['childs'],
+      };
     });
+    entities.edit.replaceAll([{ id: 'foo', childs: [{ id: 'fooA' }] }]);
+    entities.edit.replaceAll([{ id: 'bar' }]);
     entities.edit.replaceAll([
       { id: 'foo', childs: [{ id: 'fooA' }] },
       { id: 'bar' },

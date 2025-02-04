@@ -1,20 +1,18 @@
 import { expect, test, describe } from 'vitest';
 import { createStore, createEvent, sample } from 'effector';
-import { keyval, define, lens } from '@effector/model';
+import { keyval, lens } from '@effector/model';
 
 function createUpdatableEntities(
   fill?: Array<{ id: string; count: number; tag: string }>,
 ) {
-  const entities = keyval({
-    key: 'id',
-    props: {
-      id: define.store<string>(),
-      count: define.store<number>(),
-      tag: define.store<string>(),
-    },
-    create() {
-      return {};
-    },
+  const entities = keyval(() => {
+    const $id = createStore('');
+    const $count = createStore(0);
+    const $tag = createStore('');
+    return {
+      key: 'id',
+      state: { id: $id, count: $count, tag: $tag },
+    };
   });
   if (fill) {
     entities.edit.replaceAll(fill);
@@ -31,32 +29,24 @@ function createNestedEntities(
     }[];
   }>,
 ) {
-  const entities = keyval({
-    key: 'id',
-    props: {
-      id: define.store<string>(),
-    },
-    create() {
-      const childs = keyval({
-        key: 'id',
-        props: {
-          id: define.store<string>(),
-        },
-        create() {
-          const updateCount = createEvent<number>();
-          const $count = createStore(0);
-          $count.on(updateCount, (_, upd) => upd);
-          return {
-            state: { count: $count },
-            api: { updateCount },
-          };
-        },
-      });
+  const entities = keyval(() => {
+    const $id = createStore('');
+    const childs = keyval(() => {
+      const $id = createStore('');
+      const updateCount = createEvent<number>();
+      const $count = createStore(0);
+      $count.on(updateCount, (_, upd) => upd);
       return {
-        state: { childs },
-        api: { updateCount: childs.api.updateCount },
+        key: 'id',
+        state: { id: $id, count: $count },
+        api: { updateCount },
       };
-    },
+    });
+    return {
+      key: 'id',
+      state: { id: $id, childs },
+      api: { updateCount: childs.api.updateCount },
+    };
   });
   if (fill) {
     entities.edit.replaceAll(fill);

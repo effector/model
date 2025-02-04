@@ -19,8 +19,9 @@
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "^8.0.1",
     "@typescript-eslint/parser": "^8.0.1",
-    "effector": "^23.2.2",
+    "effector": "^23.3.0",
     "effector-react": "^23.2.1",
+    "patronum": "^2.3.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
@@ -48,7 +49,7 @@
     "@vitest/ui": "^2.0.5",
     "bytes-iec": "^3.1.1",
     "dotenv": "^16.0.1",
-    "effector": "^23.2.2",
+    "effector": "^23.3.0",
     "eslint": "^9.9.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^18.0.0",

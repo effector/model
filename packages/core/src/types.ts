@@ -1,16 +1,30 @@
-import type { Store, Event, Effect, EventCallable, Node } from 'effector';
+import type {
+  Store,
+  Event,
+  Effect,
+  EventCallable,
+  Node,
+  UnitTargetable,
+} from 'effector';
+
+export type FactoryPathMap = Map<number, string | FactoryPathMap>;
 
 export type Model<Props, Output, Api, Shape> = {
   type: 'model';
   // private
-  create: (props: any, config: { onMount: Event<void> }) => any;
+  readonly keyField: keyof Props;
   // private
-  readonly propsConfig: Props;
-  readonly output: Output;
+  readonly requiredStateFields: Array<keyof Props>;
+  // private
+  readonly keyvalFields: Array<keyof Output>;
+  // private
+  readonly factoryStatePaths: FactoryPathMap;
+  // private
+  create: () => any;
   // private
   readonly __lens: Shape;
   // private
-  readonly api: Api;
+  // readonly api: Api;
   shape: Show<
     {
       [K in keyof Props]: Props[K] extends Store<infer V>
@@ -41,23 +55,19 @@ export type Model<Props, Output, Api, Shape> = {
     }
   >;
   // private
-  shapeInited: boolean;
-  // private
-  __struct?: StructShape;
+  __struct: StructShape;
 };
 
 export type Instance<Output, Api> = {
   type: 'instance';
   // private
-  unmount(): void;
+  readonly output: Store<Output>;
+  // private
+  readonly keyvalShape: Record<keyof Output, Keyval<any, any, any, any>>;
   readonly props: Output;
+  onMount: UnitTargetable<void> | void;
   // private
   region: Node;
-  // private
-  readonly inputs: Record<
-    string,
-    Store<any> | Event<any> | Effect<any, any, any>
-  >;
   api: Api;
 };
 
@@ -158,6 +168,8 @@ export type ConvertToLensShape<Shape> = {
                 : never;
 };
 
+type OneOrMany<T> = T | Array<T>;
+
 export type Keyval<Input, Enriched, Api, Shape> = {
   type: 'keyval';
   api: {
@@ -175,11 +187,11 @@ export type Keyval<Input, Enriched, Api, Shape> = {
   $keys: Store<Array<string | number>>;
   edit: {
     /** Add one or multiple entities to the collection */
-    add: EventCallable<Input | Input[]>;
+    add: EventCallable<OneOrMany<Input>>;
     /** Add or replace one or multiple entities in the collection */
-    set: EventCallable<Input | Input[]>;
+    set: EventCallable<OneOrMany<Input>>;
     /** Update one or multiple entities in the collection. Supports partial updates */
-    update: EventCallable<Partial<Input> | Partial<Input>[]>;
+    update: EventCallable<OneOrMany<Partial<Input>>>;
     /** Remove multiple entities from the collection, by id or by predicate */
     remove: EventCallable<KeyOrKeys | ((entity: Enriched) => boolean)>;
     /** Replace current collection with provided collection */
@@ -194,8 +206,6 @@ export type Keyval<Input, Enriched, Api, Shape> = {
   __lens: Shape;
   // private
   __struct: StructKeyval;
-  // private
-  __getKey: (input: Input) => string | number;
 };
 
 export type StoreContext<T> = {
