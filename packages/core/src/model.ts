@@ -8,6 +8,7 @@ import {
   clearNode,
   is,
   Node,
+  EventCallable,
 } from 'effector';
 
 import type {
@@ -46,11 +47,12 @@ export function model<
 >({
   create,
 }: {
-  create: (config: { onMount: Event<void> }) => {
+  create: () => {
     state: Output;
     api?: Api;
     key: string;
     optional?: string[];
+    onMount?: EventCallable<void>;
   };
 }): Model<
   Input,
@@ -75,15 +77,15 @@ export function model<
     key,
     api = {} as Api,
     optional = [],
+    onMount,
     ...rest
   } = withRegion(region, () => {
-    const onMount = createEvent();
-    return create({ onMount });
+    return create();
   });
 
   if (Object.keys(rest).length > 0) {
     throw Error(
-      `create should return only fields 'key', 'state', 'api' or 'optional'`,
+      `create should return only fields 'key', 'state', 'api', 'optional' or 'onMount'`,
     );
   } else if (typeof key !== 'string') {
     throw Error(`key field should be a string`);
@@ -93,6 +95,9 @@ export function model<
     throw Error(`key field "${key}" should be writable store`);
   } else if (optional.includes(key)) {
     throw Error(`key field "${key}" cannot be optional`);
+  }
+  if (onMount !== undefined && (!is.unit(onMount) || !is.targetable(onMount))) {
+    throw Error('onMount should be callable event or effect');
   }
 
   const requiredStateFields = Object.keys(state).filter(

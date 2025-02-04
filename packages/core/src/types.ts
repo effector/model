@@ -1,4 +1,11 @@
-import type { Store, Event, Effect, EventCallable, Node } from 'effector';
+import type {
+  Store,
+  Event,
+  Effect,
+  EventCallable,
+  Node,
+  UnitTargetable,
+} from 'effector';
 
 export type FactoryPathMap = Map<number, string | FactoryPathMap>;
 
@@ -13,7 +20,7 @@ export type Model<Props, Output, Api, Shape> = {
   // private
   readonly factoryStatePaths: FactoryPathMap;
   // private
-  create: (config: { onMount: Event<void> }) => any;
+  create: () => any;
   // private
   readonly __lens: Shape;
   // private
@@ -58,6 +65,7 @@ export type Instance<Output, Api> = {
   // private
   readonly keyvalShape: Record<keyof Output, Keyval<any, any, any, any>>;
   readonly props: Output;
+  onMount: UnitTargetable<void> | void;
   // private
   region: Node;
   api: Api;

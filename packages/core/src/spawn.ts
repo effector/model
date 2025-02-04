@@ -11,6 +11,7 @@ import {
   launch,
   Node,
   combine,
+  EventCallable,
 } from 'effector';
 
 import type {
@@ -112,13 +113,13 @@ export function spawn<
 ): Instance<Output, Api> {
   const region = createNode({ regional: true });
   installStateHooks(params as any, region, model.factoryStatePaths);
-  const onMount = withRegion(region, () => createEvent());
   const parentTracking = childInstancesTracking;
   childInstancesTracking = [];
-  const outputs = withRegion(region, () => model.create({ onMount: onMount! }));
+  const outputs = withRegion(region, () => model.create());
   childInstancesTracking = parentTracking;
   const storeOutputs = outputs.state ?? {};
   const apiOutputs = outputs.api ?? {};
+  const onMount: EventCallable<void> | void = outputs.onMount;
   function forEachKeyvalField(
     cb: (kv: Keyval<any, any, any, any>, field: keyof Output) => void,
   ) {
@@ -152,15 +153,11 @@ export function spawn<
     props: storeOutputs,
     api: apiOutputs,
     region,
+    onMount,
   };
   if (childInstancesTracking) {
     childInstancesTracking.push(result);
   }
-  launch({
-    target: onMount!,
-    params: undefined,
-    defer: true,
-  });
   return result;
 }
 

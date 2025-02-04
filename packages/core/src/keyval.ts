@@ -280,6 +280,13 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
       });
       // @ts-expect-error some issues with types
       freshState.instances.push(instance);
+      if (instance.onMount) {
+        launch({
+          target: instance.onMount,
+          params: undefined,
+          defer: true,
+        });
+      }
     } else {
       // typecast, there is no kvModel so Input === Enriched
       freshState.items.push(inputItem as Enriched);

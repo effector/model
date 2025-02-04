@@ -1,4 +1,4 @@
-import { expect, test, describe } from 'vitest';
+import { expect, test, describe, vi } from 'vitest';
 import { keyval } from '@effector/model';
 import { createEvent, createStore } from 'effector';
 import { readonly } from 'patronum';
@@ -107,4 +107,23 @@ test('api support', () => {
     { id: 'foo', count: 2 },
     { id: 'bar', count: 0 },
   ]);
+});
+
+test('onMount support', () => {
+  const fn = vi.fn();
+  const entities = keyval(() => {
+    const $id = createStore(0);
+    const onMount = createEvent();
+    onMount.watch(() => fn());
+    return {
+      key: 'id',
+      state: { id: $id },
+      onMount,
+    };
+  });
+  expect(fn).toBeCalledTimes(0);
+  entities.edit.add({ id: 1 });
+  expect(fn).toBeCalledTimes(1);
+  entities.edit.add({ id: 2 });
+  expect(fn).toBeCalledTimes(2);
 });
