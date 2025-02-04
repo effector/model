@@ -4,6 +4,37 @@ Effector models with ease
 
 Work in progress, api may change
 
+## API
+
+```ts
+import { keyval } from '@effector/model';
+
+const entities = keyval(() => {
+  const $id = createStore(0);
+  const $count = createStore(0);
+  const inc = createEvent();
+  $count.on(inc, (x) => x + 1);
+
+  const onMount = createEvent();
+
+  return {
+    state: {
+      id: $id,
+      count: $count,
+    },
+    api: { inc },
+    key: 'id',
+    optional: ['count'],
+    onMount,
+  };
+});
+
+entities.edit.add({ id: 1 });
+entities.edit.add([{ id: 2, count: 10 }]);
+entities.api.inc({ key: 1, value: undefined });
+entities.$items;
+```
+
 ## Maintains
 
 ### Getting started
