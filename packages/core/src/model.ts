@@ -19,8 +19,9 @@ import type {
   Show,
   ConvertToLensShape,
   FactoryPathMap,
+  StructShape,
 } from './types';
-import { define, isDefine, isKeyval } from './define';
+import { define, isKeyval } from './define';
 
 export function model<
   Input extends {
@@ -43,10 +44,8 @@ export function model<
     [key: string]: Event<unknown> | Effect<unknown, unknown, unknown>;
   } = {},
 >({
-  props,
   create,
 }: {
-  props: Input;
   create: (config: { onMount: Event<void> }) => {
     state: Output;
     api?: Api;
@@ -70,7 +69,6 @@ export function model<
   //   }[keyof Output]]: Output[K];
   // }
 > {
-  const shape = {} as any;
   const region = createNode({ regional: true });
   const {
     state = {} as Output,
@@ -110,6 +108,31 @@ export function model<
     isKeyval(state[field]),
   ) as Array<keyof Output>;
 
+  const shape = {} as any;
+  const structShape: StructShape = {
+    type: 'structShape',
+    shape: {},
+  };
+  for (const key in state) {
+    shape[key] = define.store<any>();
+    structShape.shape[key] = isKeyval(state[key])
+      ? state[key].__struct
+      : {
+          type: 'structUnit',
+          unit: 'store',
+        };
+  }
+  for (const key in api) {
+    const value = api[key];
+    shape[key] = is.event(value)
+      ? define.event<any>()
+      : define.effect<any, any, any>();
+    structShape.shape[key] = {
+      type: 'structUnit',
+      unit: is.event(value) ? 'event' : 'effect',
+    };
+  }
+
   clearNode(region);
   return {
     type: 'model',
@@ -118,28 +141,11 @@ export function model<
     requiredStateFields,
     keyvalFields,
     factoryStatePaths,
-    propsConfig: props,
-    output: null as unknown as any,
-    // api: null as unknown as any,
     shape,
-    shapeInited: false,
     __lens: {} as any,
+    __struct: structShape,
   };
 }
-
-// function withInitState(fn) {
-//   const initRegion = createNode({ regional: true });
-
-//   const state = withRegion(initRegion, () => fn());
-//   const factoryPathToStateKey = collectFactoryPaths(state, initRegion);
-//   clearNode(initRegion);
-
-//   return (initState: Record<string, any> = {}) => {
-//     const region = createNode({ regional: true });
-//     installStateHooks(initState, region, factoryPathToStateKey);
-//     return [withRegion(region, () => fn()), region];
-//   };
-// }
 
 function collectFactoryPaths(state: Record<string, any>, initRegion: Node) {
   const factoryPathToStateKey: FactoryPathMap = new Map();

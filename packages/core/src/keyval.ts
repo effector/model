@@ -1,34 +1,27 @@
 import {
   createStore,
   createEvent,
-  createEffect,
   attach,
   sample,
   Store,
   StoreWritable,
   withRegion,
-  combine,
   clearNode,
   launch,
   EventCallable,
   Event,
-  Effect,
-  is,
 } from 'effector';
 
 import type {
   Keyval,
   Model,
   StoreDef,
-  EventDef,
-  EffectDef,
   InstanceOf,
   Show,
   ConvertToLensShape,
   StructKeyval,
 } from './types';
 import { spawn } from './spawn';
-import { isDefine, isKeyval } from './define';
 import { model } from './model';
 import type { SetOptional } from './setOptional';
 
@@ -308,21 +301,6 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
       ...inputUpdate,
     };
     freshState.items[idx] = newItem;
-    if (kvModel) {
-      const instance = freshState.instances[idx];
-      // for (const key in instance.inputs) {
-      //   // @ts-expect-error cannot read newItem[key], but its ok
-      //   const upd = newItem[key];
-      //   // @ts-expect-error cannot read oldItem[key], but its ok
-      //   if (upd !== oldItem[key]) {
-      //     launch({
-      //       target: instance.inputs[key],
-      //       params: upd,
-      //       defer: true,
-      //     });
-      //   }
-      // }
-    }
   }
 
   const addFx = attach({
@@ -497,19 +475,8 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
   let structShape: any = null;
 
   if (kvModel) {
-    const initShape = {} as Record<string, any>;
-    /** for in leads to typescript errors */
-    Object.entries(kvModel.shape).forEach(([key, def]) => {
-      if (isDefine.store(def)) {
-        initShape[key] = createStore({});
-      } else if (isDefine.event(def)) {
-        initShape[key] = createEvent();
-      } else if (isDefine.effect(def)) {
-        initShape[key] = createEffect(() => {});
-      }
-    });
     // @ts-expect-error type issues
-    const instance = spawn(kvModel, initShape);
+    const instance = spawn(kvModel, {});
     clearNode(instance.region);
     structShape = {
       type: 'structKeyval',

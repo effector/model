@@ -15,9 +15,6 @@ export type Model<Props, Output, Api, Shape> = {
   // private
   create: (config: { onMount: Event<void> }) => any;
   // private
-  readonly propsConfig: Props;
-  readonly output: Output;
-  // private
   readonly __lens: Shape;
   // private
   // readonly api: Api;
@@ -51,9 +48,7 @@ export type Model<Props, Output, Api, Shape> = {
     }
   >;
   // private
-  shapeInited: boolean;
-  // private
-  __struct?: StructShape;
+  __struct: StructShape;
 };
 
 export type Instance<Output, Api> = {
@@ -65,11 +60,6 @@ export type Instance<Output, Api> = {
   readonly props: Output;
   // private
   region: Node;
-  // private
-  readonly inputs: Record<
-    string,
-    Store<any> | Event<any> | Effect<any, any, any>
-  >;
   api: Api;
 };
 
