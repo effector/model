@@ -5,7 +5,7 @@ import {
   useEffect,
   ReactNode,
 } from 'react';
-import type { Store, Event, Effect } from 'effector';
+import { type Store, type Event, type Effect, clearNode } from 'effector';
 import { useList, useStoreMap, useUnit } from 'effector-react';
 
 import type {
@@ -114,7 +114,7 @@ export function ModelProvider<
     deps.push(value);
   }
   const instance = useMemo(() => spawn(model, value), deps);
-  useEffect(() => () => instance.unmount(), deps);
+  useEffect(() => () => clearNode(instance.region), deps);
   const currentStack = useContext(ModelStackContext);
   const nextStack = {
     type: 'instance' as const,

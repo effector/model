@@ -160,11 +160,10 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
   // @ts-expect-error bad implementation
   let getKeyRaw;
   let shape: Shape;
-  let props;
   if (typeof options === 'function') {
     create = options as any;
   } else {
-    ({ key: getKeyRaw, shape = {} as Shape, props, create } = options);
+    ({ key: getKeyRaw, shape = {} as Shape, create } = options);
   }
   type Enriched = Input & ModelEnhance;
   let kvModel:
@@ -181,20 +180,22 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
         Shape
       >
     | undefined;
-  if (props && create) {
+  if (create) {
     // @ts-expect-error typecast
-    kvModel = model({ props, create });
+    kvModel = model({ create });
   }
   type ListState = {
     items: Enriched[];
+    // @ts-expect-error type mismatch
     instances: Array<InstanceOf<NonNullable<typeof kvModel>>>;
     keys: Array<string | number>;
   };
-  const getKey =
-    typeof getKeyRaw === 'function'
+  const getKey = !kvModel
+    ? typeof getKeyRaw === 'function'
       ? getKeyRaw
       : // @ts-expect-error bad implementation
-        (entity: Input) => entity[getKeyRaw] as string | number;
+        (entity: Input) => entity[getKeyRaw] as string | number
+    : (entity: Input) => entity[kvModel.keyField] as string | number;
   const $entities = createStore<ListState>({
     items: [],
     instances: [],
@@ -250,19 +251,11 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
       // @ts-expect-error some issues with types
       const instance = spawn(kvModel, item1);
       withRegion(instance.region, () => {
-        const storeOutputs = {} as Record<string, Store<any>>;
-        for (const key in instance.props) {
-          const value = instance.props[key];
-          storeOutputs[key] = isKeyval(value)
-            ? value.$items
-            : (value as Store<any>);
-        }
-        const $enriching = combine(storeOutputs);
         // obviosly dirty hack, wont make it way to release
-        const enriching = $enriching.getState();
-        freshState.items.push({ ...inputItem, ...enriching } as Enriched);
+        const enriching = instance.output.getState();
+        freshState.items.push(enriching as Enriched);
         sample({
-          source: $enriching,
+          source: instance.output,
           fn: (partial) => ({
             key,
             partial: partial as Partial<Enriched>,
@@ -317,18 +310,18 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
     freshState.items[idx] = newItem;
     if (kvModel) {
       const instance = freshState.instances[idx];
-      for (const key in instance.inputs) {
-        // @ts-expect-error cannot read newItem[key], but its ok
-        const upd = newItem[key];
-        // @ts-expect-error cannot read oldItem[key], but its ok
-        if (upd !== oldItem[key]) {
-          launch({
-            target: instance.inputs[key],
-            params: upd,
-            defer: true,
-          });
-        }
-      }
+      // for (const key in instance.inputs) {
+      //   // @ts-expect-error cannot read newItem[key], but its ok
+      //   const upd = newItem[key];
+      //   // @ts-expect-error cannot read oldItem[key], but its ok
+      //   if (upd !== oldItem[key]) {
+      //     launch({
+      //       target: instance.inputs[key],
+      //       params: upd,
+      //       defer: true,
+      //     });
+      //   }
+      // }
     }
   }
 
@@ -373,7 +366,6 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
       if (kvModel) {
         for (const instance of oldState.instances) {
           clearNode(instance.region);
-          instance.unmount();
         }
       }
       const state: ListState = {
@@ -384,19 +376,18 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
       for (const item of newItems) {
         const key = getKey(item);
         runNewItemInstance(state, key, item);
-        /** new instance is always last */
-        const instance = state.instances[state.instances.length - 1];
-        for (const key in item) {
-          if (key in writableOutputs) {
-            launch({
-              target:
-                writableOutputs[key] === 'keyval'
-                  ? (instance.props[key] as any).edit.replaceAll
-                  : // @ts-expect-error typescript is broken here
-                    instance.props[key],
-              params: item[key],
-              defer: true,
-            });
+        if (kvModel) {
+          /** new instance is always last */
+          const instance = state.instances[state.instances.length - 1];
+          for (const field of kvModel.keyvalFields) {
+            // @ts-expect-error type mismatch, item is iterable
+            if (field in item) {
+              launch({
+                target: instance.keyvalShape[field].edit.replaceAll,
+                params: (item as any)[field],
+                defer: true,
+              });
+            }
           }
         }
       }
@@ -467,7 +458,6 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
       const [instance] = state.instances.splice(idx, 1);
       if (instance) {
         clearNode(instance.region);
-        instance.unmount();
       }
     }
     return state;
@@ -503,7 +493,6 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
   });
 
   const api = {} as Record<string, EventCallable<any>>;
-  const writableOutputs = {} as Record<string, 'store' | 'keyval'>;
 
   let structShape: any = null;
 
@@ -519,12 +508,9 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
         initShape[key] = createEffect(() => {});
       }
     });
-    const consoleError = console.error;
-    console.error = () => {};
     // @ts-expect-error type issues
     const instance = spawn(kvModel, initShape);
-    console.error = consoleError;
-    instance.unmount();
+    clearNode(instance.region);
     structShape = {
       type: 'structKeyval',
       getKey,
@@ -564,14 +550,6 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
         return state;
       });
     }
-    for (const key in instance.props) {
-      const value = instance.props[key];
-      if (isKeyval(value)) {
-        writableOutputs[key] = 'keyval';
-      } else if (is.store(value) && is.targetable(value)) {
-        writableOutputs[key] = 'store';
-      }
-    }
   }
 
   return {
@@ -580,7 +558,6 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
     // @ts-expect-error bad implementation
     __lens: shape,
     __struct: structShape,
-    __getKey: getKey,
     $items: $entities.map(({ items }) => items),
     $keys: $entities.map(({ keys }) => keys),
     edit: {

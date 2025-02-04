@@ -7,9 +7,10 @@ import {
   is,
   createNode,
   withRegion,
-  clearNode,
   createEvent,
   launch,
+  Node,
+  combine,
 } from 'effector';
 
 import type {
@@ -21,6 +22,8 @@ import type {
   AnyDef,
   StructUnit,
   StructShape,
+  FactoryPathMap,
+  Keyval,
 } from './types';
 import { define, isDefine, isKeyval } from './define';
 
@@ -109,7 +112,8 @@ export function spawn<
           : never;
   },
 ): Instance<Output, Api> {
-  const region = createNode();
+  const region = createNode({ regional: true });
+  installStateHooks(params as any, region, model.factoryStatePaths);
   const normProps = {} as {
     [K in keyof T]: T[K] extends
       | Store<unknown>
@@ -129,118 +133,117 @@ export function spawn<
   let onMount: Event<void>;
   withRegion(region, () => {
     onMount = createEvent();
-    for (const key in model.propsConfig) {
-      const propModel = model.propsConfig[key];
-      //@ts-expect-error
-      const propParams = params[key];
-      const propParamsExist = key in params;
-      if (is.store(propModel)) {
-        if (propParamsExist) {
-          //@ts-expect-error
-          normProps[key] = getStoreParams(propParams);
-        } else {
-          //@ts-expect-error
-          normProps[key] = propModel;
-        }
-      } else if (is.event(propModel)) {
-        if (propParamsExist) {
-          /** Maybe we should allow to pass any unit to event field */
-          if (
-            is.event(propParams) ||
-            is.effect(propParams) ||
-            is.store(propParams)
-          ) {
-            normProps[key] = propParams;
-          } else {
-            throw Error(`spawn field "${key}" expect event`);
-          }
-        } else {
-          //@ts-expect-error
-          normProps[key] = propModel;
-        }
-      } else if (is.effect(propModel)) {
-        if (propParamsExist) {
-          //@ts-expect-error
-          normProps[key] = getEffectParams(key, propParams);
-        } else {
-          //@ts-expect-error
-          normProps[key] = propModel;
-        }
-      } else if (isDefine.store(propModel)) {
-        if (propParamsExist) {
-          //@ts-expect-error
-          normProps[key] = getStoreParams(propParams);
-        } else {
-          throw Error(`spawn field "${key}" expect store or value`);
-        }
-      } else if (isDefine.event(propModel)) {
-        if (propParamsExist && is.event(propParams)) {
-          normProps[key] = propParams;
-        } else {
-          throw Error(`spawn field "${key}" expect event`);
-        }
-      } else if (isDefine.effect(propModel)) {
-        if (propParamsExist) {
-          //@ts-expect-error
-          normProps[key] = getEffectParams(key, propParams);
-        } else {
-          throw Error(`spawn field "${key}" expect effect or function`);
-        }
-      } else if (typeof propModel === 'function') {
-        if (propParamsExist) {
-          //@ts-expect-error
-          normProps[key] = getEffectParams(key, propParams);
-        } else {
-          //@ts-expect-error
-          normProps[key] = createEffect(propModel);
-        }
-      } else {
-        if (propParamsExist) {
-          //@ts-expect-error
-          normProps[key] = getStoreParams(propParams);
-        } else {
-          //@ts-expect-error
-          normProps[key] = createStore(propModel);
-        }
-      }
-    }
+    // for (const key in model.propsConfig) {
+    //   const propModel = model.propsConfig[key];
+    //   //@ts-expect-error
+    //   const propParams = params[key];
+    //   const propParamsExist = key in params;
+    //   if (is.store(propModel)) {
+    //     if (propParamsExist) {
+    //       //@ts-expect-error
+    //       normProps[key] = getStoreParams(propParams);
+    //     } else {
+    //       //@ts-expect-error
+    //       normProps[key] = propModel;
+    //     }
+    //   } else if (is.event(propModel)) {
+    //     if (propParamsExist) {
+    //       /** Maybe we should allow to pass any unit to event field */
+    //       if (
+    //         is.event(propParams) ||
+    //         is.effect(propParams) ||
+    //         is.store(propParams)
+    //       ) {
+    //         normProps[key] = propParams;
+    //       } else {
+    //         throw Error(`spawn field "${key}" expect event`);
+    //       }
+    //     } else {
+    //       //@ts-expect-error
+    //       normProps[key] = propModel;
+    //     }
+    //   } else if (is.effect(propModel)) {
+    //     if (propParamsExist) {
+    //       //@ts-expect-error
+    //       normProps[key] = getEffectParams(key, propParams);
+    //     } else {
+    //       //@ts-expect-error
+    //       normProps[key] = propModel;
+    //     }
+    //   } else if (isDefine.store(propModel)) {
+    //     if (propParamsExist) {
+    //       //@ts-expect-error
+    //       normProps[key] = getStoreParams(propParams);
+    //     } else {
+    //       throw Error(`spawn field "${key}" expect store or value`);
+    //     }
+    //   } else if (isDefine.event(propModel)) {
+    //     if (propParamsExist && is.event(propParams)) {
+    //       normProps[key] = propParams;
+    //     } else {
+    //       throw Error(`spawn field "${key}" expect event`);
+    //     }
+    //   } else if (isDefine.effect(propModel)) {
+    //     if (propParamsExist) {
+    //       //@ts-expect-error
+    //       normProps[key] = getEffectParams(key, propParams);
+    //     } else {
+    //       throw Error(`spawn field "${key}" expect effect or function`);
+    //     }
+    //   } else if (typeof propModel === 'function') {
+    //     if (propParamsExist) {
+    //       //@ts-expect-error
+    //       normProps[key] = getEffectParams(key, propParams);
+    //     } else {
+    //       //@ts-expect-error
+    //       normProps[key] = createEffect(propModel);
+    //     }
+    //   } else {
+    //     if (propParamsExist) {
+    //       //@ts-expect-error
+    //       normProps[key] = getStoreParams(propParams);
+    //     } else {
+    //       //@ts-expect-error
+    //       normProps[key] = createStore(propModel);
+    //     }
+    //   }
+    // }
   });
   const parentTracking = childInstancesTracking;
   childInstancesTracking = [];
-  const outputs = model.create({ onMount: onMount! });
-  const childInstances = childInstancesTracking;
+  const outputs = withRegion(region, () => model.create({ onMount: onMount! }));
   childInstancesTracking = parentTracking;
   let storeOutputs = {} as any;
   let apiOutputs = {} as any;
   /** its ok to not return anything */
-  if (outputs !== undefined) {
-    if (typeof outputs !== 'object' || outputs === null) {
-      throw Error(`model body should return object or undefined`);
-    }
-    if (
-      (outputs.state && !is.unit(outputs.state)) ||
-      (outputs.api && !is.unit(outputs.api))
-    ) {
-      storeOutputs = outputs.state ?? {};
-      apiOutputs = outputs.api ?? {};
-    } else {
-      storeOutputs = outputs;
-    }
-    for (const key in storeOutputs) {
-      const value = storeOutputs[key];
-      if (!is.store(value) && !isKeyval(value)) {
-        throw Error(`model body in state key "${key}" should return store`);
-      }
-    }
-    for (const key in apiOutputs) {
-      const value = apiOutputs[key];
-      if (!is.event(value) && !is.effect(value)) {
-        throw Error(
-          `model body in api key "${key}" should return event or effect`,
-        );
-      }
-    }
-  }
+  // if (outputs !== undefined) {
+  //   if (typeof outputs !== 'object' || outputs === null) {
+  //     throw Error(`model body should return object or undefined`);
+  //   }
+  //   if (
+  //     (outputs.state && !is.unit(outputs.state)) ||
+  //     (outputs.api && !is.unit(outputs.api))
+  //   ) {
+  //     storeOutputs = outputs.state ?? {};
+  //     apiOutputs = outputs.api ?? {};
+  //   } else {
+  //     storeOutputs = outputs;
+  //   }
+  //   for (const key in storeOutputs) {
+  //     const value = storeOutputs[key];
+  //     if (!is.store(value) && !isKeyval(value)) {
+  //       throw Error(`model body in state key "${key}" should return store`);
+  //     }
+  //   }
+  //   for (const key in apiOutputs) {
+  //     const value = apiOutputs[key];
+  //     if (!is.event(value) && !is.effect(value)) {
+  //       throw Error(
+  //         `model body in api key "${key}" should return event or effect`,
+  //       );
+  //     }
+  //   }
+  // }
   if (!model.shapeInited) {
     model.shapeInited = true;
     const structShape: StructShape = {
@@ -277,16 +280,41 @@ export function spawn<
     }
     model.__struct = structShape;
   }
+  function forEachKeyvalField(
+    cb: (kv: Keyval<any, any, any, any>, field: keyof Output) => void,
+  ) {
+    const resultShape = {
+      ...(outputs.state ?? {}),
+    } as Output;
+    for (const field of model.keyvalFields) {
+      if (isKeyval(resultShape[field])) {
+        cb(resultShape[field], field);
+      }
+    }
+  }
+  const $output = withRegion(region, () => {
+    const resultShape = {
+      ...(outputs.state ?? {}),
+    } as Output;
+    forEachKeyvalField(({ $items }, field) => {
+      // @ts-expect-error generic mismatch
+      resultShape[field] = $items;
+    });
+    return combine(resultShape) as unknown as Store<Output>;
+  });
+  const keyvalShape = {} as Instance<any, any>['keyvalShape'];
+
+  withRegion(region, () => {
+    forEachKeyvalField((kv, field) => {
+      keyvalShape[field] = kv;
+    });
+  });
   const result: Instance<Output, Api> = {
     type: 'instance',
+    output: $output,
+    keyvalShape,
     props: storeOutputs,
-    api: apiOutputs,
-    unmount() {
-      for (const child of childInstances) {
-        child.unmount();
-      }
-      clearNode(region);
-    },
+    api: outputs.api ?? {},
     region,
     inputs: normProps,
   };
@@ -299,6 +327,38 @@ export function spawn<
     defer: true,
   });
   return result;
+}
+
+function installStateHooks(
+  initState: Record<string, any>,
+  node: Node,
+  currentFactoryPathToStateKey: FactoryPathMap,
+) {
+  wrapPush(node.family.links, (item, idx) => {
+    if (!currentFactoryPathToStateKey.has(idx)) return;
+    const currentPath = currentFactoryPathToStateKey.get(idx)!;
+    if (typeof currentPath === 'string') {
+      if (item.scope.state && currentPath in initState) {
+        item.scope.state.initial = initState[currentPath];
+        item.scope.state.current = initState[currentPath];
+      }
+    } else {
+      installStateHooks(initState, item, currentPath);
+    }
+  });
+}
+
+function wrapPush<T>(arr: T[], cb: (item: T, realIdx: number) => void) {
+  const push = arr.push.bind(arr);
+  arr.push = (...args: T[]) => {
+    const idx = arr.length;
+    for (let i = 0; i < args.length; i++) {
+      const child = args[i];
+      const realIdx = idx + i;
+      cb(child, realIdx);
+    }
+    return push(...args);
+  };
 }
 
 function getStoreParams(propParams: any) {

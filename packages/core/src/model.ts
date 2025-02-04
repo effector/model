@@ -1,4 +1,14 @@
-import { Store, Event, Effect, createStore, createEffect, is } from 'effector';
+import {
+  Store,
+  Event,
+  Effect,
+  createNode,
+  withRegion,
+  createEvent,
+  clearNode,
+  is,
+  Node,
+} from 'effector';
 
 import type {
   Model,
@@ -8,8 +18,9 @@ import type {
   Keyval,
   Show,
   ConvertToLensShape,
+  FactoryPathMap,
 } from './types';
-import { define, isDefine } from './define';
+import { define, isDefine, isKeyval } from './define';
 
 export function model<
   Input extends {
@@ -60,23 +71,53 @@ export function model<
   // }
 > {
   const shape = {} as any;
-  for (const key in props) {
-    const value = props[key];
-    if (isDefine.any(value)) {
-      shape[key] = value;
-    } else if (is.store(value)) {
-      shape[key] = define.store<any>();
-    } else if (is.event(value)) {
-      shape[key] = define.event<any>();
-    } else if (is.effect(value) || typeof value === 'function') {
-      shape[key] = define.effect<any, any, any>();
-    } else {
-      shape[key] = define.store<any>();
-    }
+  const region = createNode({ regional: true });
+  const {
+    state = {} as Output,
+    key,
+    api = {} as Api,
+    optional = [],
+    ...rest
+  } = withRegion(region, () => {
+    const onMount = createEvent();
+    return create({ onMount });
+  });
+
+  if (Object.keys(rest).length > 0) {
+    throw Error(
+      `create should return only fields 'key', 'state', 'api' or 'optional'`,
+    );
+  } else if (typeof key !== 'string') {
+    throw Error(`key field should be a string`);
+  } else if (!(key in state)) {
+    throw Error(`key field "${key}" should be in state`);
+  } else if (!is.store(state[key]) || !is.targetable(state[key])) {
+    throw Error(`key field "${key}" should be writable store`);
+  } else if (optional.includes(key)) {
+    throw Error(`key field "${key}" cannot be optional`);
   }
+
+  const requiredStateFields = Object.keys(state).filter(
+    (field: keyof Output) =>
+      is.store(state[field]) &&
+      is.targetable(state[field]) &&
+      !optional.includes(field as string),
+  ) as Array<keyof Input>;
+
+  const factoryStatePaths = collectFactoryPaths(state, region);
+
+  const keyvalFields = Object.keys(state).filter((field: keyof Output) =>
+    isKeyval(state[field]),
+  ) as Array<keyof Output>;
+
+  clearNode(region);
   return {
     type: 'model',
     create,
+    keyField: key,
+    requiredStateFields,
+    keyvalFields,
+    factoryStatePaths,
     propsConfig: props,
     output: null as unknown as any,
     // api: null as unknown as any,
@@ -84,4 +125,65 @@ export function model<
     shapeInited: false,
     __lens: {} as any,
   };
+}
+
+// function withInitState(fn) {
+//   const initRegion = createNode({ regional: true });
+
+//   const state = withRegion(initRegion, () => fn());
+//   const factoryPathToStateKey = collectFactoryPaths(state, initRegion);
+//   clearNode(initRegion);
+
+//   return (initState: Record<string, any> = {}) => {
+//     const region = createNode({ regional: true });
+//     installStateHooks(initState, region, factoryPathToStateKey);
+//     return [withRegion(region, () => fn()), region];
+//   };
+// }
+
+function collectFactoryPaths(state: Record<string, any>, initRegion: Node) {
+  const factoryPathToStateKey: FactoryPathMap = new Map();
+  for (const key in state) {
+    const value = state[key];
+    if (is.store(value) && is.targetable(value)) {
+      const path = findNodeInTree((value as any).graphite, initRegion);
+      if (path) {
+        let nestedFactoryPathMap = factoryPathToStateKey;
+        for (let i = 0; i < path.length; i++) {
+          const step = path[i];
+          const isLastStep = i === path.length - 1;
+          if (isLastStep) {
+            nestedFactoryPathMap.set(step, key);
+          } else {
+            let childFactoryPathMap = nestedFactoryPathMap.get(step);
+            if (!childFactoryPathMap) {
+              childFactoryPathMap = new Map();
+              nestedFactoryPathMap.set(step, childFactoryPathMap);
+            }
+            nestedFactoryPathMap = childFactoryPathMap as FactoryPathMap;
+          }
+        }
+      }
+    }
+  }
+  return factoryPathToStateKey;
+}
+
+function findNodeInTree(
+  searchNode: Node,
+  currentNode: Node,
+  path: number[] = [],
+): number[] | void {
+  const idx = currentNode.family.links.findIndex((e) => e === searchNode);
+  if (idx !== -1) {
+    return [...path, idx];
+  } else {
+    for (let i = 0; i < currentNode.family.links.length; i++) {
+      const linkNode = currentNode.family.links[i];
+      if (linkNode.meta.isRegion) {
+        const result = findNodeInTree(searchNode, linkNode, [...path, i]);
+        if (result) return result;
+      }
+    }
+  }
 }

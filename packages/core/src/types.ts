@@ -1,7 +1,17 @@
 import type { Store, Event, Effect, EventCallable, Node } from 'effector';
 
+export type FactoryPathMap = Map<number, string | FactoryPathMap>;
+
 export type Model<Props, Output, Api, Shape> = {
   type: 'model';
+  // private
+  readonly keyField: keyof Props;
+  // private
+  readonly requiredStateFields: Array<keyof Props>;
+  // private
+  readonly keyvalFields: Array<keyof Output>;
+  // private
+  readonly factoryStatePaths: FactoryPathMap;
   // private
   create: (config: { onMount: Event<void> }) => any;
   // private
@@ -49,7 +59,9 @@ export type Model<Props, Output, Api, Shape> = {
 export type Instance<Output, Api> = {
   type: 'instance';
   // private
-  unmount(): void;
+  readonly output: Store<Output>;
+  // private
+  readonly keyvalShape: Record<keyof Output, Keyval<any, any, any, any>>;
   readonly props: Output;
   // private
   region: Node;
@@ -196,8 +208,6 @@ export type Keyval<Input, Enriched, Api, Shape> = {
   __lens: Shape;
   // private
   __struct: StructKeyval;
-  // private
-  __getKey: (input: Input) => string | number;
 };
 
 export type StoreContext<T> = {
