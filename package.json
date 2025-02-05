@@ -17,8 +17,10 @@
     "changes": "changeset"
   },
   "dependencies": {
+    "@effector/model": "^0.0.3",
     "@typescript-eslint/eslint-plugin": "^8.0.1",
     "@typescript-eslint/parser": "^8.0.1",
+    "clsx": "^2.1.1",
     "effector": "^23.3.0",
     "effector-react": "^23.2.1",
     "patronum": "^2.3.0",

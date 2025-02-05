@@ -1,0 +1,7 @@
+#root {
+  display: contents;
+}
+
+.categories:not(:last-child):after {
+  content: ", ";
+}
