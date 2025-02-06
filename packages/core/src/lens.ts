@@ -45,6 +45,7 @@ function createLensStruct(
               }
               return value?.[key];
             },
+            { skipVoid: false },
           );
           shape[key] = {
             __type: 'lensStore',
