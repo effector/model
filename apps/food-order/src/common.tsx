@@ -16,7 +16,7 @@ export const Radio = ({
       name={name}
       className="hidden"
       checked={checked}
-      onClick={onClick}
+      onChange={onClick}
     />
     <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center">
       <svg
@@ -25,9 +25,9 @@ export const Radio = ({
         fill="currentColor"
       >
         <path
-          fill-rule="evenodd"
+          fillRule="evenodd"
           d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z"
-          clip-rule="evenodd"
+          clipRule="evenodd"
         />
       </svg>
     </div>
@@ -64,7 +64,7 @@ export const AddToOrder = ({
       disabled={disabled}
       className={clsx(
         'w-full text-white py-3 rounded-lg',
-        disabled ? 'bg-gray-300' : 'bg-teal-500'
+        disabled ? 'bg-gray-300' : 'bg-teal-500',
       )}
     >
       {children}
