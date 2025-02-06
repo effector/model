@@ -15,7 +15,11 @@
     "isolatedModules": false,
     "noEmit": true,
     "jsx": "react-jsx",
-    "noErrorTruncation": true
+    "noErrorTruncation": true,
+    "paths": {
+      "@effector/model": ["../../packages/core/index.ts"],
+      "@effector/model-react": ["../../packages/react/index.ts"]
+    }
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
