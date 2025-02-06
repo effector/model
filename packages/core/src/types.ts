@@ -56,6 +56,7 @@ export type Model<Props, Output, Api, Shape> = {
   >;
   // private
   __struct: StructShape;
+  defaultState: Output;
 };
 
 export type Instance<Output, Api> = {
@@ -206,6 +207,7 @@ export type Keyval<Input, Enriched, Api, Shape> = {
   __lens: Shape;
   // private
   __struct: StructKeyval;
+  defaultState: Enriched;
 };
 
 export type StoreContext<T> = {

@@ -534,6 +534,7 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
     __struct: structShape,
     $items: $entities.map(({ items }) => items),
     $keys: $entities.map(({ keys }) => keys),
+    defaultState: (kvModel?.defaultState ?? null) as any,
     edit: {
       add,
       set,
