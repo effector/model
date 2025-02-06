@@ -177,7 +177,7 @@ export function useModel<Input, T, Api, Shape>(
   return [state as any, api as any];
 }
 
-export function useEntityItem<T>(keyval: Keyval<unknown, T, unknown, unknown>) {
+export function useEntityItem<T>(keyval: Keyval<any, T, any, any>) {
   const stack = useContext(ModelStackContext);
   let currentStack = stack;
   let value: string | number | undefined;
@@ -203,8 +203,8 @@ export function useEntityItem<T>(keyval: Keyval<unknown, T, unknown, unknown>) {
 }
 
 export function useEntityList<T>(
-  keyval: Keyval<unknown, T, unknown, unknown>,
-  View: () => JSX.Element,
+  keyval: Keyval<any, T, any, any>,
+  View: () => ReactNode,
 ) {
   return useList(keyval.$keys, (key) => (
     <EntityProvider model={keyval} value={key}>
