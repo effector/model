@@ -1,5 +1,11 @@
 # @effector/model-react
 
+## 0.0.4
+
+### Patch Changes
+
+- d91bdab: Improve api based on food-order app feedback
+
 ## 0.0.3
 
 ### Patch Changes
