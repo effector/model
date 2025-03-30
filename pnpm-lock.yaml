@@ -14,12 +14,15 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^8.0.1
         version: 8.0.1(eslint@9.9.0(jiti@1.21.6))(typescript@5.5.4)
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
       effector:
         specifier: ^23.3.0
         version: 23.3.0
       effector-react:
-        specifier: ^23.2.1
-        version: 23.2.1(effector@23.3.0)(react@18.3.1)
+        specifier: ^23.3.0
+        version: 23.3.0(effector@23.3.0)(react@18.3.1)
       patronum:
         specifier: ^2.3.0
         version: 2.3.0(effector@23.3.0)
@@ -2439,6 +2442,10 @@ packages:
     resolution: {integrity: sha512-JQHZ2QMW6l3aH/j6xCqQThY/9OH4D/9ls34cgkUBiEeocRTU04tHfKPBsUK1PqZCUQM7GiA0IIXJSuXHI64Kbg==}
     engines: {node: '>=0.8'}
 
+  clsx@2.1.1:
+    resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
+    engines: {node: '>=6'}
+
   collapse-white-space@1.0.6:
     resolution: {integrity: sha512-jEovNnrhMuqyCcjfEJA56v0Xq8SkIoPKDyaHahwo3POf4qcSXqMYuwNcOTzp74vTsR9Tn08z4MxWqAhcekogkQ==}
 
@@ -2786,12 +2793,12 @@ packages:
   duplexer@0.1.2:
     resolution: {integrity: sha512-jtD6YG370ZCIi/9GTaJKQxWTZD045+4R4hTk/x1UyoqadyJ9x9CgSi1RlVDQF8U2sxLLSnFkCaMihqljHIWgMg==}
 
-  effector-react@23.2.1:
-    resolution: {integrity: sha512-eyjHm095xgrDNe8wtF60w5AjaF+j4Z6XP/DxW8RvlCK4twQT5mkAbIBJxA7BXKLL74RpySai8QmjVBurzapBCw==}
+  effector-react@23.3.0:
+    resolution: {integrity: sha512-QR0+x1EnbiWhO80Yc0GVF+I9xCYoxBm3t+QLB5Wg+1uY1Q1BrSWDmKvJaJJZ/+9BU4RAr25yS5J2EkdWnicu8g==}
     engines: {node: '>=11.0.0'}
     peerDependencies:
       effector: ^23.0.0
-      react: '>=16.8.0 <19.0.0'
+      react: '>=16.8.0 <20.0.0'
 
   effector@23.2.2:
     resolution: {integrity: sha512-gzwATi9pgZQx0TNhM2LESmoUpEO+vhibLZPCvVzi7spMvKFwKnfJV2PFj4xqNFFSC35TXaznx30ne62dCQ6ZRQ==}
@@ -9224,6 +9231,8 @@ snapshots:
 
   clone@1.0.4: {}
 
+  clsx@2.1.1: {}
+
   collapse-white-space@1.0.6: {}
 
   collection-visit@1.0.0:
@@ -9595,7 +9604,7 @@ snapshots:
 
   duplexer@0.1.2: {}
 
-  effector-react@23.2.1(effector@23.3.0)(react@18.3.1):
+  effector-react@23.3.0(effector@23.3.0)(react@18.3.1):
     dependencies:
       effector: 23.3.0
       react: 18.3.1

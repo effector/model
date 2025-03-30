@@ -118,6 +118,7 @@ export function model<
     type: 'structShape',
     shape: {},
   };
+  const defaultState = {} as any;
   for (const key in state) {
     shape[key] = define.store<any>();
     structShape.shape[key] = isKeyval(state[key])
@@ -126,6 +127,7 @@ export function model<
           type: 'structUnit',
           unit: 'store',
         };
+    defaultState[key] = is.store(state[key]) ? state[key].getState() : [];
   }
   for (const key in api) {
     const value = api[key];
@@ -149,6 +151,7 @@ export function model<
     shape,
     __lens: {} as any,
     __struct: structShape,
+    defaultState,
   };
 }
 

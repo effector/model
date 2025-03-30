@@ -1,0 +1,43 @@
+{
+  "name": "food-order",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/food-order/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/vite:build",
+      "options": {
+        "outputPath": "dist/apps/food-order"
+      }
+    },
+    "serve": {
+      "executor": "@nrwl/vite:dev-server",
+      "options": {
+        "buildTarget": "food-order:build"
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/food-order/**/*.{ts,js}"]
+      }
+    },
+    "preview": {
+      "executor": "@nrwl/vite:preview-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "food-order:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "food-order:build:development"
+        },
+        "production": {
+          "buildTarget": "food-order:build:production"
+        }
+      }
+    }
+  },
+  "tags": []
+}
