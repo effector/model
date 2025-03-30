@@ -70,7 +70,7 @@
     "nx": "19.5.7",
     "postcss-normalize": "^10.0.1",
     "prettier": "^3.3.3",
-    "rollup": "^4.20.0",
+    "rollup": "^4.22.4",
     "rollup-plugin-dts": "^6.1.1",
     "semver-parser": "^4.1.6",
     "shx": "^0.3.4",
