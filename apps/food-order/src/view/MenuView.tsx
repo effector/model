@@ -1,12 +1,14 @@
 import { useUnit } from 'effector-react';
+import { useReadItem } from '@effector/model-react';
+
 import {
-  $restaurant,
-  $totalOrderPrice,
+  restaurantsList,
+  ordersList,
   openOrder,
   openDish,
   openRestList,
-} from './model';
-import { AddToOrder, Title } from './common';
+} from '../model';
+import { AddToOrder, Title } from './components';
 
 const MenuItem = ({ name, price }: { name: string; price: number }) => {
   const onClick = useUnit(openDish);
@@ -21,25 +23,21 @@ const MenuItem = ({ name, price }: { name: string; price: number }) => {
   );
 };
 
-export const MenuView = () => {
-  const [{ name, dishes }, totalPrice, goToOrder, goBack] = useUnit([
-    $restaurant,
-    $totalOrderPrice,
-    openOrder,
-    openRestList,
-  ]);
+export const MenuView = ({ restaurant }: { restaurant: string }) => {
+  const [goToOrder, goBack] = useUnit([openOrder, openRestList]);
+  const { totalPrice } = useReadItem(ordersList, restaurant);
+  const { dishes } = useReadItem(restaurantsList, restaurant);
   return (
     <>
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden">
         <div className="p-4">
-          <Title goBack={goBack} text={name}/>
+          <Title goBack={goBack} text={restaurant} />
           <h2 className="text-2xl font-bold mb-4">Выберите блюдо</h2>
           {dishes.map(({ name, price }) => (
             <MenuItem name={name} key={name} price={price} />
           ))}
         </div>
       </div>
-
       <AddToOrder disabled={totalPrice === 0} onClick={goToOrder}>
         {totalPrice === 0 ? (
           <>Добавьте блюдо для оформления заказа</>

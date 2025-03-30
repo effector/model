@@ -1,4 +1,19 @@
-
+export { restaurantsList } from './restaurants.model';
+export {
+  ordersList,
+  addToOrder,
+  $isInOrder,
+  submitOrder,
+  $submitInProgress,
+} from './orders.model';
+export {
+  additivesList,
+  addAdditive,
+  removeAdditive,
+  $dishAdditives,
+  $dish,
+  $currentDishTotalPrice,
+} from './dishOrder.model';
 
 export {
   $route,
@@ -7,23 +22,6 @@ export {
   openDish,
   openOrder,
   openDishList,
+  $dishName,
 } from './route';
-export { $restaurants } from './restaurants';
-export { $restaurant } from './restaurant';
-export {$dish} from './dish'
-export {
-  $totalOrderPrice,
-  $orderWithPrices,
-  $submitInProgress,
-  addToOrder,
-  submitOrder,
-} from './orders'
-export {
-  addAdditive,
-  removeAdditive,
-  $currentDishOrder,
-  $dishAdditives,
-  $currentDishTotalPrice,
-  $isInOrder,
-} from './dishOrder'
-export {isAdditiveSimple} from './calculateUtils'
+export { isAdditiveSimple } from './calculateUtils';

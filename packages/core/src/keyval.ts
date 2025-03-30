@@ -20,10 +20,14 @@ import type {
   Show,
   ConvertToLensShape,
   StructKeyval,
+  StructShape,
+  OneOfShapeDef,
+  EntityShapeDef,
 } from './types';
 import { spawn } from './spawn';
 import { model } from './model';
 import type { SetOptional } from './setOptional';
+import { isDefine, isKeyval } from './define';
 
 type ToPlainShape<Shape> = {
   [K in {
@@ -189,6 +193,11 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
       : // @ts-expect-error bad implementation
         (entity: Input) => entity[getKeyRaw] as string | number
     : (entity: Input) => entity[kvModel.keyField] as string | number;
+  const keyField = !kvModel
+    ? typeof getKeyRaw === 'function' || getKeyRaw === undefined
+      ? null
+      : getKeyRaw
+    : kvModel.keyField;
   const $entities = createStore<ListState>({
     items: [],
     instances: [],
@@ -209,6 +218,7 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
   const map = createEvent<{
     keys: string | number | Array<string | number>;
     map: (entity: Enriched) => Partial<Input>;
+    upsert?: boolean;
   }>();
 
   const updateEnrichedItem = createEvent<{
@@ -460,22 +470,50 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
     }
     return state;
   });
-  $entities.on(map, (state, { keys, map }) => {
-    keys = Array.isArray(keys) ? keys : [keys];
-    const refresh = refreshOnce(state);
-    for (const key of keys) {
-      const idx = state.keys.indexOf(key);
-      if (idx !== -1) {
-        const originalItem = state.items[idx];
-        const updatedItem = map(originalItem);
-        if (originalItem !== updatedItem) {
+  const mapItemsFx = attach({
+    source: $entities,
+    effect(
+      state,
+      {
+        keys,
+        map,
+        upsert = false,
+      }: {
+        keys: string | number | Array<string | number>;
+        map: (entity: Enriched) => Partial<Input>;
+        upsert?: boolean;
+      },
+    ) {
+      keys = Array.isArray(keys) ? keys : [keys];
+      if (upsert && keyField === null) {
+        console.error(
+          'map upsert is not supported with `key: function`, use `key: "fieldName"` instead',
+        );
+        upsert = false;
+      }
+      const refresh = refreshOnce(state);
+      for (const key of keys) {
+        let idx = state.keys.indexOf(key);
+        if (upsert && idx === -1) {
           state = refresh();
-          runUpdatesForInstance(state, idx, updatedItem);
+          const idObject = { [keyField!]: key } as Input;
+          runNewItemInstance(state, key, idObject);
+          idx = state.keys.indexOf(key);
+        }
+        if (idx !== -1) {
+          const originalItem = state.items[idx];
+          const updatedItem = map(originalItem);
+          if (originalItem !== updatedItem) {
+            state = refresh();
+            runUpdatesForInstance(state, idx, updatedItem);
+          }
         }
       }
-    }
-    return state;
+      return state;
+    },
   });
+  sample({ clock: map, target: mapItemsFx });
+  sample({ clock: mapItemsFx.doneData, target: $entities });
 
   const api = {} as Record<string, EventCallable<any>>;
 
@@ -524,7 +562,25 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
         return state;
       });
     }
+  } else if (shape!) {
+    const itemStructShape: StructKeyval['shape'] = {};
+    structShape = {
+      type: 'structKeyval',
+      getKey,
+      shape: itemStructShape,
+    } as StructKeyval;
+    // for (const key in shape) {
+    //   const def = shape[key] as OneOfShapeDef;
+    //   itemStructShape[key] = def.type === 'entityShapeDefinition'
+    //     isKeyval(def)
+    //     ? def.__struct
+    //     : {
+    //         type: 'structUnit',
+    //         unit: 'store',
+    //       };
+    // }
   }
+  // function convertShapeDefToStructShape(def: EntityShapeDef<any>, )
 
   return {
     type: 'keyval',

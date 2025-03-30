@@ -1,20 +1,21 @@
-import { useUnit, useList } from 'effector-react';
+import { useUnit } from 'effector-react';
+import { useReadItem } from '@effector/model-react';
+
 import {
-  $totalOrderPrice,
-  $orderWithPrices,
   openDishList,
   submitOrder,
   $submitInProgress,
-} from './model';
-import { AddToOrder, Title } from './common';
+  ordersList,
+} from '../model';
+import { AddToOrder, Title } from './components';
 
-export const OrderView = () => {
-  const [totalPrice, goBack, submit, inProgress] = useUnit([
-    $totalOrderPrice,
+export const OrderView = ({ restaurant }: { restaurant: string }) => {
+  const [goBack, submit, inProgress] = useUnit([
     openDishList,
     submitOrder,
     $submitInProgress,
   ]);
+  const { totalPrice, dishes } = useReadItem(ordersList, restaurant);
   return (
     <>
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden">
@@ -22,8 +23,8 @@ export const OrderView = () => {
         <div className="p-4">
           <h2 className="text-xl font-bold mb-4">Ваш заказ:</h2>
 
-          {useList($orderWithPrices, ({ dish, totalPrice, additives }) => (
-            <div className="mb-4">
+          {dishes.map(({ dish, totalPrice, additives }) => (
+            <div className="mb-4" key={dish}>
               <div className="flex justify-between items-center">
                 <p className="text-lg font-bold">{dish}</p>
                 <p className="text-lg text-teal-500">{totalPrice}₸</p>

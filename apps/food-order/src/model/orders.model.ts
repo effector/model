@@ -6,139 +6,131 @@ import {
   sample,
 } from 'effector';
 
-import { model, entityList, define } from './impl';
+import { keyval, lens } from '@effector/model';
 
 import {
   getAmountPerItemType,
   calculateAdditiveOrderPriceFromEntity,
 } from './calculateUtils';
 import { restaurantsList } from './restaurants.model';
-import { $restaurant } from './restaurant';
-import { openDishList, openRestaurant, openRestList } from './route';
+import {
+  openRestaurant,
+  openRestList,
+  $restaurantName,
+  $dishName,
+} from './route';
 
 export const addToOrder = createEvent();
-const removeOrder = createEvent();
 
-const ordersList = entityList({
-  getKey: (order) => order.restaurant,
-  model: model({
-    props: {
-      restaurant: define.store<string>(),
-    },
-    create({ $restaurant }) {
-      const dishList = entityList({
-        getKey: ({ dish }) => dish,
-        model: model({
-          props: {
-            dish: define.store<string>(),
+export const ordersList = keyval(() => {
+  const $restaurant = createStore('');
+  const dishList = keyval(() => {
+    const $dish = createStore<string>('');
+    const dishLens = lens(restaurantsList, $restaurant).dishes($dish);
+    const additivesList = keyval(() => {
+      const $additive = createStore('');
+      const $choice = createStore('');
+      const $amount = createStore(0);
+      // const $additiveEntity = lens(restaurantsList, $restaurant)
+      //   .dishes($dish)
+      //   .additives($additive)
+      //   .store;
+      const $additiveEntity = combine(
+        dishLens.additives.store,
+        $additive,
+        (items, name) =>
+          items?.find((e) => e.name === name) ?? {
+            name: '',
+            required: false,
+            options: [],
           },
-          create({ $dish }) {
-            const dishLens = restaurantsList.lens($restaurant).dishes($dish);
-            const additivesList = entityList({
-              getKey: ({ additive }) => additive,
-              model: model({
-                props: {
-                  additive: define.store<string>(),
-                  choice: define.store<string>(),
-                  amount: define.store<number>(),
-                },
-                create({ $additive, $choice, $amount }) {
-                  // const $additiveEntity = restaurantsList
-                  //   .lens($restaurant)
-                  //   .dishes($dish)
-                  //   .additives($additive)
-                  //   .store;
-                  const $additiveEntity = dishLens.additives($additive).store;
-                  const $showAmount = combine(
-                    $additiveEntity,
-                    $choice,
-                    (additiveEntity, choice) =>
-                      getAmountPerItemType(additiveEntity, choice) === 'many'
-                  );
-                  const $totalPrice = combine(
-                    $additiveEntity,
-                    $choice,
-                    $amount,
-                    (additiveEntity, choice, amount) =>
-                      calculateAdditiveOrderPriceFromEntity(
-                        additiveEntity,
-                        choice,
-                        amount
-                      )
-                  );
-                  return {
-                    amount: $amount,
-                    showAmount: $showAmount,
-                    totalPrice: $totalPrice,
-                  };
-                },
-              }),
-            });
-            const $totalPrice = combine(
-              dishLens.price.store,
-              additivesList.$items,
-              (price, additives) =>
-                additives.reduce(
-                  (sum, additive) => sum + additive.totalPrice,
-                  price
-                )
-            );
-            return {
-              additives: additivesList,
-              totalPrice: $totalPrice,
-            };
-          },
-        }),
-      });
-      const $totalPrice = combine(dishList.$items, (dishOrders) =>
-        dishOrders.reduce((sum, dishOrder) => sum + dishOrder.totalPrice, 0)
+      );
+      const $showAmount = combine(
+        $additiveEntity,
+        $choice,
+        (additiveEntity, choice) =>
+          getAmountPerItemType(additiveEntity, choice) === 'many',
+      );
+      const $totalPrice = combine(
+        $additiveEntity,
+        $choice,
+        $amount,
+        (additiveEntity, choice, amount) =>
+          calculateAdditiveOrderPriceFromEntity(additiveEntity, choice, amount),
       );
       return {
+        key: 'additive',
         state: {
-          dishes: dishList,
+          additive: $additive,
+          choice: $choice,
+          amount: $amount,
+          showAmount: $showAmount,
           totalPrice: $totalPrice,
         },
-        api: {
-          addDishToOrder: dishList.edit.add,
-        },
       };
+    });
+    const $totalPrice = combine(
+      dishLens.price.store,
+      additivesList.$items,
+      (price, additives) =>
+        additives.reduce(
+          (sum, additive) => sum + additive.totalPrice,
+          price ?? 0,
+        ),
+    );
+
+    return {
+      key: 'dish',
+      state: {
+        dish: $dish,
+        additives: additivesList,
+        totalPrice: $totalPrice,
+      },
+    };
+  });
+  const $totalPrice = combine(dishList.$items, (dishOrders) =>
+    dishOrders.reduce((sum, dishOrder) => sum + dishOrder.totalPrice, 0),
+  );
+  return {
+    key: 'restaurant',
+    state: {
+      restaurant: $restaurant,
+      dishes: dishList,
+      totalPrice: $totalPrice,
     },
-  }),
+    api: {
+      addDishToOrder: dishList.edit.add,
+    },
+    optional: ['dishes'],
+  };
 });
+
+export const $isInOrder = lens(ordersList)
+  .item($restaurantName)
+  .dishes.has($dishName);
 
 export const submitOrder = createEvent();
 
-const orderInProgressFx = createEffect(async () => {
+const orderInProgressFx = createEffect(async (rest: string) => {
   await new Promise((rs) => setTimeout(rs, 2000));
+  return rest;
 });
 
 export const $submitInProgress = orderInProgressFx.pending;
 
-sample({ clock: submitOrder, target: orderInProgressFx });
+sample({
+  clock: submitOrder,
+  source: $restaurantName,
+  target: orderInProgressFx,
+});
 
 sample({
   clock: orderInProgressFx.doneData,
-  target: [removeOrder, openRestList],
+  target: [ordersList.edit.remove, openRestList],
 });
-
-sample({ clock: addToOrder, target: openDishList });
 
 sample({
   clock: openRestaurant,
   fn: (restaurant) => ({ restaurant }),
   target: ordersList.edit.add,
-});
-
-// TODO why this not show an error?
-// sample({
-//   clock: removeOrder,
-//   source: $restaurant,
-//   target: ordersList.remove,
-// })
-
-sample({
-  clock: removeOrder,
-  source: $restaurant,
-  fn: (restaurant) => restaurant.name,
-  target: ordersList.edit.remove,
 });

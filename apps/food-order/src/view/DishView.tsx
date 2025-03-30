@@ -1,21 +1,25 @@
 import { useList, useStoreMap, useUnit } from 'effector-react';
-import { AdditiveSelect } from './types';
-import { Radio, Title, AddToOrder } from './common';
+import { useReadItem } from '@effector/model-react';
+
+import { AdditiveSelect } from '../types';
+import { Radio, Title, AddToOrder } from './components';
 import {
-  $currentDishOrder,
-  $dish,
-  $dishAdditives,
+  openDishList,
+  addToOrder,
+  isAdditiveSimple,
   addAdditive,
   removeAdditive,
-  addToOrder,
-  openDishList,
-  isAdditiveSimple,
-  $currentDishTotalPrice,
+  $dishAdditives,
+  $dishName,
+  $dish,
   $isInOrder,
-} from './model';
+  $currentDishTotalPrice,
+  additivesList,
+} from '../model';
 
 const DishHead = () => {
-  const [{ name, description, price }, goBack] = useUnit([
+  const [name, { description, price }, goBack] = useUnit([
+    $dishName,
     $dish,
     openDishList,
   ]);
@@ -54,15 +58,11 @@ const AdditiveSimpleItem = ({
   amountPerItem: 'single' | 'many';
   price: number;
 }) => {
-  const orderedAmount = useStoreMap({
-    store: $currentDishOrder,
-    keys: [additive],
-    fn: ({ additives }) =>
-      additives.find((e) => e.additive === additive && e.choice === choice)
-        ?.amount ?? 0,
-  });
+  const item = useReadItem(additivesList, additive);
+  const orderedAmount = useReadItem(additivesList, additive).amount;
   const [add, remove] = useUnit([addAdditive, removeAdditive]);
   const selected = orderedAmount !== 0;
+  console.log('AdditiveSimpleItem', item, selected);
   return (
     <div className="flex justify-between items-center mb-2">
       <AdditiveWithPrice text={choice} price={price} />
@@ -147,7 +147,13 @@ const DishAdditives = () => (
   </div>
 );
 
-export const DishView = () => {
+export const DishView = ({
+  restaurant,
+  dish,
+}: {
+  restaurant: string;
+  dish: string;
+}) => {
   const [currentPrice, isInOrder, submit] = useUnit([
     $currentDishTotalPrice,
     $isInOrder,

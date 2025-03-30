@@ -1,4 +1,4 @@
-import { createStore, createEvent, sample } from 'effector';
+import { createStore, createEvent, sample, combine } from 'effector';
 
 import type { Route, RestaurantRoute } from '../types';
 
@@ -9,6 +9,26 @@ export const openRestList = createEvent();
 export const openDish = createEvent<string>();
 export const openOrder = createEvent<void>();
 export const openDishList = createEvent();
+
+export const $restaurantName = combine($route, (route) => {
+  switch (route.name) {
+    case 'menu':
+    case 'dish':
+    case 'order':
+      return route.restaurant;
+    default:
+      return '';
+  }
+});
+
+export const $dishName = combine($route, (route) => {
+  switch (route.name) {
+    case 'dish':
+      return route.dish;
+    default:
+      return '';
+  }
+});
 
 const isRestaurantRoute = (route: Route): route is RestaurantRoute =>
   !!(route as any).restaurant;

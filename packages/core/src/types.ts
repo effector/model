@@ -104,6 +104,11 @@ export type EntityItemDef<T> = {
   readonly __: T;
 };
 
+export type OneOfShapeDef =
+  | StoreDef<any>
+  | EntityShapeDef<any>
+  | EntityItemDef<any>;
+
 export type InstanceOf<T extends Model<unknown, unknown, unknown, unknown>> =
   T extends Model<any, infer Output, infer Api, any>
     ? Instance<Output, Api>
@@ -164,8 +169,12 @@ export type ConvertToLensShape<Shape> = {
             ? LensStore<V>
             : Shape[K] extends Event<infer V>
               ? LensEvent<V>
-              : Shape[K] extends Keyval<any, any, any, infer ChildShape>
-                ? (key: KeyStore) => LensShape<ChildShape>
+              : Shape[K] extends Keyval<any, infer V, any, infer ChildShape>
+                ? {
+                    (key: KeyStore): LensShape<ChildShape>;
+                    itemStore(key: KeyStore): Store<V>;
+                    has(key: KeyStore): Store<boolean>;
+                  }
                 : never;
 };
 
@@ -201,6 +210,7 @@ export type Keyval<Input, Enriched, Api, Shape> = {
     map: EventCallable<{
       keys: KeyOrKeys;
       map: (entity: Enriched) => Partial<Input>;
+      upsert?: boolean;
     }>;
   };
   // private

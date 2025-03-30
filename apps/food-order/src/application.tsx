@@ -1,19 +1,19 @@
 import { useUnit } from 'effector-react';
 import { $route } from './model';
-import { MenuView } from './MenuView';
-import { DishView } from './DishView';
-import { OrderView } from './OrderView';
-import { RestaurantsView } from './RestaurantsView';
+import { MenuView } from './view/MenuView';
+import { DishView } from './view/DishView';
+import { OrderView } from './view/OrderView';
+import { RestaurantsView } from './view/RestaurantsView';
 
 export function App() {
   const route = useUnit($route);
   switch (route.name) {
     case 'menu':
-      return <MenuView />;
+      return <MenuView restaurant={route.restaurant} />;
     case 'dish':
-      return <DishView />;
+      return <DishView restaurant={route.restaurant} dish={route.dish} />;
     case 'order':
-      return <OrderView />;
+      return <OrderView restaurant={route.restaurant} />;
     case 'restaurants':
       return <RestaurantsView />;
     default:

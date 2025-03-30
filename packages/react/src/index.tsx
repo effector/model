@@ -212,3 +212,40 @@ export function useEntityList<T>(
     </EntityProvider>
   ));
 }
+
+export function useEntityByKey<T>(
+  keyval: Keyval<any, T, any, any>,
+  key: string | number,
+  View: (params: { value: T }) => ReactNode,
+) {
+  const idx = useStoreMap({
+    store: keyval.$keys,
+    keys: [key],
+    fn: (keys, [value]) => keys.indexOf(value),
+  });
+  const result = useStoreMap({
+    store: keyval.$items,
+    keys: [idx, key],
+    fn: (values, [idx]) => (idx === -1 ? null : values[idx]),
+  });
+  if (idx === -1) return null;
+  return <View value={result as T} />;
+}
+
+export function useReadItem<T>(
+  keyval: Keyval<any, T, any, any>,
+  key: string | number,
+): T {
+  const idx = useStoreMap({
+    store: keyval.$keys,
+    keys: [key],
+    fn: (keys, [value]) => keys.indexOf(value),
+  });
+  const result = useStoreMap({
+    store: keyval.$items,
+    keys: [idx, key],
+    fn: (values, [idx]) => (idx === -1 ? null : values[idx]),
+  });
+  if (idx === -1) return keyval.defaultState;
+  return result as T;
+}
