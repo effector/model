@@ -3,5 +3,5 @@
 }
 
 .categories:not(:last-child):after {
-  content: ", ";
+  content: ', ';
 }
