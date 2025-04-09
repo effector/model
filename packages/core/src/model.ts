@@ -126,6 +126,7 @@ export function model<
       : {
           type: 'structUnit',
           unit: 'store',
+          derived: !is.targetable(state[key] as any),
         };
     defaultState[key] = is.store(state[key]) ? state[key].getState() : [];
   }
