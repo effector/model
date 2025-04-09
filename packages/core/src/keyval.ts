@@ -318,6 +318,19 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
       ...inputUpdate,
     };
     freshState.items[idx] = newItem;
+    const instance = freshState.instances[idx];
+    const storesToUpdate = [] as any[];
+    const updates = [] as any[];
+    for (const key in inputUpdate) {
+      const store = instance.props[key as any as keyof ModelEnhance];
+      storesToUpdate.push(store);
+      updates.push(inputUpdate[key]);
+    }
+    launch({
+      target: storesToUpdate,
+      params: updates,
+      defer: true,
+    });
   }
 
   const addFx = attach({
