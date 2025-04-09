@@ -5,7 +5,13 @@ import {
   useEffect,
   ReactNode,
 } from 'react';
-import { type Store, type Event, type Effect, clearNode } from 'effector';
+import {
+  type Store,
+  type Event,
+  type Effect,
+  type EventCallable,
+  clearNode,
+} from 'effector';
 import { useList, useStoreMap, useUnit } from 'effector-react';
 
 import type {
@@ -248,4 +254,50 @@ export function useReadItem<T>(
   });
   if (idx === -1) return keyval.defaultState;
   return result as T;
+}
+
+export function useItemApi<T, Api>(
+  keyval: Keyval<any, T, Api, any>,
+  key: string | number,
+): {
+  [K in keyof Api]: Api[K] extends EventCallable<infer V>
+    ? (params: V) => void
+    : never;
+} {
+  const commonApi = useUnit(keyval.api);
+  return useMemo(() => {
+    const result = {} as any;
+    for (const field in commonApi) {
+      const fn = (data: any) =>
+        //@ts-expect-error
+        commonApi[field]({
+          key,
+          data,
+        });
+      result[field] = fn;
+    }
+    return result;
+  }, [keyval, key, commonApi]);
+}
+
+export function useEditItemField<Input>(
+  keyval: Keyval<Input, any, any, any>,
+  key: string | number,
+): {
+  [K in keyof Input]: (params: Input[K]) => void;
+} {
+  const commonApi = useUnit(keyval.editField);
+  return useMemo(() => {
+    const result = {} as any;
+    for (const field in commonApi) {
+      const fn = (data: any) =>
+        //@ts-expect-error
+        commonApi[field]({
+          key,
+          data,
+        });
+      result[field] = fn;
+    }
+    return result;
+  }, [keyval, key, commonApi]);
 }
