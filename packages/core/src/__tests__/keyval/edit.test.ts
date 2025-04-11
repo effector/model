@@ -1,5 +1,5 @@
 import { expect, test, describe } from 'vitest';
-import { createStore, combine } from 'effector';
+import { createStore, combine, createEvent, sample } from 'effector';
 import { keyval } from '@effector/model';
 
 function createEntities(fill?: Array<{ id: string }>) {
@@ -158,6 +158,43 @@ describe('edit.update', () => {
       { id: 'foo', count: 0, tag: 'x' },
     ]);
   });
+  test('sync stores after update', () => {
+    const entities = keyval(() => {
+      const $id = createStore('');
+      const $fieldA = createStore('');
+      const $count = createStore(0);
+      const inc = createEvent();
+      sample({
+        clock: inc,
+        source: $count,
+        fn: (n) => n + 1,
+        target: $count,
+      });
+      return {
+        key: 'id',
+        state: {
+          id: $id,
+          fieldA: $fieldA,
+          count: $count,
+        },
+        api: {
+          inc,
+        },
+        optional: ['count', 'fieldA'],
+      };
+    });
+    entities.edit.replaceAll([{ id: 'a' }, { id: 'b' }]);
+    entities.edit.update({ id: 'b', fieldA: 'x' });
+    expect(entities.$items.getState()).toEqual([
+      { id: 'a', fieldA: '', count: 0 },
+      { id: 'b', fieldA: 'x', count: 0 },
+    ]);
+    entities.api.inc({ key: 'b', data: undefined });
+    expect(entities.$items.getState()).toEqual([
+      { id: 'a', fieldA: '', count: 0 },
+      { id: 'b', fieldA: 'x', count: 1 },
+    ]);
+  });
 });
 
 describe('edit.replaceAll', () => {
@@ -244,6 +281,46 @@ describe('edit.map', () => {
     expect(entities.$items.getState()).toEqual([
       { id: 'foo', count: 0, tag: 'x' },
       { id: 'bar', count: 0, tag: 'y' },
+    ]);
+  });
+  test('sync stores after update', () => {
+    const entities = keyval(() => {
+      const $id = createStore('');
+      const $fieldA = createStore('');
+      const $count = createStore(0);
+      const inc = createEvent();
+      sample({
+        clock: inc,
+        source: $count,
+        fn: (n) => n + 1,
+        target: $count,
+      });
+      return {
+        key: 'id',
+        state: {
+          id: $id,
+          fieldA: $fieldA,
+          count: $count,
+        },
+        api: {
+          inc,
+        },
+        optional: ['count', 'fieldA'],
+      };
+    });
+    entities.edit.replaceAll([{ id: 'a' }, { id: 'b' }]);
+    entities.edit.map({
+      keys: 'b',
+      map: () => ({ fieldA: 'x' }),
+    });
+    expect(entities.$items.getState()).toEqual([
+      { id: 'a', fieldA: '', count: 0 },
+      { id: 'b', fieldA: 'x', count: 0 },
+    ]);
+    entities.api.inc({ key: 'b', data: undefined });
+    expect(entities.$items.getState()).toEqual([
+      { id: 'a', fieldA: '', count: 0 },
+      { id: 'b', fieldA: 'x', count: 1 },
     ]);
   });
 });

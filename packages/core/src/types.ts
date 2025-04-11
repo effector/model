@@ -136,10 +136,16 @@ export type LensEvent<T> = {
 };
 
 /** internal representation of model structure, unit leaf */
-export type StructUnit = {
-  type: 'structUnit';
-  unit: 'store' | 'event' | 'effect';
-};
+export type StructUnit =
+  | {
+      type: 'structUnit';
+      unit: 'event' | 'effect';
+    }
+  | {
+      type: 'structUnit';
+      unit: 'store';
+      derived: boolean;
+    };
 
 /** internal representation of model structure, model shape */
 export type StructShape = {
@@ -212,6 +218,15 @@ export type Keyval<Input, Enriched, Api, Shape> = {
       map: (entity: Enriched) => Partial<Input>;
       upsert?: boolean;
     }>;
+  };
+  editField: {
+    [K in keyof Input]-?: EventCallable<
+      | { key: string | number; data: Exclude<Input[K], undefined> }
+      | {
+          key: Array<string | number>;
+          data: Exclude<Input[K], undefined>[];
+        }
+    >;
   };
   // private
   __lens: Shape;

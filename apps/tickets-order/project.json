@@ -1,0 +1,43 @@
+{
+  "name": "tickets-order",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/tickets-order/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/vite:build",
+      "options": {
+        "outputPath": "dist/apps/tickets-order"
+      }
+    },
+    "serve": {
+      "executor": "@nrwl/vite:dev-server",
+      "options": {
+        "buildTarget": "tickets-order:build"
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/tickets-order/**/*.{ts,js}"]
+      }
+    },
+    "preview": {
+      "executor": "@nrwl/vite:preview-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "tickets-order:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "tickets-order:build:development"
+        },
+        "production": {
+          "buildTarget": "tickets-order:build:production"
+        }
+      }
+    }
+  },
+  "tags": []
+}
