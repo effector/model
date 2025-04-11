@@ -5,7 +5,6 @@ import {
   combine,
   sample,
   EventCallable,
-  StoreWritable,
 } from 'effector';
 
 import type {
@@ -16,65 +15,7 @@ import type {
   ServicemanId,
 } from '../types';
 import { createPassenger, getDefaultDocument } from './calculateUtils';
-
-function subtypeOperation<
-  T,
-  TypeKey extends keyof T,
-  const Cases extends ReadonlyArray<T[TypeKey]>,
-  Upd,
->({
-  store,
-  typeKey,
-  on,
-  fn,
-}: {
-  store: StoreWritable<T>;
-  typeKey: TypeKey;
-  on: Cases;
-  fn: (
-    upd: Upd,
-    value: Extract<T, Record<TypeKey, Cases[keyof Cases]>>,
-  ) => Partial<T>;
-}) {
-  const trigger = createEvent<Upd>();
-  sample({
-    clock: trigger,
-    source: store,
-    fn(value, upd) {
-      const caseName = value[typeKey];
-      if (on.includes(caseName)) {
-        const partialResult = fn(upd, value as any);
-        return {
-          ...value,
-          ...partialResult,
-        };
-      }
-      return value;
-    },
-    target: store,
-  });
-  return trigger;
-}
-
-function createSubtypeOp<T, TypeKey extends keyof T>(
-  store: StoreWritable<T>,
-  typeKey: TypeKey,
-) {
-  return function op<const Cases extends ReadonlyArray<T[TypeKey]>, Upd>(
-    on: Cases,
-    fn: (
-      upd: Upd,
-      value: Extract<T, Record<TypeKey, Cases[keyof Cases]>>,
-    ) => Partial<T>,
-  ) {
-    return subtypeOperation({
-      store,
-      typeKey,
-      on,
-      fn,
-    });
-  };
-}
+import { createSubtypeOperation } from './createSubtypeOperation';
 
 export const passengersList = keyval(() => {
   const $index = createStore(-1);
@@ -107,28 +48,28 @@ export const passengersList = keyval(() => {
     target: $document,
   });
 
-  const documentOp = createSubtypeOp($document, 'type');
+  const createDocumentEditor = createSubtypeOperation($document, 'type');
 
-  const editCitizenship = documentOp(
+  const editCitizenship = createDocumentEditor(
     ['foreign-id'],
     (value: ForeignId['citizenship']) => ({ citizenship: value }),
   );
 
-  const editCategory = documentOp(
+  const editCategory = createDocumentEditor(
     ['military-ticket', 'serviceman-ticket'],
     (value: MilitaryTicket['category'] | ServicemanId['category']) => ({
       category: value,
     }),
   );
 
-  const editStartDate = documentOp(
+  const editStartDate = createDocumentEditor(
     ['military-ticket', 'serviceman-ticket'],
     (value: Date | null) => ({
       startDate: value,
     }),
   );
 
-  const editIsNotServed = documentOp(
+  const editIsNotServed = createDocumentEditor(
     ['military-ticket', 'serviceman-ticket'],
     (value: boolean, { startDate }) => ({
       startDate: value ? null : startDate,
@@ -177,12 +118,3 @@ export const setPassengersAmount = passengersList.edit.add.prepend(
 
 export const removePassenger = passengersList.edit
   .remove as EventCallable<number>;
-export const editPassenger = passengersList.edit.update;
-
-export const {
-  changeDocumentType,
-  changeDocumentNumber,
-  editCitizenship,
-  editCategory,
-  editStartDate,
-} = passengersList.api;
