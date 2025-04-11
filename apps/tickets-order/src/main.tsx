@@ -6,7 +6,7 @@ import '@mantine/code-highlight/styles.css';
 
 import { MantineProvider } from '@mantine/core';
 
-import App from './App.tsx';
+import { App } from './view/App';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
