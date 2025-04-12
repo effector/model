@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- ce455af: - Add support for overload without explicit `key` to all hooks
+- ce455af: Add support for overload without explicit `key` to all hooks
 
 ## 0.0.4
 

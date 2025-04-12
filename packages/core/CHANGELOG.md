@@ -4,7 +4,8 @@
 
 ### Patch Changes
 
-- ce455af: - Add `keyval.editField` api for easier store updates
+- ce455af:
+  - Add `keyval.editField` api for easier store updates
   - Fix sync bug in keyval
 
 ## 0.0.4
