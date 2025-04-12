@@ -1,5 +1,13 @@
 # @effector/model-react
 
+## 0.0.5
+
+### Patch Changes
+
+- ce455af: - Add `keyval.editField` api for easier store updates
+  - Fix sync bug in keyval
+  - Add support for overload without explicit `key` to all hooks
+
 ## 0.0.4
 
 ### Patch Changes
