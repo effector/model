@@ -1,6 +1,6 @@
 {
   "name": "@effector/model-react",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "type": "commonjs",
   "peerDependencies": {
     "effector": "^23.2.2"

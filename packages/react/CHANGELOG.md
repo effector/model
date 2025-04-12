@@ -1,5 +1,11 @@
 # @effector/model-react
 
+## 0.0.5
+
+### Patch Changes
+
+- ce455af: Add support for overload without explicit `key` to all hooks
+
 ## 0.0.4
 
 ### Patch Changes
