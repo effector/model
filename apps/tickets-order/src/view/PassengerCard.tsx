@@ -1,9 +1,8 @@
 import { useUnit } from 'effector-react';
 import {
   useItemApi,
-  useReadItem,
-  useEditItemField,
   useEntityItem,
+  useEditItemField,
 } from '@effector/model-react';
 import {
   Card,
@@ -26,10 +25,10 @@ import { DocumentBlock } from './DocumentBlock';
 
 export const PassengerCard = () => {
   const passenger = useEntityItem(passengersList);
+  const { changeDocumentType } = useItemApi(passengersList);
+  const editField = useEditItemField(passengersList);
   const { index } = passenger;
-  const { changeDocumentType } = useItemApi(passengersList, index);
-  const editField = useEditItemField(passengersList, index);
-  const { errors } = useReadItem(errorsList, index);
+  const { errors } = useEntityItem(errorsList, index);
   const doRemovePassenger = useUnit(removePassenger);
   return (
     <Card shadow="sm" padding="md" radius="md" withBorder>
@@ -110,11 +109,7 @@ export const PassengerCard = () => {
         />
 
         <Flex gap="xs" direction="row">
-          <DocumentBlock
-            errors={errors.document}
-            passenger={passenger}
-            index={index}
-          />
+          <DocumentBlock errors={errors.document} />
         </Flex>
       </Flex>
     </Card>

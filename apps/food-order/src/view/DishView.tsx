@@ -1,5 +1,5 @@
 import { useList, useStoreMap, useUnit } from 'effector-react';
-import { useReadItem } from '@effector/model-react';
+import { useEntityItem } from '@effector/model-react';
 
 import { AdditiveSelect } from '../types';
 import { Radio, Title, AddToOrder } from './components';
@@ -58,8 +58,8 @@ const AdditiveSimpleItem = ({
   amountPerItem: 'single' | 'many';
   price: number;
 }) => {
-  const item = useReadItem(additivesList, additive);
-  const orderedAmount = useReadItem(additivesList, additive).amount;
+  const item = useEntityItem(additivesList, additive);
+  const orderedAmount = useEntityItem(additivesList, additive).amount;
   const [add, remove] = useUnit([addAdditive, removeAdditive]);
   const selected = orderedAmount !== 0;
   console.log('AdditiveSimpleItem', item, selected);
