@@ -23,6 +23,7 @@ import type {
   StructShape,
   OneOfShapeDef,
   EntityShapeDef,
+  KeyOrKeys,
 } from './types';
 import { spawn } from './spawn';
 import { model } from './model';
@@ -318,6 +319,19 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
       ...inputUpdate,
     };
     freshState.items[idx] = newItem;
+    const instance = freshState.instances[idx];
+    const storesToUpdate = [] as any[];
+    const updates = [] as any[];
+    for (const key in inputUpdate) {
+      const store = instance.props[key as any as keyof ModelEnhance];
+      storesToUpdate.push(store);
+      updates.push(inputUpdate[key]);
+    }
+    launch({
+      target: storesToUpdate,
+      params: updates,
+      defer: true,
+    });
   }
 
   const addFx = attach({
@@ -518,7 +532,7 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
   const api = {} as Record<string, EventCallable<any>>;
 
   let structShape: any = null;
-
+  const editField = {} as any;
   if (kvModel) {
     // @ts-expect-error type issues
     const instance = spawn(kvModel, {});
@@ -562,6 +576,42 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
         return state;
       });
     }
+    //TODO add support for generated keys
+    if (keyField) {
+      const structShape = kvModel.__struct!.shape;
+      for (const field in structShape) {
+        const fieldStruct = structShape[field];
+        if (fieldStruct.type === 'structUnit') {
+          // derived stores are not supported
+          if (fieldStruct.unit === 'store' && fieldStruct.derived) {
+            continue;
+          }
+          const fieldEditor = updateSome.prepend(
+            (upd: { key: KeyOrKeys; data: any }) => {
+              const keySet = Array.isArray(upd.key) ? upd.key : [upd.key];
+              const dataSet: Array<any> = Array.isArray(upd.key)
+                ? upd.data
+                : [upd.data];
+              const results = [] as Partial<Input>[];
+              for (let i = 0; i < keySet.length; i++) {
+                const keyValue = keySet[i];
+                const dataValue = dataSet[i];
+                const item = {} as Partial<Input>;
+                //@ts-expect-error
+                item[keyField] = keyValue;
+                //@ts-expect-error
+                item[field] = dataValue;
+                results.push(item);
+              }
+              return results;
+            },
+          );
+          editField[field] = fieldEditor;
+        } else {
+          // TODO keyval support
+        }
+      }
+    }
   } else if (shape!) {
     const itemStructShape: StructKeyval['shape'] = {};
     structShape = {
@@ -599,6 +649,7 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
       remove: removeMany,
       map,
     },
+    editField,
   };
 }
 

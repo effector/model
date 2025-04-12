@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useReadItem } from '@effector/model-react';
+import { useEntityItem } from '@effector/model-react';
 
 import {
   restaurantsList,
@@ -25,8 +25,8 @@ const MenuItem = ({ name, price }: { name: string; price: number }) => {
 
 export const MenuView = ({ restaurant }: { restaurant: string }) => {
   const [goToOrder, goBack] = useUnit([openOrder, openRestList]);
-  const { totalPrice } = useReadItem(ordersList, restaurant);
-  const { dishes } = useReadItem(restaurantsList, restaurant);
+  const { totalPrice } = useEntityItem(ordersList, restaurant);
+  const { dishes } = useEntityItem(restaurantsList, restaurant);
   return (
     <>
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden">

@@ -5,7 +5,13 @@ import {
   useEffect,
   ReactNode,
 } from 'react';
-import { type Store, type Event, type Effect, clearNode } from 'effector';
+import {
+  type Store,
+  type Event,
+  type Effect,
+  type EventCallable,
+  clearNode,
+} from 'effector';
 import { useList, useStoreMap, useUnit } from 'effector-react';
 
 import type {
@@ -177,29 +183,56 @@ export function useModel<Input, T, Api, Shape>(
   return [state as any, api as any];
 }
 
-export function useEntityItem<T>(keyval: Keyval<any, T, any, any>) {
-  const stack = useContext(ModelStackContext);
-  let currentStack = stack;
-  let value: string | number | undefined;
-  while (value === undefined && currentStack) {
-    if (currentStack.model === keyval) {
-      value = currentStack.value as string | number;
+function useGetKeyvalKey<Input, T, Api>(
+  args:
+    | [keyval: Keyval<Input, T, Api, any>]
+    | [keyval: Keyval<Input, T, Api, any>, key: string | number],
+): [keyval: Keyval<Input, T, Api, any>, key: string | number] {
+  if (args.length === 1) {
+    const [keyval] = args;
+    const stack = useContext(ModelStackContext);
+    let currentStack = stack;
+    let key: string | number | undefined;
+    while (key === undefined && currentStack) {
+      if (currentStack.model === keyval) {
+        key = currentStack.value as string | number;
+      }
+      currentStack = currentStack.parent;
     }
-    currentStack = currentStack.parent;
+    if (key === undefined)
+      throw Error('model not found, add EntityProvider first');
+    return [keyval, key];
+  } else {
+    return args;
   }
-  if (value === undefined)
-    throw Error('model not found, add EntityProvider first');
+}
+
+export function useEntityItem<T>(keyval: Keyval<any, T, any, any>): T;
+export function useEntityItem<T>(
+  keyval: Keyval<any, T, any, any>,
+  key: string | number,
+): T;
+export function useEntityItem<T>(
+  ...args:
+    | [keyval: Keyval<any, T, any, any>]
+    | [keyval: Keyval<any, T, any, any>, key: string | number]
+) {
+  const [keyval, key] = useGetKeyvalKey(args);
   const idx = useStoreMap({
     store: keyval.$keys,
-    keys: [value],
+    keys: [key],
     fn: (keys, [value]) => keys.indexOf(value),
   });
-  if (idx === -1) throw Error(`instance with key "${value}" not found`);
-  return useStoreMap({
+  const result = useStoreMap({
     store: keyval.$items,
-    keys: [idx, value],
-    fn: (values, [idx]) => values[idx],
+    keys: [idx, key],
+    fn: (values, [idx]) => (idx === -1 ? null : values[idx]),
   });
+  if (idx === -1) {
+    // NOTE probably need to throw error here
+    return keyval.defaultState;
+  }
+  return result as T;
 }
 
 export function useEntityList<T>(
@@ -232,20 +265,52 @@ export function useEntityByKey<T>(
   return <View value={result as T} />;
 }
 
-export function useReadItem<T>(
-  keyval: Keyval<any, T, any, any>,
-  key: string | number,
-): T {
-  const idx = useStoreMap({
-    store: keyval.$keys,
-    keys: [key],
-    fn: (keys, [value]) => keys.indexOf(value),
-  });
-  const result = useStoreMap({
-    store: keyval.$items,
-    keys: [idx, key],
-    fn: (values, [idx]) => (idx === -1 ? null : values[idx]),
-  });
-  if (idx === -1) return keyval.defaultState;
-  return result as T;
+export function useItemApi<T, Api>(
+  ...args:
+    | [keyval: Keyval<any, T, Api, any>]
+    | [keyval: Keyval<any, T, Api, any>, key: string | number]
+): {
+  [K in keyof Api]: Api[K] extends EventCallable<infer V>
+    ? (params: V) => void
+    : never;
+} {
+  const [keyval, key] = useGetKeyvalKey(args);
+  const commonApi = useUnit(keyval.api);
+  return useMemo(() => {
+    const result = {} as any;
+    for (const field in commonApi) {
+      const fn = (data: any) =>
+        //@ts-expect-error
+        commonApi[field]({
+          key,
+          data,
+        });
+      result[field] = fn;
+    }
+    return result;
+  }, [keyval, key, commonApi]);
+}
+
+export function useEditItemField<Input>(
+  ...args:
+    | [keyval: Keyval<Input, any, any, any>]
+    | [keyval: Keyval<Input, any, any, any>, key: string | number]
+): {
+  [K in keyof Input]: (params: Input[K]) => void;
+} {
+  const [keyval, key] = useGetKeyvalKey(args);
+  const commonApi = useUnit(keyval.editField);
+  return useMemo(() => {
+    const result = {} as any;
+    for (const field in commonApi) {
+      const fn = (data: any) =>
+        //@ts-expect-error
+        commonApi[field]({
+          key,
+          data,
+        });
+      result[field] = fn;
+    }
+    return result;
+  }, [keyval, key, commonApi]);
 }
