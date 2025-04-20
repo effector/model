@@ -13,7 +13,9 @@ const restaurantLens = lens(restaurantsList, $restaurantName);
 
 export const $dish = restaurantLens.dishes.itemStore($dishName);
 
-export const $dishAdditives = restaurantLens.dishes($dishName).additives.store;
+export const $dishAdditives = restaurantLens
+  .dishes($dishName)
+  .additives.store([]);
 
 export const additivesList = keyval(() => {
   const $additive = createStore('');
@@ -23,7 +25,7 @@ export const additivesList = keyval(() => {
     $dishAdditives,
     $additive,
     (additives, additiveName) =>
-      additives?.find((e) => e.name === additiveName) ?? {
+      additives.find((e) => e.name === additiveName) ?? {
         name: '',
         required: false,
         options: [],

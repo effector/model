@@ -54,6 +54,84 @@ function createNestedEntities(
   return entities;
 }
 
+describe('defaultValue behavior', () => {
+  test('null when no match and no default value', () => {
+    const setCurrentKey = createEvent<string>();
+    const entities = createUpdatableEntities([
+      { id: 'foo', count: 0, tag: 'x' },
+      { id: 'bar', count: 0, tag: 'y' },
+      { id: 'baz', count: 0, tag: 'z' },
+    ]);
+
+    const $currentKey = createStore('none');
+
+    sample({
+      clock: setCurrentKey,
+      target: $currentKey,
+    });
+
+    const $currentTag = lens(entities, $currentKey).tag.store();
+    expect($currentTag.getState()).toBe(null);
+    setCurrentKey('bar');
+    expect($currentTag.getState()).toBe('y');
+  });
+  test('with defaultValue', () => {
+    const setCurrentKey = createEvent<string>();
+    const entities = createUpdatableEntities([
+      { id: 'foo', count: 0, tag: 'x' },
+      { id: 'bar', count: 0, tag: 'y' },
+      { id: 'baz', count: 0, tag: 'z' },
+    ]);
+
+    const $currentKey = createStore('none');
+
+    sample({
+      clock: setCurrentKey,
+      target: $currentKey,
+    });
+
+    const $currentTag = lens(entities, $currentKey).tag.store('missed value');
+    expect($currentTag.getState()).toBe('missed value');
+    setCurrentKey('bar');
+    expect($currentTag.getState()).toBe('y');
+  });
+  test('itemStore default is model default values', () => {
+    const setCurrentKeyB = createEvent<string>();
+    const entities = createNestedEntities([
+      {
+        id: 'foo',
+        childs: [{ id: 'foo1', count: 0 }],
+      },
+      {
+        id: 'bar',
+        childs: [
+          { id: 'bar1', count: 1 },
+          { id: 'bar2', count: 2 },
+        ],
+      },
+    ]);
+
+    const $currentKeyA = createStore('bar');
+    const $currentKeyB = createStore('none');
+
+    sample({
+      clock: setCurrentKeyB,
+      target: $currentKeyB,
+    });
+
+    const $child = lens(entities, $currentKeyA).childs.itemStore($currentKeyB);
+    expect($child.getState()).toEqual({
+      id: '',
+      count: 0,
+    });
+    setCurrentKeyB('bar2');
+    expect($child.getState()).toEqual({
+      id: 'bar2',
+      count: 2,
+    });
+  });
+});
+
 describe('lens read value of field in keyval', () => {
   test('with store', () => {
     const entities = createUpdatableEntities([
@@ -64,7 +142,7 @@ describe('lens read value of field in keyval', () => {
 
     const $currentKey = createStore('bar');
 
-    const $currentTag = lens(entities, $currentKey).tag.store;
+    const $currentTag = lens(entities, $currentKey).tag.store();
     expect($currentTag.getState()).toBe('y');
   });
   test('with constant', () => {
@@ -73,7 +151,7 @@ describe('lens read value of field in keyval', () => {
       { id: 'bar', count: 0, tag: 'y' },
     ]);
 
-    const $currentTag = lens(entities, 'bar').tag.store;
+    const $currentTag = lens(entities, 'bar').tag.store();
     expect($currentTag.getState()).toBe('y');
   });
 });
@@ -84,7 +162,7 @@ test('lens store change value when entity changed', () => {
     { id: 'bar', count: 0, tag: 'y' },
   ]);
 
-  const $currentTag = lens(entities, 'bar').tag.store;
+  const $currentTag = lens(entities, 'bar').tag.store();
   expect($currentTag.getState()).toBe('y');
 
   entities.edit.update({ id: 'bar', tag: 'z' });
@@ -101,7 +179,7 @@ test('lens store change value when key changed', () => {
   const $currentKey = createStore('bar');
   sample({ clock: changeKey, target: $currentKey });
 
-  const $currentTag = lens(entities, $currentKey).tag.store;
+  const $currentTag = lens(entities, $currentKey).tag.store();
   expect($currentTag.getState()).toBe('y');
 
   changeKey('foo');
@@ -128,8 +206,9 @@ describe('nested store lens', () => {
       const $currentKeyA = createStore('bar');
       const $currentKeyB = createStore('bar2');
 
-      const $currentCount = lens(entities, $currentKeyA).childs($currentKeyB)
-        .count.store;
+      const $currentCount = lens(entities, $currentKeyA)
+        .childs($currentKeyB)
+        .count.store();
       expect($currentCount.getState()).toBe(2);
     });
     test('with constant', () => {
@@ -149,8 +228,9 @@ describe('nested store lens', () => {
 
       const $currentKey = createStore('bar2');
 
-      const $currentCount = lens(entities, 'bar').childs($currentKey).count
-        .store;
+      const $currentCount = lens(entities, 'bar')
+        .childs($currentKey)
+        .count.store();
       expect($currentCount.getState()).toBe(2);
     });
   });
@@ -172,8 +252,9 @@ describe('nested store lens', () => {
     const $currentKeyA = createStore('bar');
     const $currentKeyB = createStore('bar1');
 
-    const $currentCount = lens(entities, $currentKeyA).childs($currentKeyB)
-      .count.store;
+    const $currentCount = lens(entities, $currentKeyA)
+      .childs($currentKeyB)
+      .count.store();
     expect($currentCount.getState()).toBe(1);
 
     entities.api.updateCount({
@@ -208,11 +289,66 @@ describe('nested store lens', () => {
 
     $currentKeyB.on(updateKeyB, (_, upd) => upd);
 
-    const $currentCount = lens(entities, $currentKeyA).childs($currentKeyB)
-      .count.store;
+    const $currentCount = lens(entities, $currentKeyA)
+      .childs($currentKeyB)
+      .count.store();
     expect($currentCount.getState()).toBe(1);
 
     updateKeyB('bar2');
     expect($currentCount.getState()).toBe(2);
+  });
+
+  test('itemStore return store with all model fields in one object', () => {
+    const entities = createNestedEntities([
+      {
+        id: 'foo',
+        childs: [{ id: 'foo1', count: 0 }],
+      },
+      {
+        id: 'bar',
+        childs: [
+          { id: 'bar1', count: 1 },
+          { id: 'bar2', count: 2 },
+        ],
+      },
+    ]);
+
+    const $currentKeyA = createStore('bar');
+    const $currentKeyB = createStore('bar2');
+
+    const $child = lens(entities, $currentKeyA).childs.itemStore($currentKeyB);
+    expect($child.getState()).toEqual({
+      id: 'bar2',
+      count: 2,
+    });
+  });
+  test('has return store which show that item exists', () => {
+    const setCurrentKeyB = createEvent<string>();
+    const entities = createNestedEntities([
+      {
+        id: 'foo',
+        childs: [{ id: 'foo1', count: 0 }],
+      },
+      {
+        id: 'bar',
+        childs: [
+          { id: 'bar1', count: 1 },
+          { id: 'bar2', count: 2 },
+        ],
+      },
+    ]);
+
+    const $currentKeyA = createStore('bar');
+    const $currentKeyB = createStore('none');
+
+    sample({
+      clock: setCurrentKeyB,
+      target: $currentKeyB,
+    });
+
+    const $hasChild = lens(entities, $currentKeyA).childs.has($currentKeyB);
+    expect($hasChild.getState()).toBe(false);
+    setCurrentKeyB('bar2');
+    expect($hasChild.getState()).toBe(true);
   });
 });

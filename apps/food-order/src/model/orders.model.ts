@@ -31,12 +31,8 @@ export const ordersList = keyval(() => {
       const $additive = createStore('');
       const $choice = createStore('');
       const $amount = createStore(0);
-      // const $additiveEntity = lens(restaurantsList, $restaurant)
-      //   .dishes($dish)
-      //   .additives($additive)
-      //   .store;
       const $additiveEntity = combine(
-        dishLens.additives.store,
+        dishLens.additives.store([]),
         $additive,
         (items, name) =>
           items?.find((e) => e.name === name) ?? {
@@ -70,7 +66,7 @@ export const ordersList = keyval(() => {
       };
     });
     const $totalPrice = combine(
-      dishLens.price.store,
+      dishLens.price.store(0),
       additivesList.$items,
       (price, additives) =>
         additives.reduce(

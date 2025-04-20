@@ -127,7 +127,8 @@ export type LensItem<T> = {
 
 export type LensStore<T> = {
   __type: 'lensStore';
-  store: Store<T>;
+  store(): Store<T | null>;
+  store(defaultValue: T): Store<T>;
 };
 
 export type LensEvent<T> = {
@@ -158,6 +159,7 @@ export type StructKeyval = {
   type: 'structKeyval';
   getKey: (input: any) => string | number;
   shape: Record<string, StructUnit | StructKeyval>;
+  defaultItem: any;
 };
 
 export type KeyStore = Store<string | number>;
