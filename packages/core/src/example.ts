@@ -69,7 +69,7 @@ const fieldList1 = keyval(() => {
 
 fieldList1.api.submit;
 
-lens(fieldList1, $email).isValid.store;
+lens(fieldList1, $email).isValid.store();
 
 const fieldList2 = keyval(() => {
   const $name = createStore('');

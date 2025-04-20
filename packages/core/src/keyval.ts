@@ -541,6 +541,7 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
       type: 'structKeyval',
       getKey,
       shape: kvModel.__struct!.shape,
+      defaultItem: kvModel.defaultState ?? null,
     } as StructKeyval;
     for (const prop in instance.api) {
       const evt = createEvent<
@@ -618,6 +619,8 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
       type: 'structKeyval',
       getKey,
       shape: itemStructShape,
+      // TODO add support for .itemStore
+      defaultItem: null,
     } as StructKeyval;
     // for (const key in shape) {
     //   const def = shape[key] as OneOfShapeDef;
