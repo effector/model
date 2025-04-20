@@ -1,5 +1,11 @@
 # @effector/model
 
+## 0.0.6
+
+### Patch Changes
+
+- 1150b9c: Implement type safe lenses
+
 ## 0.0.5
 
 ### Patch Changes
