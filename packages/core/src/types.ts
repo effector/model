@@ -276,3 +276,6 @@ export type Show<A extends any> = A extends BuiltInObject
   : {
       [K in keyof A]: A[K];
     }; // & {}
+
+export type InputType<T extends Keyval<any, any, any, any>> =
+  T extends Keyval<infer Input, any, any, any> ? Input : never;
