@@ -66,6 +66,37 @@ describe('edit.add', () => {
       { id: 'bar', count: 0, tag: 'y' },
     ]);
   });
+  test('support nested keyvals', () => {
+    const entities = keyval(() => {
+      const $id = createStore('');
+      const childs = keyval(() => {
+        const $id = createStore('');
+        return {
+          key: 'id',
+          state: {
+            id: $id,
+          },
+        };
+      });
+      return {
+        key: 'id',
+        state: {
+          id: $id,
+          childs,
+        },
+      };
+    });
+    entities.edit.add({
+      id: 'a',
+      childs: [{ id: 'b' }],
+    });
+    expect(entities.$items.getState()).toEqual([
+      {
+        id: 'a',
+        childs: [{ id: 'b' }],
+      },
+    ]);
+  });
 });
 
 describe('edit.remove', () => {

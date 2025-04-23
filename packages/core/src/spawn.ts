@@ -92,6 +92,10 @@ export function spawn<
       for (const field of model.keyvalFields) {
         if (isKeyval(storeOutputs[field])) {
           const kv = storeOutputs[field];
+          if (field in params) {
+            // TODO implement without additional retrigger
+            kv.edit.add((params as any)[field]);
+          }
           // @ts-expect-error generic mismatch
           resultShape[field] = kv.$items;
           keyvalShape[field] = kv;
