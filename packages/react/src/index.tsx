@@ -22,7 +22,6 @@ import type {
   EventDef,
   EffectDef,
   AnyDef,
-  Show,
 } from '@effector/model';
 import { spawn } from '@effector/model';
 
@@ -135,54 +134,6 @@ export function ModelProvider<
   );
 }
 
-export function useModel<Input, T, Api, Shape>(
-  model: Model<Input, T, Api, Shape>,
-): [
-  state: Show<
-    {
-      [K in keyof Input]: Input[K] extends Store<infer V>
-        ? V
-        : Input[K] extends StoreDef<infer V>
-          ? V
-          : Input[K] extends Event<infer V>
-            ? (params: V) => V
-            : Input[K] extends EventDef<infer V>
-              ? (params: V) => V
-              : Input[K] extends Effect<infer V, infer D, unknown>
-                ? (params: V) => Promise<D>
-                : Input[K] extends EffectDef<infer V, infer D, unknown>
-                  ? (params: V) => Promise<D>
-                  : Input[K] extends (params: infer V) => infer D
-                    ? (params: V) => Promise<Awaited<D>>
-                    : Input[K];
-    } & {
-      [K in keyof T]: T[K] extends Store<infer V> ? V : never;
-    }
-  >,
-  api: {
-    [K in keyof Api]: Api[K] extends Event<infer V>
-      ? (params: V) => V
-      : Api[K] extends Effect<infer V, infer D, unknown>
-        ? (params: V) => Promise<D>
-        : never;
-  },
-] {
-  const stack = useContext(ModelStackContext);
-  let currentStack = stack;
-  let instance: Instance<T, Api> | undefined;
-  while (instance === undefined && currentStack) {
-    if (currentStack.model === model) {
-      instance = currentStack.value as Instance<T, Api>;
-    }
-    currentStack = currentStack.parent;
-  }
-  if (instance === undefined)
-    throw Error('model not found, add ModelProvider first');
-  const state = useUnit(instance.props as any);
-  const api = useUnit(instance.api as any);
-  return [state as any, api as any];
-}
-
 function useGetKeyvalKey<Input, T, Api>(
   args:
     | [keyval: Keyval<Input, T, Api, any>]
@@ -244,25 +195,6 @@ export function useEntityList<T>(
       <View />
     </EntityProvider>
   ));
-}
-
-export function useEntityByKey<T>(
-  keyval: Keyval<any, T, any, any>,
-  key: string | number,
-  View: (params: { value: T }) => ReactNode,
-) {
-  const idx = useStoreMap({
-    store: keyval.$keys,
-    keys: [key],
-    fn: (keys, [value]) => keys.indexOf(value),
-  });
-  const result = useStoreMap({
-    store: keyval.$items,
-    keys: [idx, key],
-    fn: (values, [idx]) => (idx === -1 ? null : values[idx]),
-  });
-  if (idx === -1) return null;
-  return <View value={result as T} />;
 }
 
 export function useItemApi<T, Api>(
