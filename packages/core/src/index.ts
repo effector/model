@@ -4,4 +4,4 @@ export { keyval } from './keyval';
 export { lens } from './lens';
 export { createContext, readContext, setContext } from './context';
 export { spawn } from './spawn';
-export { InputType } from './types';
+export { InputType, KeyvalWithState } from './types';

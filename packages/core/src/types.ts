@@ -334,3 +334,10 @@ type ParamsNormalize<
                     | ((params: V) => Awaited<Res> | Promise<Awaited<Res>>)
                 : Store<T[K]> | T[K];
 };
+
+export type KeyvalWithState<Input, Output> = Keyval<
+  Input,
+  Output,
+  unknown,
+  unknown
+>;
