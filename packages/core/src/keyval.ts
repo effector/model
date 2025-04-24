@@ -20,6 +20,7 @@ import { lazyInit } from './lazyInit';
 import { createEditApi } from './editApi';
 import { createEditFieldApi } from './editFieldApi';
 import { createInstanceApi } from './instanceApi';
+import { isKeyval } from './define';
 
 export function keyval<
   ReactiveState,
@@ -80,6 +81,9 @@ export function keyval<T, Shape>(options: {
 export function keyval<T>(options: {
   key: ((entity: T) => string | number) | keyof T;
 }): Keyval<T, T, {}, {}>;
+export function keyval<Input, Output, Api, Shape>(
+  keyval: Keyval<Input, Output, Api, Shape>,
+): Keyval<Input, Output, Api, Shape>;
 export function keyval<Input, ModelEnhance, Api, Shape>(
   options:
     | {
@@ -88,109 +92,133 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
         props?: any;
         create?: any;
       }
-    | Function,
+    | Function
+    | Keyval<Input, Input & ModelEnhance, Api, Shape>,
 ): Keyval<Input, Input & ModelEnhance, Api, Shape> {
-  return lazyInit(
-    {
-      type: 0,
-      api: 0,
-      __lens: 0,
-      __struct: 0,
-      $items: 0,
-      $keys: 0,
-      defaultState: 0,
-      edit: 0,
-      editField: 0,
-    } as any as Keyval<Input, Input & ModelEnhance, Api, Shape>,
-    () => {
-      let create:
-        | void
-        | ((config: { onMount: Event<void> }) => {
-            state: unknown;
-            api?: unknown;
-            key: string;
-            optional?: string[];
-          });
-      // @ts-expect-error bad implementation
-      let getKeyRaw;
-      let shape: Shape;
-      if (typeof options === 'function') {
-        create = options as any;
-      } else {
-        ({ key: getKeyRaw, shape = {} as Shape, create } = options);
-      }
-      type Enriched = Input & ModelEnhance;
-      type Output = {
-        [K in keyof ModelEnhance]:
-          | Store<ModelEnhance[K]>
-          | Keyval<any, ModelEnhance[K], any, any>;
-      };
-      let kvModel:
-        | Model<
-            {
-              [K in keyof Input]?: Store<Input[K]> | StoreDef<Input[K]>;
-            },
-            Output,
-            Api,
-            Shape
-          >
-        | undefined;
-      type KeyvalListState = ListState<Enriched, Output, Api>;
-      if (create) {
-        // @ts-expect-error typecast
-        kvModel = model({ create });
-      }
+  if (isKeyval(options)) {
+    return options.clone(true);
+  }
 
-      const getKey = !kvModel
-        ? typeof getKeyRaw === 'function'
-          ? getKeyRaw
-          : // @ts-expect-error bad implementation
-            (entity: Input) => entity[getKeyRaw] as string | number
-        : (entity: Input) => entity[kvModel.keyField] as string | number;
-      const keyField = !kvModel
-        ? typeof getKeyRaw === 'function' || getKeyRaw === undefined
-          ? null
-          : getKeyRaw
-        : kvModel.keyField;
-      const $entities = createStore<KeyvalListState>({
-        items: [],
-        instances: [],
-        keys: [],
-      });
+  const init = (isClone: boolean) => {
+    return lazyInit(
+      {
+        type: 'keyval',
+        api: 0,
+        __lens: 0,
+        __struct: 0,
+        $items: 0,
+        $keys: 0,
+        defaultState: () => null as any,
+        edit: 0,
+        editField: 0,
+        clone: init,
+        isClone,
+      } as any as Keyval<Input, Input & ModelEnhance, Api, Shape>,
+      () => {
+        let create:
+          | void
+          | ((config: { onMount: Event<void> }) => {
+              state: unknown;
+              api?: unknown;
+              key: string;
+              optional?: string[];
+            });
+        // @ts-expect-error bad implementation
+        let getKeyRaw;
+        let shape: Shape;
+        if (typeof options === 'function') {
+          create = options as any;
+        } else {
+          ({
+            key: getKeyRaw,
+            shape = {} as Shape,
+            create,
+          } = options as Exclude<typeof options, Keyval<any, any, any, any>>);
+        }
+        type Enriched = Input & ModelEnhance;
+        type Output = {
+          [K in keyof ModelEnhance]:
+            | Store<ModelEnhance[K]>
+            | Keyval<any, ModelEnhance[K], any, any>;
+        };
+        let kvModel:
+          | Model<
+              {
+                [K in keyof Input]?: Store<Input[K]> | StoreDef<Input[K]>;
+              },
+              Output,
+              Api,
+              Shape
+            >
+          | undefined;
+        type KeyvalListState = ListState<Enriched, Output, Api>;
+        if (create) {
+          // @ts-expect-error typecast
+          kvModel = model({ create });
+        }
 
-      const api = createInstanceApi($entities, kvModel);
-      const editApi = createEditApi($entities, getKey, keyField, api, kvModel);
-      const editField = createEditFieldApi(keyField, kvModel, editApi.update);
+        const getKey = !kvModel
+          ? typeof getKeyRaw === 'function'
+            ? getKeyRaw
+            : // @ts-expect-error bad implementation
+              (entity: Input) => entity[getKeyRaw] as string | number
+          : (entity: Input) => entity[kvModel.keyField] as string | number;
+        const keyField = !kvModel
+          ? typeof getKeyRaw === 'function' || getKeyRaw === undefined
+            ? null
+            : getKeyRaw
+          : kvModel.keyField;
+        const $entities = createStore<KeyvalListState>({
+          items: [],
+          instances: [],
+          keys: [],
+        });
 
-      const structShape = kvModel
-        ? ({
-            type: 'structKeyval',
-            getKey,
-            shape: kvModel.__struct!.shape,
-            defaultItem: kvModel.defaultState ?? null,
-          } as StructKeyval)
-        : shape!
+        const api = createInstanceApi($entities, kvModel);
+        const editApi = createEditApi(
+          $entities,
+          getKey,
+          keyField,
+          api,
+          kvModel,
+        );
+        const editField = createEditFieldApi(keyField, kvModel, editApi.update);
+
+        const structShape = kvModel
           ? ({
               type: 'structKeyval',
               getKey,
-              shape: {},
-              // TODO add support for .itemStore
-              defaultItem: null,
+              shape: kvModel.__struct!.shape,
+              defaultItem: kvModel.defaultState,
             } as StructKeyval)
-          : (null as any as StructKeyval);
+          : shape!
+            ? ({
+                type: 'structKeyval',
+                getKey,
+                shape: {},
+                // TODO add support for .itemStore
+                defaultItem: () => null,
+              } as StructKeyval)
+            : (null as any as StructKeyval);
 
-      return {
-        type: 'keyval',
-        api: api as any,
-        // @ts-expect-error bad implementation
-        __lens: shape,
-        __struct: structShape,
-        $items: $entities.map(({ items }) => items),
-        $keys: $entities.map(({ keys }) => keys),
-        defaultState: (kvModel?.defaultState ?? null) as any,
-        edit: editApi,
-        editField,
-      };
-    },
-  );
+        return {
+          type: 'keyval' as const,
+          api: api as any,
+          // @ts-expect-error bad implementation
+          __lens: shape,
+          __struct: structShape,
+          $items: $entities.map(({ items }) => items),
+          $keys: $entities.map(({ keys }) => keys),
+          defaultState() {
+            return kvModel?.defaultState() ?? (null as any);
+          },
+          edit: editApi,
+          editField,
+          clone: init,
+          isClone,
+        };
+      },
+    );
+  };
+  return init(false);
 }

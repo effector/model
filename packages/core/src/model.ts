@@ -2,7 +2,6 @@ import {
   Store,
   Event,
   Effect,
-  createNode,
   withRegion,
   clearNode,
   is,
@@ -20,7 +19,8 @@ import type {
   StructShape,
 } from './types';
 import { define, isKeyval } from './define';
-import { collectFactoryPaths } from './factoryStatePaths';
+import { collectFactoryPaths, createRegionalNode } from './factoryStatePaths';
+import { callInLazyStack } from './lazy';
 
 export function model<
   Input extends {
@@ -69,7 +69,7 @@ export function model<
   //   }[keyof Output]]: Output[K];
   // }
 > {
-  const region = createNode({ regional: true });
+  const region = createRegionalNode(true);
   const {
     state = {} as Output,
     key,
@@ -78,7 +78,7 @@ export function model<
     onMount,
     ...rest
   } = withRegion(region, () => {
-    return create();
+    return callInLazyStack(() => create(), true);
   });
 
   if (Object.keys(rest).length > 0) {
@@ -116,17 +116,17 @@ export function model<
     type: 'structShape',
     shape: {},
   };
-  const defaultState = {} as any;
   for (const key in state) {
     shape[key] = define.store<any>();
-    structShape.shape[key] = isKeyval(state[key])
-      ? state[key].__struct
-      : {
-          type: 'structUnit',
-          unit: 'store',
-          derived: !is.targetable(state[key] as any),
-        };
-    defaultState[key] = is.store(state[key]) ? state[key].getState() : [];
+    structShape.shape[key] =
+      // TODO cloned keyvals are omitted because of infinite recursion
+      isKeyval(state[key]) && !state[key].isClone
+        ? state[key].__struct
+        : {
+            type: 'structUnit',
+            unit: 'store',
+            derived: !is.targetable(state[key] as any),
+          };
   }
   for (const key in api) {
     const value = api[key];
@@ -140,6 +140,7 @@ export function model<
   }
 
   clearNode(region);
+  let defaultState: any;
   return {
     type: 'model',
     create,
@@ -151,6 +152,21 @@ export function model<
     shape,
     __lens: {} as any,
     __struct: structShape,
-    defaultState,
+    defaultState() {
+      if (!defaultState) {
+        const region = createRegionalNode(false);
+        const { state = {} } = withRegion(region, () =>
+          callInLazyStack(() => create(), false),
+        );
+        defaultState = {};
+        for (const key in state) {
+          defaultState[key] = is.store((state as any)[key])
+            ? (state as any)[key].getState()
+            : [];
+        }
+        clearNode(region);
+      }
+      return defaultState;
+    },
   };
 }

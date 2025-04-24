@@ -123,7 +123,7 @@ function createLensStruct(
           ],
           [...path, childKey],
           $items,
-          item.defaultItem,
+          item.defaultItem(),
         );
       shape[key].has = (childKey: KeyStore | string | number) =>
         createPathReaderStore(
@@ -165,7 +165,7 @@ export function lens<T, Shape>(
           [{ type: 'index', pathIndex: 0 }],
           [key],
           keyval.$items,
-          keyval.defaultState,
+          keyval.defaultState(),
         );
       },
       itemStore(key: KeyStore) {
@@ -174,7 +174,7 @@ export function lens<T, Shape>(
           [{ type: 'index', pathIndex: 0 }],
           [key],
           keyval.$items,
-          keyval.defaultState,
+          keyval.defaultState(),
         );
       },
       has(key: KeyStore) {
@@ -193,7 +193,7 @@ export function lens<T, Shape>(
       [{ type: 'index', pathIndex: 0 }],
       [key],
       keyval.$items,
-      keyval.defaultState,
+      keyval.defaultState(),
     );
   }
 }

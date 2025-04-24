@@ -1,4 +1,4 @@
-import { type Node, is } from 'effector';
+import { type Node, is, createNode } from 'effector';
 
 import type { FactoryPathMap } from './types';
 
@@ -84,4 +84,22 @@ function findNodeInTree(
       }
     }
   }
+}
+
+export function createRegionalNode(muteCallbacks: boolean) {
+  const node = createNode({ regional: true });
+  let template =
+    /** fallback for forest templates, not sure that it works */
+    node.family.owners[0]?.meta.template;
+  if (muteCallbacks && !template) {
+    /** empty template for muting combine/store.map callbacks */
+    template = {
+      handlers: {
+        /** skip store watch immediate call */
+        storeWatch: () => true,
+      },
+    };
+  }
+  node.meta.template = template;
+  return node;
 }

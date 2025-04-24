@@ -58,7 +58,7 @@ export type Model<Props, Output, Api, Shape> = {
   >;
   // private
   __struct: StructShape;
-  defaultState: Output;
+  defaultState(): Output;
 };
 
 export type Instance<Output, Api> = {
@@ -161,7 +161,7 @@ export type StructKeyval = {
   type: 'structKeyval';
   getKey: (input: any) => string | number;
   shape: Record<string, StructUnit | StructKeyval>;
-  defaultItem: any;
+  defaultItem(): any;
 };
 
 export type KeyStore = Store<string | number>;
@@ -236,7 +236,10 @@ export type Keyval<Input, Enriched, Api, Shape> = {
   __lens: Shape;
   // private
   __struct: StructKeyval;
-  defaultState: Enriched;
+  defaultState(): Enriched;
+  //private
+  clone(isClone: boolean): Keyval<Input, Enriched, Api, Shape>;
+  isClone: boolean;
 };
 
 export type StoreContext<T> = {

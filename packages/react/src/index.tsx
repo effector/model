@@ -181,7 +181,7 @@ export function useEntityItem<T>(
   });
   if (idx === -1) {
     // NOTE probably need to throw error here
-    return keyval.defaultState;
+    return keyval.defaultState();
   }
   return result as T;
 }

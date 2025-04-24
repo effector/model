@@ -1,6 +1,6 @@
 import { expect, test, describe, vi } from 'vitest';
 import { keyval } from '@effector/model';
-import { createEvent, createStore } from 'effector';
+import { combine, createEvent, createStore } from 'effector';
 import { readonly } from 'patronum';
 
 describe('support nested keyval', () => {
@@ -126,4 +126,22 @@ test('onMount support', () => {
   expect(fn).toBeCalledTimes(1);
   entities.edit.add({ id: 2 });
   expect(fn).toBeCalledTimes(2);
+});
+
+test('.defaultState', () => {
+  const entities = keyval(() => {
+    const $id = createStore('');
+    const $size = combine($id, (str) => str.length);
+    return {
+      key: 'id',
+      state: {
+        id: $id,
+        size: $size,
+      },
+    };
+  });
+  expect(entities.defaultState()).toEqual({
+    id: '',
+    size: 0,
+  });
 });

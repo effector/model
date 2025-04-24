@@ -2,6 +2,7 @@
 export { define, isKeyval } from './define';
 export { keyval } from './keyval';
 export { lens } from './lens';
+export { lazy } from './lazy';
 export { createContext, readContext, setContext } from './context';
 export { spawn } from './spawn';
 export { InputType, KeyvalWithState } from './types';

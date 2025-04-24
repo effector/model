@@ -2,7 +2,6 @@ import {
   Store,
   Event,
   Effect,
-  createNode,
   withRegion,
   combine,
   EventCallable,
@@ -17,7 +16,8 @@ import type {
   AnyDef,
 } from './types';
 import { isKeyval } from './define';
-import { installStateHooks } from './factoryStatePaths';
+import { createRegionalNode, installStateHooks } from './factoryStatePaths';
+import { callInLazyStack } from './lazy';
 
 let childInstancesTracking: Instance<any, any>[] | null = null;
 
@@ -72,7 +72,7 @@ export function spawn<
           : never;
   },
 ): Instance<Output, Api> {
-  const region = createNode({ regional: true });
+  const region = createRegionalNode(false);
   installStateHooks(params as any, region, model.factoryStatePaths);
   const parentTracking = childInstancesTracking;
   childInstancesTracking = [];
@@ -84,7 +84,7 @@ export function spawn<
         state: storeOutputs = {},
         api: apiOutputs = {},
         onMount,
-      } = model.create();
+      } = callInLazyStack(() => model.create(), false);
       const resultShape = {
         ...storeOutputs,
       } as Output;

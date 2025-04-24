@@ -71,10 +71,20 @@ describe('edit.add', () => {
       const $id = createStore('');
       const childs = keyval(() => {
         const $id = createStore('');
+        const childs = keyval(() => {
+          const $id = createStore('');
+          return {
+            key: 'id',
+            state: {
+              id: $id,
+            },
+          };
+        });
         return {
           key: 'id',
           state: {
             id: $id,
+            childs,
           },
         };
       });
@@ -88,12 +98,12 @@ describe('edit.add', () => {
     });
     entities.edit.add({
       id: 'a',
-      childs: [{ id: 'b' }],
+      childs: [{ id: 'b', childs: [{ id: 'c' }] }],
     });
     expect(entities.$items.getState()).toEqual([
       {
         id: 'a',
-        childs: [{ id: 'b' }],
+        childs: [{ id: 'b', childs: [{ id: 'c' }] }],
       },
     ]);
   });
