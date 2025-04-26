@@ -139,6 +139,5 @@ test('lazy will not break combine callbacks', () => {
       amountStr: '1',
     },
   ]);
-  // TODO fix combine breaking
   expect(fn.mock.calls.filter(([val]) => typeof val !== 'number')).toEqual([]);
 });
