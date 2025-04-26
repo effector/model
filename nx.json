@@ -4,6 +4,9 @@
   "affected": {
     "defaultBase": "origin/main"
   },
+  "cli": {
+    "defaultOutputStyle": "stream"
+  },
   "tasksRunnerOptions": {
     "default": {
       "runner": "nx/tasks-runners/default",

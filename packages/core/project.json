@@ -49,12 +49,18 @@
       }
     },
     "test": {
-      "executor": "@nrwl/vite:test"
+      "executor": "@nrwl/vite:test",
+      "options": {
+        "config": "packages/core/vite.config.mts",
+        "passWithNoTests": true
+      }
     },
     "test_watch": {
       "executor": "@nrwl/vite:test",
       "options": {
-        "watch": true
+        "watch": true,
+        "config": "packages/core/vite.config.mts",
+        "passWithNoTests": true
       }
     },
     "typetest": {

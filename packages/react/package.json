@@ -3,6 +3,11 @@
   "version": "0.0.6",
   "type": "commonjs",
   "peerDependencies": {
-    "effector": "^23.2.2"
+    "effector": "^23.3.0"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "happy-dom": "^17.4.4"
   }
 }
