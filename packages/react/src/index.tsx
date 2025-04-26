@@ -46,7 +46,7 @@ export function EntityProvider<T>({
   value,
   children,
 }: {
-  model: Keyval<unknown, T, unknown, unknown>;
+  model: Keyval<any, T, any, any>;
   value: string | number;
   children: ReactNode;
 }) {

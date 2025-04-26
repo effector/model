@@ -62,11 +62,12 @@ export function keyval<
   Api = {},
   OptionalFields extends keyof WritableState = never,
 >(
-  create: (config: { onMount: Event<void> }) => {
+  create: () => {
     state: ReactiveState;
     api?: Api;
     key: keyof ReactiveState;
     optional?: ReadonlyArray<OptionalFields>;
+    onMount?: Event<void>;
   },
 ): Keyval<
   SetOptional<WritableState, OptionalFields>,
