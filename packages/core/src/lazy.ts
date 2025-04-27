@@ -15,16 +15,20 @@ type TypeMap = {
   effect: Effect<any, any, any>;
 };
 
-let currentSkipLazyCb = true;
+export let currentSkipLazyCb = true;
+export let isRoot = true;
 
 export function callInLazyStack<T extends () => any>(
   fn: T,
   skipLazyCb: boolean,
 ): ReturnType<T> {
   const prevLazyCb = currentSkipLazyCb;
+  const prevIsRoot = isRoot;
   currentSkipLazyCb = skipLazyCb;
+  isRoot = false;
   const result = fn();
   currentSkipLazyCb = prevLazyCb;
+  isRoot = prevIsRoot;
   return result;
 }
 

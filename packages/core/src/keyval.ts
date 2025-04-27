@@ -104,15 +104,29 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
     isClone: boolean,
     cloneOf: Keyval<any, any, any, any> | null,
   ) => {
+    type Enriched = Input & ModelEnhance;
+    type Output = {
+      [K in keyof ModelEnhance]:
+        | Store<ModelEnhance[K]>
+        | Keyval<any, ModelEnhance[K], any, any>;
+    };
+    type KeyvalListState = ListState<Enriched, Output, Api>;
+    const $entities = createStore<KeyvalListState>({
+      items: [],
+      instances: [],
+      keys: [],
+    });
+    const $items = $entities.map(({ items }) => items);
+    const $keys = $entities.map(({ keys }) => keys);
     return lazyInit(
       {
         type: 'keyval',
         api: 0,
         __lens: 0,
         __struct: 0,
-        $items: 0,
-        $keys: 0,
-        __$listState: 0,
+        $items,
+        $keys,
+        __$listState: $entities,
         defaultState: () => null as any,
         edit: 0,
         editField: 0,
@@ -141,12 +155,7 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
             create,
           } = options as Exclude<typeof options, Keyval<any, any, any, any>>);
         }
-        type Enriched = Input & ModelEnhance;
-        type Output = {
-          [K in keyof ModelEnhance]:
-            | Store<ModelEnhance[K]>
-            | Keyval<any, ModelEnhance[K], any, any>;
-        };
+
         let kvModel:
           | Model<
               {
@@ -157,7 +166,7 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
               Shape
             >
           | undefined;
-        type KeyvalListState = ListState<Enriched, Output, Api>;
+
         if (create) {
           // @ts-expect-error typecast
           kvModel = model({ create });
@@ -174,11 +183,6 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
             ? null
             : getKeyRaw
           : kvModel.keyField;
-        const $entities = createStore<KeyvalListState>({
-          items: [],
-          instances: [],
-          keys: [],
-        });
 
         const api = createInstanceApi($entities, kvModel);
         const editApi = createEditApi(
@@ -213,8 +217,8 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
           // @ts-expect-error bad implementation
           __lens: shape,
           __struct: structShape,
-          $items: $entities.map(({ items }) => items),
-          $keys: $entities.map(({ keys }) => keys),
+          $items,
+          $keys,
           __$listState: $entities as any,
           defaultState() {
             return kvModel?.defaultState() ?? (null as any);

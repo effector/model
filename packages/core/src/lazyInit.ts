@@ -1,3 +1,5 @@
+import { currentSkipLazyCb, isRoot } from './lazy';
+
 const queue: InitTask<any>[] = [];
 let scheduled = false;
 
@@ -7,7 +9,15 @@ type InitTask<T> = {
   initialized: boolean;
 };
 
-const ignore = ['type', 'clone', 'isClone', 'cloneOf'];
+const ignore = [
+  'type',
+  'clone',
+  'isClone',
+  'cloneOf',
+  '__$listState',
+  '$items',
+  '$keys',
+];
 
 function runQueue() {
   for (const task of queue.splice(0)) {
@@ -29,8 +39,10 @@ function runQueue() {
 }
 
 export function lazyInit<T extends object>(target: T, init: () => T): T {
+  if (currentSkipLazyCb && !isRoot) {
+    return target;
+  }
   const task: InitTask<T> = { target, init, initialized: false };
-
   queue.push(task);
   if (!scheduled) {
     scheduled = true;
@@ -44,7 +56,9 @@ export function lazyInit<T extends object>(target: T, init: () => T): T {
     if (!ignore.includes(key as any)) {
       Object.defineProperty(target, key, {
         get() {
-          if (!task.initialized) runQueue();
+          if (!task.initialized) {
+            runQueue();
+          }
           return target[key];
         },
         enumerable: true,
