@@ -284,7 +284,7 @@ export function useEditItemField<Input>(
     | [keyval: Keyval<Input, any, any, any>]
     | [keyval: Keyval<Input, any, any, any>, key: string | number]
 ): {
-  [K in keyof Input]: (params: Input[K]) => void;
+  [K in keyof Input]-?: (params: Input[K]) => void;
 } {
   const [keyval, key] = useGetKeyvalKey(args);
   const commonApi = useUnit(keyval.editField);
