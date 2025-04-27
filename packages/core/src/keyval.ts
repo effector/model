@@ -97,10 +97,13 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
     | Keyval<Input, Input & ModelEnhance, Api, Shape>,
 ): Keyval<Input, Input & ModelEnhance, Api, Shape> {
   if (isKeyval(options)) {
-    return options.clone(true);
+    return options.clone(true, options.cloneOf || options);
   }
 
-  const init = (isClone: boolean) => {
+  const init = (
+    isClone: boolean,
+    cloneOf: Keyval<any, any, any, any> | null,
+  ) => {
     return lazyInit(
       {
         type: 'keyval',
@@ -109,11 +112,13 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
         __struct: 0,
         $items: 0,
         $keys: 0,
+        __$listState: 0,
         defaultState: () => null as any,
         edit: 0,
         editField: 0,
         clone: init,
         isClone,
+        cloneOf,
       } as any as Keyval<Input, Input & ModelEnhance, Api, Shape>,
       () => {
         let create:
@@ -210,6 +215,7 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
           __struct: structShape,
           $items: $entities.map(({ items }) => items),
           $keys: $entities.map(({ keys }) => keys),
+          __$listState: $entities as any,
           defaultState() {
             return kvModel?.defaultState() ?? (null as any);
           },
@@ -217,9 +223,10 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
           editField,
           clone: init,
           isClone,
+          cloneOf,
         };
       },
     );
   };
-  return init(false);
+  return init(false, null);
 }

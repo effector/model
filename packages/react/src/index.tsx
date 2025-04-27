@@ -14,14 +14,15 @@ import {
 } from 'effector';
 import { useList, useStoreMap, useUnit } from 'effector-react';
 
-import type {
-  Model,
-  Instance,
-  Keyval,
-  StoreDef,
-  EventDef,
-  EffectDef,
-  AnyDef,
+import {
+  type Model,
+  type Instance,
+  type Keyval,
+  type StoreDef,
+  type EventDef,
+  type EffectDef,
+  type AnyDef,
+  isKeyval,
 } from '@effector/model';
 import { spawn } from '@effector/model';
 
@@ -29,6 +30,7 @@ type ModelStack =
   | {
       type: 'entity';
       model: Keyval<unknown, any, unknown, unknown>;
+      clone: Keyval<unknown, any, unknown, unknown> | null;
       value: string | number;
       parent: ModelStack | null;
     }
@@ -53,7 +55,8 @@ export function EntityProvider<T>({
   const currentStack = useContext(ModelStackContext);
   const nextStack = {
     type: 'entity' as const,
-    model,
+    model: model.cloneOf || model,
+    clone: model.isClone ? model : null,
     value,
     parent: currentStack,
   };
@@ -140,13 +143,17 @@ function useGetKeyvalKey<Input, T, Api>(
     | [keyval: Keyval<Input, T, Api, any>, key: string | number],
 ): [keyval: Keyval<Input, T, Api, any>, key: string | number] {
   if (args.length === 1) {
-    const [keyval] = args;
+    let [keyval] = args;
     const stack = useContext(ModelStackContext);
     let currentStack = stack;
     let key: string | number | undefined;
     while (key === undefined && currentStack) {
       if (currentStack.model === keyval) {
         key = currentStack.value as string | number;
+        if (currentStack.type === 'entity' && currentStack.clone) {
+          // @ts-expect-error typecast
+          keyval = currentStack.clone;
+        }
       }
       currentStack = currentStack.parent;
     }
@@ -189,12 +196,61 @@ export function useEntityItem<T>(
 export function useEntityList<T>(
   keyval: Keyval<any, T, any, any>,
   View: () => ReactNode,
+): ReactNode;
+export function useEntityList<T>(config: {
+  keyval: Keyval<any, T, any, any>;
+  field: keyof T;
+  fn: () => ReactNode;
+}): ReactNode;
+export function useEntityList<T>(
+  ...[keyvalOrConfig, viewFn]:
+    | [keyval: Keyval<any, T, any, any>, View: () => ReactNode]
+    | [
+        config: {
+          keyval: Keyval<any, T, any, any>;
+          field: keyof T;
+          fn: () => ReactNode;
+        },
+      ]
 ) {
-  return useList(keyval.$keys, (key) => (
-    <EntityProvider model={keyval} value={key}>
-      <View />
-    </EntityProvider>
-  ));
+  let View: () => ReactNode;
+  let keyvalToIterate: Keyval<any, T, any, any>;
+  if (isKeyval(keyvalOrConfig)) {
+    [keyvalToIterate, View] = [keyvalOrConfig, viewFn!];
+  } else {
+    const {
+      keyval: keyvalRaw,
+      field,
+      fn,
+    } = keyvalOrConfig as Exclude<
+      typeof keyvalOrConfig,
+      Keyval<any, any, any, any>
+    >;
+    View = fn;
+    /**
+     * keyvalRaw is always a root keyval, used as a tag
+     * keyval is current instance in which computation will happens
+     * instanceKeyval is child instance from a field
+     */
+    const [keyval, currentKey] = useGetKeyvalKey([keyvalRaw]);
+    const instanceKeyval = useStoreMap({
+      store: keyval.__$listState,
+      keys: [currentKey, field],
+      fn({ instances, keys }, [key, field]) {
+        const idx = keys.findIndex((e) => e === key);
+        return instances[idx].keyvalShape[field];
+      },
+    });
+    keyvalToIterate = instanceKeyval;
+  }
+
+  return useList(keyvalToIterate.$keys, (key) => {
+    return (
+      <EntityProvider model={keyvalToIterate} value={key}>
+        <View />
+      </EntityProvider>
+    );
+  });
 }
 
 export function useItemApi<T, Api>(

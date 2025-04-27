@@ -7,7 +7,7 @@ type InitTask<T> = {
   initialized: boolean;
 };
 
-const ignore = ['type', 'clone', 'isClone'];
+const ignore = ['type', 'clone', 'isClone', 'cloneOf'];
 
 function runQueue() {
   for (const task of queue.splice(0)) {

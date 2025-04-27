@@ -238,8 +238,24 @@ export type Keyval<Input, Enriched, Api, Shape> = {
   __struct: StructKeyval;
   defaultState(): Enriched;
   //private
-  clone(isClone: boolean): Keyval<Input, Enriched, Api, Shape>;
+  clone(
+    isClone: boolean,
+    cloneOf: Keyval<any, any, any, any> | null,
+  ): Keyval<Input, Enriched, Api, Shape>;
   isClone: boolean;
+  // private
+  __$listState: Store<
+    ListState<
+      Enriched,
+      {
+        [K in keyof Enriched]:
+          | Store<Enriched[K]>
+          | Keyval<any, Enriched[K], any, any>;
+      },
+      Api
+    >
+  >;
+  cloneOf: Keyval<any, any, any, any> | null;
 };
 
 export type StoreContext<T> = {
