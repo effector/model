@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "paths": {
+      "@effector/model": ["../../packages/core/index.ts"],
+      "@effector/model-react": ["../../packages/react/index.ts"]
+    }
+  },
+  "include": ["vite.config.ts"]
+}
