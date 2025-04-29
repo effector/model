@@ -4,12 +4,14 @@ import {
   useItemApi,
   useEntityList,
   useEditItemField,
+  useEditKeyval,
 } from '@effector/model-react';
 
 import { todoList } from '../model';
 
 export const TodoItem = ({ nesting }: { nesting: number }) => {
   const {
+    id,
     title,
     completed,
     editing,
@@ -18,11 +20,12 @@ export const TodoItem = ({ nesting }: { nesting: number }) => {
     subtasksVisible,
     visible,
   } = useEntityItem(todoList);
+  const { remove } = useEditKeyval(todoList);
   const api = useItemApi(todoList);
   const fieldApi = useEditItemField(todoList);
   const onToggle = () => api.toggleCompleted();
   const onRemove = () => {
-    // api.remove();
+    remove(id);
   };
   const onAddChild = () => {
     // addTodoFromDraft({ childOf: id });

@@ -3,13 +3,6 @@ import { useUnit } from 'effector-react';
 import { useEntityList } from '@effector/model-react';
 
 import { todoList, addTodo } from '../model';
-// import {
-//   addTodo,
-//   clearCompleted,
-//   toggleAll,
-//   changeDraft,
-//   $descriptionDraft,
-// } from '../model.old';
 import { TodoCount } from './TodoCount';
 import { TodoFilters } from './TodoFilters';
 import { TodoItem } from './TodoItem';

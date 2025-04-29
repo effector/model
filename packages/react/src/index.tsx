@@ -141,6 +141,19 @@ function useGetKeyvalKey<Input, T, Api>(
   args:
     | [keyval: Keyval<Input, T, Api, any>]
     | [keyval: Keyval<Input, T, Api, any>, key: string | number],
+  allowUndefinedKey?: false,
+): [keyval: Keyval<Input, T, Api, any>, key: string | number];
+function useGetKeyvalKey<Input, T, Api>(
+  args:
+    | [keyval: Keyval<Input, T, Api, any>]
+    | [keyval: Keyval<Input, T, Api, any>, key: string | number],
+  allowUndefinedKey: true,
+): [keyval: Keyval<Input, T, Api, any>, key: string | number | void];
+function useGetKeyvalKey<Input, T, Api>(
+  args:
+    | [keyval: Keyval<Input, T, Api, any>]
+    | [keyval: Keyval<Input, T, Api, any>, key: string | number],
+  allowUndefinedKey: boolean = false,
 ): [keyval: Keyval<Input, T, Api, any>, key: string | number] {
   if (args.length === 1) {
     let [keyval] = args;
@@ -157,9 +170,9 @@ function useGetKeyvalKey<Input, T, Api>(
       }
       currentStack = currentStack.parent;
     }
-    if (key === undefined)
+    if (key === undefined && !allowUndefinedKey)
       throw Error('model not found, add EntityProvider first');
-    return [keyval, key];
+    return [keyval, key!];
   } else {
     return args;
   }
@@ -301,4 +314,11 @@ export function useEditItemField<Input>(
     }
     return result;
   }, [keyval, key, commonApi]);
+}
+
+export function useEditKeyval<Input, Output>(
+  keyval: Keyval<Input, Output, any, any>,
+) {
+  const [currentKeyval] = useGetKeyvalKey([keyval], true);
+  return useUnit(currentKeyval.edit);
 }
