@@ -1,5 +1,14 @@
 # @effector/model-react
 
+## 0.0.7
+
+### Patch Changes
+
+- ffe46f8: - Implement tree render support in `useEntityList`
+  - Add `useEditKeyval` public hook
+  - Fix `useEditItemField` types
+  - Fix peerDependencies
+
 ## 0.0.6
 
 ### Patch Changes
