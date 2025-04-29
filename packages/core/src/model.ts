@@ -2,12 +2,9 @@ import {
   Store,
   Event,
   Effect,
-  createNode,
   withRegion,
-  createEvent,
   clearNode,
   is,
-  Node,
   EventCallable,
 } from 'effector';
 
@@ -19,10 +16,11 @@ import type {
   Keyval,
   Show,
   ConvertToLensShape,
-  FactoryPathMap,
   StructShape,
 } from './types';
 import { define, isKeyval } from './define';
+import { collectFactoryPaths, createRegionalNode } from './factoryStatePaths';
+import { callInLazyStack } from './lazy';
 
 export function model<
   Input extends {
@@ -46,6 +44,7 @@ export function model<
   } = {},
 >({
   create,
+  isClone,
 }: {
   create: () => {
     state: Output;
@@ -54,6 +53,7 @@ export function model<
     optional?: string[];
     onMount?: EventCallable<void>;
   };
+  isClone: boolean;
 }): Model<
   Input,
   Show<{
@@ -71,7 +71,7 @@ export function model<
   //   }[keyof Output]]: Output[K];
   // }
 > {
-  const region = createNode({ regional: true });
+  const region = createRegionalNode(true);
   const {
     state = {} as Output,
     key,
@@ -80,7 +80,7 @@ export function model<
     onMount,
     ...rest
   } = withRegion(region, () => {
-    return create();
+    return callInLazyStack(() => create(), true, isClone);
   });
 
   if (Object.keys(rest).length > 0) {
@@ -118,17 +118,17 @@ export function model<
     type: 'structShape',
     shape: {},
   };
-  const defaultState = {} as any;
   for (const key in state) {
     shape[key] = define.store<any>();
-    structShape.shape[key] = isKeyval(state[key])
-      ? state[key].__struct
-      : {
-          type: 'structUnit',
-          unit: 'store',
-          derived: !is.targetable(state[key] as any),
-        };
-    defaultState[key] = is.store(state[key]) ? state[key].getState() : [];
+    structShape.shape[key] =
+      // TODO cloned keyvals are omitted because of infinite recursion
+      isKeyval(state[key]) && !state[key].isClone
+        ? state[key].__struct
+        : {
+            type: 'structUnit',
+            unit: 'store',
+            derived: !is.targetable(state[key] as any),
+          };
   }
   for (const key in api) {
     const value = api[key];
@@ -142,63 +142,33 @@ export function model<
   }
 
   clearNode(region);
+  let defaultState: any;
   return {
     type: 'model',
     create,
     keyField: key,
     requiredStateFields,
     keyvalFields,
+    apiFields: Object.keys(api),
     factoryStatePaths,
     shape,
     __lens: {} as any,
     __struct: structShape,
-    defaultState,
-  };
-}
-
-function collectFactoryPaths(state: Record<string, any>, initRegion: Node) {
-  const factoryPathToStateKey: FactoryPathMap = new Map();
-  for (const key in state) {
-    const value = state[key];
-    if (is.store(value) && is.targetable(value)) {
-      const path = findNodeInTree((value as any).graphite, initRegion);
-      if (path) {
-        let nestedFactoryPathMap = factoryPathToStateKey;
-        for (let i = 0; i < path.length; i++) {
-          const step = path[i];
-          const isLastStep = i === path.length - 1;
-          if (isLastStep) {
-            nestedFactoryPathMap.set(step, key);
-          } else {
-            let childFactoryPathMap = nestedFactoryPathMap.get(step);
-            if (!childFactoryPathMap) {
-              childFactoryPathMap = new Map();
-              nestedFactoryPathMap.set(step, childFactoryPathMap);
-            }
-            nestedFactoryPathMap = childFactoryPathMap as FactoryPathMap;
-          }
+    defaultState() {
+      if (!defaultState) {
+        const region = createRegionalNode(false);
+        const { state = {} } = withRegion(region, () =>
+          callInLazyStack(() => create(), false, false),
+        );
+        defaultState = {};
+        for (const key in state) {
+          defaultState[key] = is.store((state as any)[key])
+            ? (state as any)[key].getState()
+            : [];
         }
+        clearNode(region);
       }
-    }
-  }
-  return factoryPathToStateKey;
-}
-
-function findNodeInTree(
-  searchNode: Node,
-  currentNode: Node,
-  path: number[] = [],
-): number[] | void {
-  const idx = currentNode.family.links.findIndex((e) => e === searchNode);
-  if (idx !== -1) {
-    return [...path, idx];
-  } else {
-    for (let i = 0; i < currentNode.family.links.length; i++) {
-      const linkNode = currentNode.family.links[i];
-      if (linkNode.meta.isRegion) {
-        const result = findNodeInTree(searchNode, linkNode, [...path, i]);
-        if (result) return result;
-      }
-    }
-  }
+      return defaultState;
+    },
+  };
 }

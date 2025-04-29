@@ -52,11 +52,17 @@
       }
     },
     "test": {
-      "executor": "@nrwl/vite:test"
+      "executor": "@nrwl/vite:test",
+      "options": {
+        "config": "packages/react/vite.config.mts",
+        "passWithNoTests": true
+      }
     },
     "test_watch": {
       "executor": "@nrwl/vite:test",
       "options": {
+        "config": "packages/react/vite.config.mts",
+        "passWithNoTests": true,
         "watch": true
       }
     },

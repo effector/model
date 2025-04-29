@@ -13,8 +13,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@effector/model": ["packages/core/index.ts"],
-      "@effector/model-react": ["packages/react/index.ts"]
+      "@effector/model": ["./packages/core/index.ts"],
+      "@effector/model-react": ["./packages/react/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

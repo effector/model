@@ -1,0 +1,43 @@
+{
+  "name": "tree-todo-list",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/tree-todo-list/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/vite:build",
+      "options": {
+        "outputPath": "dist/apps/tree-todo-list"
+      }
+    },
+    "serve": {
+      "executor": "@nrwl/vite:dev-server",
+      "options": {
+        "buildTarget": "tree-todo-list:build"
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/tree-todo-list/**/*.{ts,js}"]
+      }
+    },
+    "preview": {
+      "executor": "@nrwl/vite:preview-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "tree-todo-list:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "tree-todo-list:build:development"
+        },
+        "production": {
+          "buildTarget": "tree-todo-list:build:production"
+        }
+      }
+    }
+  },
+  "tags": []
+}

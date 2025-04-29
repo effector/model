@@ -14,15 +14,15 @@ import {
 } from 'effector';
 import { useList, useStoreMap, useUnit } from 'effector-react';
 
-import type {
-  Model,
-  Instance,
-  Keyval,
-  StoreDef,
-  EventDef,
-  EffectDef,
-  AnyDef,
-  Show,
+import {
+  type Model,
+  type Instance,
+  type Keyval,
+  type StoreDef,
+  type EventDef,
+  type EffectDef,
+  type AnyDef,
+  isKeyval,
 } from '@effector/model';
 import { spawn } from '@effector/model';
 
@@ -30,6 +30,7 @@ type ModelStack =
   | {
       type: 'entity';
       model: Keyval<unknown, any, unknown, unknown>;
+      clone: Keyval<unknown, any, unknown, unknown> | null;
       value: string | number;
       parent: ModelStack | null;
     }
@@ -47,14 +48,15 @@ export function EntityProvider<T>({
   value,
   children,
 }: {
-  model: Keyval<unknown, T, unknown, unknown>;
+  model: Keyval<any, T, any, any>;
   value: string | number;
   children: ReactNode;
 }) {
   const currentStack = useContext(ModelStackContext);
   const nextStack = {
     type: 'entity' as const,
-    model,
+    model: model.cloneOf || model,
+    clone: model.isClone ? model : null,
     value,
     parent: currentStack,
   };
@@ -135,73 +137,42 @@ export function ModelProvider<
   );
 }
 
-export function useModel<Input, T, Api, Shape>(
-  model: Model<Input, T, Api, Shape>,
-): [
-  state: Show<
-    {
-      [K in keyof Input]: Input[K] extends Store<infer V>
-        ? V
-        : Input[K] extends StoreDef<infer V>
-          ? V
-          : Input[K] extends Event<infer V>
-            ? (params: V) => V
-            : Input[K] extends EventDef<infer V>
-              ? (params: V) => V
-              : Input[K] extends Effect<infer V, infer D, unknown>
-                ? (params: V) => Promise<D>
-                : Input[K] extends EffectDef<infer V, infer D, unknown>
-                  ? (params: V) => Promise<D>
-                  : Input[K] extends (params: infer V) => infer D
-                    ? (params: V) => Promise<Awaited<D>>
-                    : Input[K];
-    } & {
-      [K in keyof T]: T[K] extends Store<infer V> ? V : never;
-    }
-  >,
-  api: {
-    [K in keyof Api]: Api[K] extends Event<infer V>
-      ? (params: V) => V
-      : Api[K] extends Effect<infer V, infer D, unknown>
-        ? (params: V) => Promise<D>
-        : never;
-  },
-] {
-  const stack = useContext(ModelStackContext);
-  let currentStack = stack;
-  let instance: Instance<T, Api> | undefined;
-  while (instance === undefined && currentStack) {
-    if (currentStack.model === model) {
-      instance = currentStack.value as Instance<T, Api>;
-    }
-    currentStack = currentStack.parent;
-  }
-  if (instance === undefined)
-    throw Error('model not found, add ModelProvider first');
-  const state = useUnit(instance.props as any);
-  const api = useUnit(instance.api as any);
-  return [state as any, api as any];
-}
-
 function useGetKeyvalKey<Input, T, Api>(
   args:
     | [keyval: Keyval<Input, T, Api, any>]
     | [keyval: Keyval<Input, T, Api, any>, key: string | number],
+  allowUndefinedKey?: false,
+): [keyval: Keyval<Input, T, Api, any>, key: string | number];
+function useGetKeyvalKey<Input, T, Api>(
+  args:
+    | [keyval: Keyval<Input, T, Api, any>]
+    | [keyval: Keyval<Input, T, Api, any>, key: string | number],
+  allowUndefinedKey: true,
+): [keyval: Keyval<Input, T, Api, any>, key: string | number | void];
+function useGetKeyvalKey<Input, T, Api>(
+  args:
+    | [keyval: Keyval<Input, T, Api, any>]
+    | [keyval: Keyval<Input, T, Api, any>, key: string | number],
+  allowUndefinedKey: boolean = false,
 ): [keyval: Keyval<Input, T, Api, any>, key: string | number] {
   if (args.length === 1) {
-    const [keyval] = args;
+    let [keyval] = args;
     const stack = useContext(ModelStackContext);
     let currentStack = stack;
     let key: string | number | undefined;
     while (key === undefined && currentStack) {
       if (currentStack.model === keyval) {
         key = currentStack.value as string | number;
+        if (currentStack.type === 'entity' && currentStack.clone) {
+          // @ts-expect-error typecast
+          keyval = currentStack.clone;
+        }
       }
       currentStack = currentStack.parent;
     }
-    if (key === undefined)
+    if (key === undefined && !allowUndefinedKey)
       throw Error('model not found, add EntityProvider first');
-    return [keyval, key];
+    return [keyval, key!];
   } else {
     return args;
   }
@@ -230,7 +201,7 @@ export function useEntityItem<T>(
   });
   if (idx === -1) {
     // NOTE probably need to throw error here
-    return keyval.defaultState;
+    return keyval.defaultState();
   }
   return result as T;
 }
@@ -238,31 +209,61 @@ export function useEntityItem<T>(
 export function useEntityList<T>(
   keyval: Keyval<any, T, any, any>,
   View: () => ReactNode,
+): ReactNode;
+export function useEntityList<T>(config: {
+  keyval: Keyval<any, T, any, any>;
+  field: keyof T;
+  fn: () => ReactNode;
+}): ReactNode;
+export function useEntityList<T>(
+  ...[keyvalOrConfig, viewFn]:
+    | [keyval: Keyval<any, T, any, any>, View: () => ReactNode]
+    | [
+        config: {
+          keyval: Keyval<any, T, any, any>;
+          field: keyof T;
+          fn: () => ReactNode;
+        },
+      ]
 ) {
-  return useList(keyval.$keys, (key) => (
-    <EntityProvider model={keyval} value={key}>
-      <View />
-    </EntityProvider>
-  ));
-}
+  let View: () => ReactNode;
+  let keyvalToIterate: Keyval<any, T, any, any>;
+  if (isKeyval(keyvalOrConfig)) {
+    [keyvalToIterate, View] = [keyvalOrConfig, viewFn!];
+  } else {
+    const {
+      keyval: keyvalRaw,
+      field,
+      fn,
+    } = keyvalOrConfig as Exclude<
+      typeof keyvalOrConfig,
+      Keyval<any, any, any, any>
+    >;
+    View = fn;
+    /**
+     * keyvalRaw is always a root keyval, used as a tag
+     * keyval is current instance in which computation will happens
+     * instanceKeyval is child instance from a field
+     */
+    const [keyval, currentKey] = useGetKeyvalKey([keyvalRaw]);
+    const instanceKeyval = useStoreMap({
+      store: keyval.__$listState,
+      keys: [currentKey, field],
+      fn({ instances, keys }, [key, field]) {
+        const idx = keys.findIndex((e) => e === key);
+        return instances[idx].keyvalShape[field];
+      },
+    });
+    keyvalToIterate = instanceKeyval;
+  }
 
-export function useEntityByKey<T>(
-  keyval: Keyval<any, T, any, any>,
-  key: string | number,
-  View: (params: { value: T }) => ReactNode,
-) {
-  const idx = useStoreMap({
-    store: keyval.$keys,
-    keys: [key],
-    fn: (keys, [value]) => keys.indexOf(value),
+  return useList(keyvalToIterate.$keys, (key) => {
+    return (
+      <EntityProvider model={keyvalToIterate} value={key}>
+        <View />
+      </EntityProvider>
+    );
   });
-  const result = useStoreMap({
-    store: keyval.$items,
-    keys: [idx, key],
-    fn: (values, [idx]) => (idx === -1 ? null : values[idx]),
-  });
-  if (idx === -1) return null;
-  return <View value={result as T} />;
 }
 
 export function useItemApi<T, Api>(
@@ -296,7 +297,7 @@ export function useEditItemField<Input>(
     | [keyval: Keyval<Input, any, any, any>]
     | [keyval: Keyval<Input, any, any, any>, key: string | number]
 ): {
-  [K in keyof Input]: (params: Input[K]) => void;
+  [K in keyof Input]-?: (params: Input[K]) => void;
 } {
   const [keyval, key] = useGetKeyvalKey(args);
   const commonApi = useUnit(keyval.editField);
@@ -313,4 +314,11 @@ export function useEditItemField<Input>(
     }
     return result;
   }, [keyval, key, commonApi]);
+}
+
+export function useEditKeyval<Input, Output>(
+  keyval: Keyval<Input, Output, any, any>,
+) {
+  const [currentKeyval] = useGetKeyvalKey([keyval], true);
+  return useUnit(currentKeyval.edit);
 }

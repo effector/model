@@ -4,7 +4,7 @@
   "author": "zerobias",
   "license": "MIT",
   "scripts": {
-    "test": "nx run-many --target=test --all",
+    "test": "nx run-many --target=test --all --output-style=stream",
     "test:watch": "nx run-many --target=test_watch --all --args=\"--\"",
     "test:types": "nx run-many --target=typetest --all",
     "lint": "nx run-many --target=lint --all",

@@ -1,7 +1,75 @@
-import type { Model } from './types';
+import {
+  Store,
+  Event,
+  Effect,
+  createEffect,
+  createEvent,
+  createStore,
+} from 'effector';
 
-export function lazy<M extends Model<unknown, unknown, unknown, unknown>>(
-  cb: () => M,
-): M {
-  return cb();
+type Descriptor = 'store' | 'event' | 'effect';
+
+type TypeMap = {
+  store: Store<any>;
+  event: Event<any>;
+  effect: Effect<any, any, any>;
+};
+
+export let currentSkipLazyCb = true;
+export let isRoot = true;
+export let isInitClone = false;
+
+export function callInLazyStack<T extends () => any>(
+  fn: T,
+  skipLazyCb: boolean,
+  isClone: boolean,
+): ReturnType<T> {
+  const prevLazyCb = currentSkipLazyCb;
+  const prevIsRoot = isRoot;
+  const prevIsInitClone = isInitClone;
+  currentSkipLazyCb = skipLazyCb;
+  isRoot = false;
+  isInitClone = isClone;
+  const result = fn();
+  currentSkipLazyCb = prevLazyCb;
+  isRoot = prevIsRoot;
+  isInitClone = prevIsInitClone;
+  return result;
+}
+
+export function lazy<T>(creator: () => Store<T>): Store<T>;
+export function lazy<
+  S extends { [key: string]: Descriptor },
+  R extends { [K in keyof S]: TypeMap[S[K]] },
+>(shape: S, creator: () => R): R;
+export function lazy<
+  S extends readonly Descriptor[],
+  R extends { [K in keyof S]: TypeMap[S[K]] },
+>(shape: S, creator: () => R): R;
+
+export function lazy(shapeRaw: any, creatorRaw?: () => any): any {
+  const isSingle = typeof shapeRaw === 'function';
+  const shape = isSingle ? { single: 'store' } : shapeRaw;
+  const creator: () => any = isSingle ? shapeRaw : creatorRaw;
+  if (currentSkipLazyCb) {
+    const result = Array.isArray(shape) ? [] : ({} as any);
+    for (const key in shape) {
+      switch (shape[key]) {
+        case 'store':
+          result[key] = createStore(null, { serialize: 'ignore' }).map(
+            (x: any) => x,
+          );
+          break;
+        case 'event':
+          result[key] = createEvent();
+          break;
+        case 'effect':
+          result[key] = createEffect(() => {});
+          break;
+      }
+    }
+    return isSingle ? result.single : result;
+  } else {
+    return creator();
+  }
 }

@@ -25,6 +25,8 @@ export type Model<Props, Output, Api, Shape> = {
   readonly __lens: Shape;
   // private
   // readonly api: Api;
+  // private
+  readonly apiFields: Array<keyof Api>;
   shape: Show<
     {
       [K in keyof Props]: Props[K] extends Store<infer V>
@@ -56,7 +58,7 @@ export type Model<Props, Output, Api, Shape> = {
   >;
   // private
   __struct: StructShape;
-  defaultState: Output;
+  defaultState(): Output;
 };
 
 export type Instance<Output, Api> = {
@@ -159,7 +161,7 @@ export type StructKeyval = {
   type: 'structKeyval';
   getKey: (input: any) => string | number;
   shape: Record<string, StructUnit | StructKeyval>;
-  defaultItem: any;
+  defaultItem(): any;
 };
 
 export type KeyStore = Store<string | number>;
@@ -234,7 +236,32 @@ export type Keyval<Input, Enriched, Api, Shape> = {
   __lens: Shape;
   // private
   __struct: StructKeyval;
-  defaultState: Enriched;
+  defaultState(): Enriched;
+  //private
+  clone(
+    isClone: boolean,
+    cloneOf: Keyval<Input, Enriched, Api, Shape> | null,
+  ): Keyval<Input, Enriched, Api, Shape>;
+  isClone: boolean;
+  // private
+  __$listState: Store<
+    ListState<
+      Enriched,
+      {
+        [K in keyof Enriched]:
+          | Store<Enriched[K]>
+          | Keyval<any, Enriched[K], any, any>;
+      },
+      Api
+    >
+  >;
+  cloneOf: Keyval<any, any, any, any> | null;
+  getCloneData(): {
+    defaultState(): Enriched;
+    structShape: StructKeyval;
+    keyField: keyof Input | null;
+    getKey(entity: Input): string | number;
+  };
 };
 
 export type StoreContext<T> = {
@@ -276,3 +303,66 @@ export type Show<A extends any> = A extends BuiltInObject
   : {
       [K in keyof A]: A[K];
     }; // & {}
+
+export type InputType<T extends Keyval<any, any, any, any>> =
+  T extends Keyval<infer Input, any, any, any> ? Input : never;
+
+/** Internal state of keyval */
+export type ListState<Enriched, Output, Api> = {
+  items: Enriched[];
+  instances: Array<Instance<Output, Api>>;
+  keys: Array<string | number>;
+};
+
+type ToPlainShape<Shape> = {
+  [K in {
+    [P in keyof Shape]: Shape[P] extends Store<unknown>
+      ? P
+      : Shape[P] extends StoreDef<unknown>
+        ? P
+        : never;
+  }[keyof Shape]]: Shape[K] extends Store<infer V>
+    ? V
+    : Shape[K] extends StoreDef<infer V>
+      ? V
+      : never;
+};
+
+type ParamsNormalize<
+  T extends {
+    [key: string]:
+      | Store<unknown>
+      | Event<unknown>
+      | Effect<unknown, unknown, unknown>
+      | StoreDef<unknown>
+      | EventDef<unknown>
+      | EffectDef<unknown, unknown, unknown>
+      | unknown;
+  },
+> = {
+  [K in keyof T]: T[K] extends Store<infer V>
+    ? T[K] | V
+    : T[K] extends Event<unknown>
+      ? T[K]
+      : T[K] extends Effect<infer V, infer Res, unknown>
+        ? T[K] | ((params: V) => Res | Promise<Res>)
+        : T[K] extends StoreDef<infer V>
+          ? Store<V> | V
+          : T[K] extends EventDef<infer V>
+            ? Event<V>
+            : T[K] extends EffectDef<infer V, infer Res, infer Err>
+              ? Effect<V, Res, Err> | ((params: V) => Res | Promise<Res>)
+              : T[K] extends (params: infer V) => infer Res
+                ?
+                    | Effect<V, Awaited<Res>, unknown>
+                    | T[K]
+                    | ((params: V) => Awaited<Res> | Promise<Awaited<Res>>)
+                : Store<T[K]> | T[K];
+};
+
+export type KeyvalWithState<Input, Output> = Keyval<
+  Input,
+  Output,
+  unknown,
+  unknown
+>;
