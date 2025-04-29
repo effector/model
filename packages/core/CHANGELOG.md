@@ -1,5 +1,16 @@
 # @effector/model
 
+## 0.0.7
+
+### Patch Changes
+
+- ffe46f8: - Add `InputType` and `KeyvalWithState` type helpers
+  - Add `isKeyval` method
+  - Add recursive keyval support
+  - Implement lazy initialization for keyval body
+  - Add support for filling nested keyvals on `.edit.add`
+  - Fix `onMount` types
+
 ## 0.0.6
 
 ### Patch Changes
