@@ -156,28 +156,44 @@ function createID() {
   return `id-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-export const addTodo = todoList.edit.add.prepend((inputs: InputTodo[]) => {
-  function addIds(inputs: InputTodo[]): TodoInputShape[] {
-    return inputs.map(({ title, subtasks = [] }) => ({
+export const addTodo = createAction({
+  source: $todoDraft,
+  target: {
+    add: todoList.edit.add,
+    todoDraft: $todoDraft,
+  },
+  fn(target, todoDraft) {
+    if (!todoDraft.trim()) return;
+    target.add({
       id: createID(),
-      title,
-      subtasks: addIds(subtasks),
-    }));
-  }
-  return addIds(inputs);
+      title: todoDraft.trim(),
+      subtasks: [],
+    });
+    target.todoDraft.reinit();
+  },
 });
 
-addTodo([
-  { title: '🖱 Double-click to edit' },
-  { title: 'Effector models' },
-  {
-    title: 'Example task',
-    subtasks: [
-      {
-        title: 'subtask #1',
-        subtasks: [{ title: 'Foo' }, { title: 'Bar' }],
-      },
-      { title: 'subtask #2' },
-    ],
-  },
-]);
+function addIds(inputs: InputTodo[]): TodoInputShape[] {
+  return inputs.map(({ title, subtasks = [] }) => ({
+    id: createID(),
+    title,
+    subtasks: addIds(subtasks),
+  }));
+}
+
+todoList.edit.add(
+  addIds([
+    { title: '🖱 Double-click to edit' },
+    { title: 'Effector models' },
+    {
+      title: 'Example task',
+      subtasks: [
+        {
+          title: 'subtask #1',
+          subtasks: [{ title: 'Foo' }, { title: 'Bar' }],
+        },
+        { title: 'subtask #2' },
+      ],
+    },
+  ]),
+);
