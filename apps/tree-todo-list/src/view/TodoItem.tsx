@@ -28,7 +28,7 @@ export const TodoItem = ({ nesting }: { nesting: number }) => {
     remove(id);
   };
   const onAddChild = () => {
-    // addTodoFromDraft({ childOf: id });
+    api.addSubtask();
   };
   const onEdit = () => api.editMode('on');
   const onSave = () => api.saveDraft();

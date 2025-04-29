@@ -106,6 +106,21 @@ export const todoList = keyval(() => {
     target: $completed,
   });
 
+  const [addSubtask] = lazy(['event'], () => [
+    createAction({
+      source: $todoDraft,
+      target: { todoDraft: $todoDraft, add: childsList.edit.add },
+      fn(target, todoDraft) {
+        target.add({
+          id: createID(),
+          title: todoDraft,
+          subtasks: [],
+        });
+        target.todoDraft.reinit();
+      },
+    }),
+  ]);
+
   return {
     key: 'id',
     state: {
@@ -123,6 +138,7 @@ export const todoList = keyval(() => {
       saveDraft,
       editMode,
       toggleCompleted,
+      addSubtask,
     },
     optional: ['completed', 'editing', 'titleDraft'],
   };
@@ -132,10 +148,18 @@ export const $totalSize = combine(todoList.$items, (items) => {
   return items.reduce((acc, { subtasksTotal }) => acc + 1 + subtasksTotal, 0);
 });
 
+export const $todoDraft = createStore('');
+export const editDraft = createEvent<string>();
+sample({ clock: editDraft, target: $todoDraft });
+
+function createID() {
+  return `id-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 export const addTodo = todoList.edit.add.prepend((inputs: InputTodo[]) => {
   function addIds(inputs: InputTodo[]): TodoInputShape[] {
     return inputs.map(({ title, subtasks = [] }) => ({
-      id: `id-${Math.random().toString(36).slice(2, 10)}`,
+      id: createID(),
       title,
       subtasks: addIds(subtasks),
     }));

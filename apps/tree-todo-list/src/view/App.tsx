@@ -1,8 +1,8 @@
-import { KeyboardEvent, ChangeEvent } from 'react';
+import { ChangeEvent } from 'react';
 import { useUnit } from 'effector-react';
 import { useEntityList } from '@effector/model-react';
 
-import { todoList, addTodo } from '../model';
+import { todoList, $todoDraft, editDraft } from '../model';
 import { TodoCount } from './TodoCount';
 import { TodoFilters } from './TodoFilters';
 import { TodoItem } from './TodoItem';
@@ -10,22 +10,9 @@ import { TodoItem } from './TodoItem';
 import './main.css';
 
 export const App = () => {
-  const [addTodoClicked] = useUnit([addTodo]);
-  // const draft = useUnit($descriptionDraft);
+  const [todoDraft, onDraftChange] = useUnit([$todoDraft, editDraft]);
   const onChangeDraft = (e: ChangeEvent<HTMLInputElement>) => {
-    // changeDraft(e.target.value);
-  };
-  const onAddTodo = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key !== 'Enter') return;
-    e.preventDefault();
-    const input = e.currentTarget;
-    if (input.value && input.value.trim()) {
-      addTodoClicked([
-        {
-          title: input.value.trim(),
-        },
-      ]);
-    }
+    onDraftChange(e.target.value);
   };
   const onToggleAll = (e: ChangeEvent<HTMLInputElement>) => {
     // toggleAll(e.currentTarget.checked);
@@ -41,9 +28,8 @@ export const App = () => {
           <input
             className="new-todo"
             placeholder="What needs to be done?"
-            onKeyDown={onAddTodo}
             onChange={onChangeDraft}
-            value={'---'}
+            value={todoDraft}
           />
         </header>
         <section className="main">
