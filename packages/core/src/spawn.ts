@@ -84,7 +84,7 @@ export function spawn<
         state: storeOutputs = {},
         api: apiOutputs = {},
         onMount,
-      } = callInLazyStack(() => model.create(), false);
+      } = callInLazyStack(() => model.create(), false, false);
       const resultShape = {
         ...storeOutputs,
       } as Output;

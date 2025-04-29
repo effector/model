@@ -17,18 +17,23 @@ type TypeMap = {
 
 export let currentSkipLazyCb = true;
 export let isRoot = true;
+export let isInitClone = false;
 
 export function callInLazyStack<T extends () => any>(
   fn: T,
   skipLazyCb: boolean,
+  isClone: boolean,
 ): ReturnType<T> {
   const prevLazyCb = currentSkipLazyCb;
   const prevIsRoot = isRoot;
+  const prevIsInitClone = isInitClone;
   currentSkipLazyCb = skipLazyCb;
   isRoot = false;
+  isInitClone = isClone;
   const result = fn();
   currentSkipLazyCb = prevLazyCb;
   isRoot = prevIsRoot;
+  isInitClone = prevIsInitClone;
   return result;
 }
 

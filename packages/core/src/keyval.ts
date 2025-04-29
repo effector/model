@@ -100,17 +100,18 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
     return options.clone(true, options.cloneOf || options);
   }
 
+  type Enriched = Input & ModelEnhance;
+  type Output = {
+    [K in keyof ModelEnhance]:
+      | Store<ModelEnhance[K]>
+      | Keyval<any, ModelEnhance[K], any, any>;
+  };
+  type KeyvalListState = ListState<Enriched, Output, Api>;
+
   const init = (
     isClone: boolean,
-    cloneOf: Keyval<any, any, any, any> | null,
+    cloneOf: Keyval<Input, Enriched, Api, Shape> | null,
   ) => {
-    type Enriched = Input & ModelEnhance;
-    type Output = {
-      [K in keyof ModelEnhance]:
-        | Store<ModelEnhance[K]>
-        | Keyval<any, ModelEnhance[K], any, any>;
-    };
-    type KeyvalListState = ListState<Enriched, Output, Api>;
     const $entities = createStore<KeyvalListState>({
       items: [],
       instances: [],
@@ -118,44 +119,52 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
     });
     const $items = $entities.map(({ items }) => items);
     const $keys = $entities.map(({ keys }) => keys);
+    let getKeyRaw:
+      | keyof Input
+      | ((entity: Input) => string | number)
+      | undefined;
+    let create:
+      | void
+      | ((config: { onMount: Event<void> }) => {
+          state: unknown;
+          api?: unknown;
+          key: string;
+          optional?: string[];
+        });
+    let shape: Shape;
+    if (typeof options === 'function') {
+      create = options as any;
+    } else {
+      ({
+        key: getKeyRaw,
+        shape = {} as Shape,
+        create,
+      } = options as Exclude<typeof options, Keyval<any, any, any, any>>);
+    }
+    const {
+      getKey: getKeyClone,
+      keyField: keyFieldClone,
+      structShape: structShapeClone,
+      defaultState: defaultStateClone,
+    } = cloneOf?.getCloneData() ?? {};
     return lazyInit(
       {
         type: 'keyval',
         api: 0,
         __lens: 0,
-        __struct: 0,
+        __struct: structShapeClone,
         $items,
         $keys,
         __$listState: $entities,
-        defaultState: () => null as any,
+        defaultState: defaultStateClone,
         edit: 0,
         editField: 0,
         clone: init,
         isClone,
         cloneOf,
+        getCloneData: cloneOf?.getCloneData ?? (() => null as any),
       } as any as Keyval<Input, Input & ModelEnhance, Api, Shape>,
       () => {
-        let create:
-          | void
-          | ((config: { onMount: Event<void> }) => {
-              state: unknown;
-              api?: unknown;
-              key: string;
-              optional?: string[];
-            });
-        // @ts-expect-error bad implementation
-        let getKeyRaw;
-        let shape: Shape;
-        if (typeof options === 'function') {
-          create = options as any;
-        } else {
-          ({
-            key: getKeyRaw,
-            shape = {} as Shape,
-            create,
-          } = options as Exclude<typeof options, Keyval<any, any, any, any>>);
-        }
-
         let kvModel:
           | Model<
               {
@@ -169,20 +178,55 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
 
         if (create) {
           // @ts-expect-error typecast
-          kvModel = model({ create });
+          kvModel = model({ create, isClone });
         }
+        const getKey =
+          getKeyClone ??
+          (!kvModel
+            ? typeof getKeyRaw === 'function'
+              ? getKeyRaw
+              : // @ts-expect-error bad implementation
+                (entity: Input) => entity[getKeyRaw] as string | number
+            : (entity: Input) => entity[kvModel.keyField] as string | number);
+        const keyField =
+          keyFieldClone ??
+          (!kvModel
+            ? typeof getKeyRaw === 'function' || getKeyRaw === undefined
+              ? null
+              : getKeyRaw
+            : kvModel.keyField);
+        const structShape =
+          structShapeClone ??
+          (kvModel
+            ? ({
+                type: 'structKeyval',
+                getKey,
+                shape: kvModel.__struct!.shape,
+                defaultItem: kvModel.defaultState,
+              } as StructKeyval)
+            : shape!
+              ? ({
+                  type: 'structKeyval',
+                  getKey,
+                  shape: {},
+                  // TODO add support for .itemStore
+                  defaultItem: () => null,
+                } as StructKeyval)
+              : (null as any as StructKeyval));
 
-        const getKey = !kvModel
-          ? typeof getKeyRaw === 'function'
-            ? getKeyRaw
-            : // @ts-expect-error bad implementation
-              (entity: Input) => entity[getKeyRaw] as string | number
-          : (entity: Input) => entity[kvModel.keyField] as string | number;
-        const keyField = !kvModel
-          ? typeof getKeyRaw === 'function' || getKeyRaw === undefined
-            ? null
-            : getKeyRaw
-          : kvModel.keyField;
+        const defaultState =
+          defaultStateClone ?? (() => kvModel?.defaultState() ?? (null as any));
+
+        const getCloneData =
+          cloneOf?.getCloneData ??
+          (() => {
+            return {
+              defaultState,
+              structShape,
+              keyField,
+              getKey,
+            };
+          });
 
         const api = createInstanceApi($entities, kvModel);
         const editApi = createEditApi(
@@ -194,41 +238,22 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
         );
         const editField = createEditFieldApi(keyField, kvModel, editApi.update);
 
-        const structShape = kvModel
-          ? ({
-              type: 'structKeyval',
-              getKey,
-              shape: kvModel.__struct!.shape,
-              defaultItem: kvModel.defaultState,
-            } as StructKeyval)
-          : shape!
-            ? ({
-                type: 'structKeyval',
-                getKey,
-                shape: {},
-                // TODO add support for .itemStore
-                defaultItem: () => null,
-              } as StructKeyval)
-            : (null as any as StructKeyval);
-
         return {
           type: 'keyval' as const,
           api: api as any,
-          // @ts-expect-error bad implementation
           __lens: shape,
           __struct: structShape,
           $items,
           $keys,
           __$listState: $entities as any,
-          defaultState() {
-            return kvModel?.defaultState() ?? (null as any);
-          },
+          defaultState,
           edit: editApi,
           editField,
           clone: init,
           isClone,
           cloneOf,
-        };
+          getCloneData,
+        } as Keyval<Input, Input & ModelEnhance, Api, Shape>;
       },
     );
   };

@@ -44,6 +44,7 @@ export function model<
   } = {},
 >({
   create,
+  isClone,
 }: {
   create: () => {
     state: Output;
@@ -52,6 +53,7 @@ export function model<
     optional?: string[];
     onMount?: EventCallable<void>;
   };
+  isClone: boolean;
 }): Model<
   Input,
   Show<{
@@ -78,7 +80,7 @@ export function model<
     onMount,
     ...rest
   } = withRegion(region, () => {
-    return callInLazyStack(() => create(), true);
+    return callInLazyStack(() => create(), true, isClone);
   });
 
   if (Object.keys(rest).length > 0) {
@@ -156,7 +158,7 @@ export function model<
       if (!defaultState) {
         const region = createRegionalNode(false);
         const { state = {} } = withRegion(region, () =>
-          callInLazyStack(() => create(), false),
+          callInLazyStack(() => create(), false, false),
         );
         defaultState = {};
         for (const key in state) {

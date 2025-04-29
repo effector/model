@@ -1,4 +1,4 @@
-import { currentSkipLazyCb, isRoot } from './lazy';
+import { currentSkipLazyCb, isRoot, isInitClone } from './lazy';
 
 const queue: InitTask<any>[] = [];
 let scheduled = false;
@@ -17,6 +17,7 @@ const ignore = [
   '__$listState',
   '$items',
   '$keys',
+  'getCloneData',
 ];
 
 function runQueue() {
@@ -39,7 +40,7 @@ function runQueue() {
 }
 
 export function lazyInit<T extends object>(target: T, init: () => T): T {
-  if (currentSkipLazyCb && !isRoot) {
+  if (currentSkipLazyCb && !isRoot && isInitClone) {
     return target;
   }
   const task: InitTask<T> = { target, init, initialized: false };

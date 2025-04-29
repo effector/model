@@ -240,7 +240,7 @@ export type Keyval<Input, Enriched, Api, Shape> = {
   //private
   clone(
     isClone: boolean,
-    cloneOf: Keyval<any, any, any, any> | null,
+    cloneOf: Keyval<Input, Enriched, Api, Shape> | null,
   ): Keyval<Input, Enriched, Api, Shape>;
   isClone: boolean;
   // private
@@ -256,6 +256,12 @@ export type Keyval<Input, Enriched, Api, Shape> = {
     >
   >;
   cloneOf: Keyval<any, any, any, any> | null;
+  getCloneData(): {
+    defaultState(): Enriched;
+    structShape: StructKeyval;
+    keyField: keyof Input | null;
+    getKey(entity: Input): string | number;
+  };
 };
 
 export type StoreContext<T> = {
