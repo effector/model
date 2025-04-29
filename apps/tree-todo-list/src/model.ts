@@ -1,5 +1,11 @@
-import { combine, createEvent, createStore, sample } from 'effector';
-import { keyval, lazy, KeyvalWithState } from '@effector/model';
+import {
+  combine,
+  createEvent,
+  createStore,
+  type EventCallable,
+  sample,
+} from 'effector';
+import { KeyOrKeys, keyval, lazy, type Keyval } from '@effector/model';
 import { createAction } from 'effector-action';
 
 type InputTodo = {
@@ -49,9 +55,11 @@ export const todoList = keyval(() => {
     }
   });
 
-  const childsList = keyval(todoList) as KeyvalWithState<
+  const childsList = keyval(todoList) as Keyval<
     TodoInputShape,
-    TodoShape
+    TodoShape,
+    { removeCompleted: EventCallable<void>; toggleAll: EventCallable<void> },
+    any
   >;
 
   const $subtasksTotal = lazy(() => {
@@ -106,20 +114,14 @@ export const todoList = keyval(() => {
     target: $completed,
   });
 
-  const [addSubtask] = lazy(['event'], () => [
-    createAction({
-      source: $todoDraft,
-      target: { todoDraft: $todoDraft, add: childsList.edit.add },
-      fn(target, todoDraft) {
-        target.add({
-          id: createID(),
-          title: todoDraft,
-          subtasks: [],
-        });
-        target.todoDraft.reinit();
-      },
-    }),
-  ]);
+  const [addSubtask, removeCompleted, toggleAll] = lazy(
+    ['event', 'event', 'event'],
+    () => [
+      createAddTodo(childsList),
+      createRemoveCompleted(childsList),
+      createToggleAll(childsList),
+    ],
+  );
 
   return {
     key: 'id',
@@ -139,10 +141,85 @@ export const todoList = keyval(() => {
       editMode,
       toggleCompleted,
       addSubtask,
+      removeCompleted,
+      toggleAll,
     },
     optional: ['completed', 'editing', 'titleDraft'],
   };
 });
+
+function createRemoveCompleted(
+  todoList: Keyval<
+    any,
+    TodoShape,
+    { removeCompleted: EventCallable<void> },
+    any
+  >,
+) {
+  return createAction({
+    source: todoList.$keys,
+    target: {
+      removeCompletedNestedChilds: todoList.api.removeCompleted,
+      /** effector-action messing with function payloads so we need to wrap data to pass thru it */
+      removeItems: todoList.edit.remove.prepend<{
+        fn: (entity: TodoShape) => boolean;
+      }>(({ fn }) => fn),
+    },
+    fn(target, childKeys) {
+      target.removeCompletedNestedChilds({
+        key: childKeys,
+        data: Array.from(childKeys, () => undefined),
+      });
+      target.removeItems({
+        fn: ({ completed }) => completed,
+      });
+    },
+  });
+}
+
+function createToggleAll(
+  todoList: Keyval<any, TodoShape, { toggleAll: EventCallable<void> }, any>,
+) {
+  return createAction({
+    source: todoList.$keys,
+    target: {
+      toggleAllNestedChilds: todoList.api.toggleAll,
+      mapItems: todoList.edit.map,
+    },
+    fn(target, childKeys) {
+      target.toggleAllNestedChilds({
+        key: childKeys,
+        data: Array.from(childKeys, () => undefined),
+      });
+      target.mapItems({
+        keys: childKeys,
+        map: ({ completed }) => ({ completed: !completed }),
+      });
+    },
+  });
+}
+
+function createAddTodo(todoList: Keyval<any, TodoShape, any, any>) {
+  return createAction({
+    source: $todoDraft,
+    target: {
+      add: todoList.edit.add,
+      todoDraft: $todoDraft,
+    },
+    fn(target, todoDraft) {
+      if (!todoDraft.trim()) return;
+      target.add({
+        id: createID(),
+        title: todoDraft.trim(),
+        subtasks: [],
+      });
+      target.todoDraft.reinit();
+    },
+  });
+}
+
+export const removeCompleted = createRemoveCompleted(todoList);
+export const toggleAll = createToggleAll(todoList);
 
 export const $totalSize = combine(todoList.$items, (items) => {
   return items.reduce((acc, { subtasksTotal }) => acc + 1 + subtasksTotal, 0);
@@ -156,22 +233,7 @@ function createID() {
   return `id-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-export const addTodo = createAction({
-  source: $todoDraft,
-  target: {
-    add: todoList.edit.add,
-    todoDraft: $todoDraft,
-  },
-  fn(target, todoDraft) {
-    if (!todoDraft.trim()) return;
-    target.add({
-      id: createID(),
-      title: todoDraft.trim(),
-      subtasks: [],
-    });
-    target.todoDraft.reinit();
-  },
-});
+export const addTodo = createAddTodo(todoList);
 
 function addIds(inputs: InputTodo[]): TodoInputShape[] {
   return inputs.map(({ title, subtasks = [] }) => ({
