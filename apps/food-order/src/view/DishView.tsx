@@ -59,10 +59,9 @@ const AdditiveSimpleItem = ({
   price: number;
 }) => {
   const item = useEntityItem(additivesList, additive);
-  const orderedAmount = useEntityItem(additivesList, additive).amount;
+  const orderedAmount = item.choice === choice ? item.amount : 0;
   const [add, remove] = useUnit([addAdditive, removeAdditive]);
-  const selected = orderedAmount !== 0;
-  console.log('AdditiveSimpleItem', item, selected);
+  const selected = item.choice === choice && orderedAmount !== 0;
   return (
     <div className="flex justify-between items-center mb-2">
       <AdditiveWithPrice text={choice} price={price} />

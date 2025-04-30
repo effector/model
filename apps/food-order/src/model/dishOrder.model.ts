@@ -8,6 +8,7 @@ import {
   calculateAdditiveOrderPriceFromEntity,
   calculateDishOrderPrice,
 } from './calculateUtils';
+import { createAction } from 'effector-action';
 
 const restaurantLens = lens(restaurantsList, $restaurantName);
 
@@ -51,7 +52,23 @@ export const additivesList = keyval(() => {
 });
 
 export const addAdditive = createEvent<{ additive: string; choice: string }>();
-export const removeAdditive = createEvent<string>();
+export const removeAdditive = createAction({
+  source: additivesList.$items,
+  target: {
+    map: additivesList.edit.map,
+    remove: additivesList.edit.remove,
+  },
+  fn(target, items, additiveToRemove: string) {
+    if (items.some((e) => e.additive === additiveToRemove && e.amount === 1)) {
+      target.remove(additiveToRemove);
+    } else {
+      target.map({
+        keys: [additiveToRemove],
+        map: ({ amount }) => ({ amount: amount - 1 }),
+      });
+    }
+  },
+});
 
 export const $currentDishTotalPrice = combine(
   $dish,
@@ -63,17 +80,15 @@ export const $currentDishTotalPrice = combine(
 sample({
   clock: addAdditive,
   target: additivesList.edit.map.prepend(
-    (e: UnitValue<typeof addAdditive>) => ({
-      keys: [e.additive],
-      map: ({ amount, ...rest }) => ({ ...rest, amount: amount + 1 }),
+    ({ additive, choice }: UnitValue<typeof addAdditive>) => ({
+      keys: [additive],
+      map: ({ amount, choice: currentChoice }) => ({
+        choice,
+        amount: currentChoice === choice ? amount + 1 : 1,
+      }),
       upsert: true,
     }),
   ),
-});
-
-sample({
-  clock: removeAdditive,
-  target: additivesList.edit.remove,
 });
 
 sample({

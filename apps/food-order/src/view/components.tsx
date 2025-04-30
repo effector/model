@@ -10,7 +10,13 @@ export const Radio = ({
   checked: boolean;
   onClick: () => void;
 }) => (
-  <label className="flex items-center space-x-3 cursor-pointer">
+  <label
+    className="flex items-center space-x-3 cursor-pointer"
+    onClick={(e) => {
+      e.preventDefault();
+      onClick();
+    }}
+  >
     <input
       type="radio"
       name={name}
