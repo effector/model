@@ -220,8 +220,8 @@ importers:
   apps/food-order:
     dependencies:
       effector-action:
-        specifier: ^1.1.0
-        version: 1.1.0(effector@23.3.0)(patronum@2.3.0(effector@23.3.0))
+        specifier: ^1.1.1
+        version: 1.1.1(effector@23.3.0)(patronum@2.3.0(effector@23.3.0))
     devDependencies:
       '@vitejs/plugin-react':
         specifier: ^3.1.0
@@ -258,8 +258,8 @@ importers:
   apps/tree-todo-list:
     dependencies:
       effector-action:
-        specifier: ^1.1.0
-        version: 1.1.0(effector@23.3.0)(patronum@2.3.0(effector@23.3.0))
+        specifier: ^1.1.1
+        version: 1.1.1(effector@23.3.0)(patronum@2.3.0(effector@23.3.0))
     devDependencies:
       '@vitejs/plugin-react':
         specifier: ^3.1.0
@@ -3097,8 +3097,8 @@ packages:
   duplexer@0.1.2:
     resolution: {integrity: sha512-jtD6YG370ZCIi/9GTaJKQxWTZD045+4R4hTk/x1UyoqadyJ9x9CgSi1RlVDQF8U2sxLLSnFkCaMihqljHIWgMg==}
 
-  effector-action@1.1.0:
-    resolution: {integrity: sha512-CHzv5LB6dW81GRiQKoVIxVEDeRPVTKipy2LWH8AjcSAV7Dmv7x9fvU0SQt6FmsmMV8LHw3v2jomL3kpVp3yNdA==}
+  effector-action@1.1.1:
+    resolution: {integrity: sha512-CnSDv46aOb/0mCiJ93m49ug+/2Fl+lpH1xMNFCFg/HHfZBsROgfXX1iQKko4/YsDoLakytQBXq4nbiwGszNkuQ==}
     peerDependencies:
       effector: '>=23'
       patronum: '>=2.1.0'
@@ -10293,7 +10293,7 @@ snapshots:
 
   duplexer@0.1.2: {}
 
-  effector-action@1.1.0(effector@23.3.0)(patronum@2.3.0(effector@23.3.0)):
+  effector-action@1.1.1(effector@23.3.0)(patronum@2.3.0(effector@23.3.0)):
     dependencies:
       effector: 23.3.0
       patronum: 2.3.0(effector@23.3.0)

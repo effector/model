@@ -160,19 +160,14 @@ function createRemoveCompleted(
     source: todoList.$keys,
     target: {
       removeCompletedNestedChilds: todoList.api.removeCompleted,
-      /** effector-action messing with function payloads so we need to wrap data to pass thru it */
-      removeItems: todoList.edit.remove.prepend<{
-        fn: (entity: TodoShape) => boolean;
-      }>(({ fn }) => fn),
+      removeItems: todoList.edit.remove,
     },
     fn(target, childKeys) {
       target.removeCompletedNestedChilds({
         key: childKeys,
         data: Array.from(childKeys, () => undefined),
       });
-      target.removeItems({
-        fn: ({ completed }) => completed,
-      });
+      target.removeItems(({ completed }) => completed);
     },
   });
 }
