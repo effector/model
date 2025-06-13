@@ -190,18 +190,28 @@ export type ConvertToLensShape<Shape> = {
 
 type OneOrMany<T> = T | Array<T>;
 
+type ApiEvent<T> = void extends T
+  ?
+      | { key: string | number; data?: void }
+      | {
+          key: Array<string | number>;
+          data?: void[];
+        }
+  :
+      | { key: string | number; data: T }
+      | {
+          key: Array<string | number>;
+          data: T[];
+        };
+
 export type Keyval<Input, Enriched, Api, Shape> = {
   type: 'keyval';
   api: {
     [K in keyof Api]: Api[K] extends EventCallable<infer V>
-      ? EventCallable<
-          | { key: string | number; data: V }
-          | {
-              key: Array<string | number>;
-              data: V[];
-            }
-        >
-      : never;
+      ? EventCallable<ApiEvent<V>>
+      : Api[K] extends Effect<infer V, any, any>
+        ? EventCallable<ApiEvent<V>>
+        : never;
   };
   $items: Store<Enriched[]>;
   $keys: Store<Array<string | number>>;
