@@ -1,5 +1,13 @@
 # @effector/model
 
+## 0.0.8
+
+### Patch Changes
+
+- 72bab7d: - Fix module package type (change from commonjs to esm)
+  - Add support for effects to `api`
+  - Allow to omit `data` field when `api` unit is void
+
 ## 0.0.7
 
 ### Patch Changes

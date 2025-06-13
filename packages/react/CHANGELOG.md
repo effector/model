@@ -1,5 +1,11 @@
 # @effector/model-react
 
+## 0.0.8
+
+### Patch Changes
+
+- - Fix module package type (change from commonjs to esm)
+
 ## 0.0.7
 
 ### Patch Changes
