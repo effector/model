@@ -30,7 +30,12 @@ export function createInstanceApi<Input, Enriched, Output, Api, Shape>(
       api[prop] = evt;
       $entities.on(evt, (state, payload) => {
         const [key, data] = Array.isArray(payload.key)
-          ? [payload.key, payload.data]
+          ? [
+              payload.key,
+              Array.isArray(payload.data)
+                ? payload.data
+                : Array.from({ length: payload.key.length }),
+            ]
           : [[payload.key], [payload.data]];
         const targets = [] as any[];
         const params = [] as any[];
