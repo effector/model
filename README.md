@@ -4,6 +4,8 @@ Effector models with ease
 
 Work in progress, api may change
 
+The goal of this project is to implement the concept of models in the effector. This requires a lot of experimentation and fresh ideas, so if you don't see commits in this repo for a long time, it means we're testing what we've come up with on real projects (this is critical if we want to achieve a truly user-friendly API).
+
 ## API
 
 ```ts
