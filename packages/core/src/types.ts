@@ -1,378 +1,137 @@
-import type {
-  Store,
-  Event,
-  Effect,
-  EventCallable,
-  Node,
-  UnitTargetable,
-} from 'effector';
+import { Effect, Event, EventCallable, Store, StoreWritable } from "effector";
 
-export type FactoryPathMap = Map<number, string | FactoryPathMap>;
+export type RefTarget = Keyval<any, any, any, any> | Model<any>;
 
-export type Model<Props, Output, Api, Shape> = {
-  type: 'model';
-  // private
-  readonly keyField: keyof Props;
-  // private
-  readonly requiredStateFields: Array<keyof Props>;
-  // private
-  readonly keyvalFields: Array<keyof Output>;
-  // private
-  readonly factoryStatePaths: FactoryPathMap;
-  // private
-  create: () => any;
-  // private
-  readonly __lens: Shape;
-  // private
-  // readonly api: Api;
-  // private
-  readonly apiFields: Array<keyof Api>;
-  shape: Show<
-    {
-      [K in keyof Props]: Props[K] extends Store<infer V>
-        ? StoreDef<V>
-        : Props[K] extends StoreDef<unknown>
-          ? Props[K]
-          : Props[K] extends Event<infer V>
-            ? EventDef<V>
-            : Props[K] extends EventDef<unknown>
-              ? Props[K]
-              : Props[K] extends Effect<infer V, infer D, infer E>
-                ? EffectDef<V, D, E>
-                : Props[K] extends EffectDef<unknown, unknown, unknown>
-                  ? Props[K]
-                  : Props[K] extends (params: infer V) => infer D
-                    ? EffectDef<V, Awaited<D>, any>
-                    : StoreDef<Props[K]>;
-    } & {
-      [K in keyof Output]: Output[K] extends Store<infer V>
-        ? StoreDef<V>
-        : never;
-    } & {
-      [K in keyof Api]: Api[K] extends Event<infer V>
-        ? EventDef<V>
-        : Api[K] extends Effect<infer V, infer D, infer E>
-          ? EffectDef<V, D, E>
-          : never;
-    }
-  >;
-  // private
-  __struct: StructShape;
-  defaultState(): Output;
-};
+export type DefineStore<T> = { '@@type': 'store'; defaultValue: T };
+export type DefineEvent<T = void> = { '@@type': 'event' };
+export type DefineEffect<Effect> = { '@@type': 'effect', effect: Effect };
+export type DefineRef<T extends RefTarget> = { '@@type': 'ref'; model: T };
 
-export type Instance<Output, Api> = {
-  type: 'instance';
-  // private
-  readonly output: Store<Output>;
-  // private
-  readonly keyvalShape: Record<keyof Output, Keyval<any, any, any, any>>;
-  readonly props: Output;
-  onMount: UnitTargetable<void> | void;
-  // private
-  region: Node;
-  api: Api;
-};
+type ShapeElement = DefineStore<any> | DefineEvent<any> | DefineEffect<any> | DefineRef<any>;
+export type ModelShape = Record<string, ShapeElement>;
 
-export type AnyDef<T> =
-  | StoreDef<T>
-  | EventDef<T>
-  | EffectDef<T, unknown, unknown>;
+export interface Define {
+  store: <T>(defaultValue: T) => DefineStore<T>;
+  event: <T>() => DefineEvent<T>;
+  effect: <InputEffect extends Effect<any, any, any>>(effect: InputEffect) => DefineEffect<InputEffect>;
+  ref: <T extends RefTarget>(model: T) => DefineRef<T>;
+}
 
-export type StoreDef<T> = {
-  type: 'storeDefinition';
-  readonly __: T;
-};
+type ToPrimitive<T extends ShapeElement> =
+  T extends DefineStore<infer K> ?
+    K :
+    T extends DefineRef<infer K> ?
+      Record<string, K> :
+      never;
 
-export type EventDef<T> = {
-  type: 'eventDefinition';
-  readonly __: T;
-};
+export type ModelProjection<Shape extends ModelShape> = {
+  [k in keyof Shape]: ToPrimitive<Shape[k]>
+}
 
-export type EffectDef<T, Result, Err> = {
-  type: 'effectDefinition';
-  readonly __: T;
-  readonly res: Result;
-  readonly err: Err;
-};
+type StoreOverride<Writable extends boolean> = { writable: Writable };
+type EventOverride<Callable extends boolean> = { callable: Callable };
 
-export type EntityShapeDef<Shape> = {
-  type: 'entityShapeDefinition';
-  readonly shape: Shape;
-};
+type Override<Element extends ShapeElement> =
+  Element extends DefineStore<any> ?
+    StoreOverride<boolean> :
+    Element extends DefineEvent<any> ?
+      EventOverride<boolean> :
+      never
 
-export type EntityItemDef<T> = {
-  type: 'entityItemDefinition';
-  readonly __: T;
-};
+type WithOverrides<
+  Shape extends ModelShape,
+  Overrides extends ModelOverrides<Shape>,
+  Units extends ModelUnits<Shape>
+> = Omit<Units, keyof Overrides> & {
+  [p in keyof Overrides extends keyof Shape ? keyof Overrides : never]:
+    Units[p] extends StoreWritable<infer K> ?
+      Overrides[p] extends { writable: false } ?
+        Store<K> : never
+    :
+    Units[p] extends EventCallable<infer K> ?
+      Overrides[p] extends { callable: false } ?
+        Event<K> : never
+    : never
+}
 
-export type OneOfShapeDef =
-  | StoreDef<any>
-  | EntityShapeDef<any>
-  | EntityItemDef<any>;
+type KeyvalUnits<
+  Target extends Keyval<any, any, any, any>,
+  Overrides extends ModelOverrides<Shape> = Target extends Keyval<any, infer K, any, any> ? K : never,
+  PublicApi extends ModelPublicApi<Shape> = Target extends Keyval<any, any, infer K, any> ? K : never,
+  Shape extends ModelShape = Target extends Keyval<any, any, any, infer K> ? K : never,
+> = PublicApi extends never ?
+      Overrides extends never ?
+        ModelUnits<Shape> :
+        WithOverrides<Shape, Overrides, ModelUnits<Shape>> :
+      Overrides extends never ?
+        PublicApi :
+        WithOverrides<Shape, Overrides, ModelUnits<Shape>>
 
-export type InstanceOf<T extends Model<unknown, unknown, unknown, unknown>> =
-  T extends Model<any, infer Output, infer Api, any>
-    ? Instance<Output, Api>
-    : never;
+export type ModelUnits<Shape extends ModelShape> = {
+  [k in keyof Shape]: 
+    Shape[k] extends DefineStore<infer K > ?
+      StoreWritable<K> :
+      Shape[k] extends DefineEvent<infer K> ?
+        EventCallable<K> :
+        Shape[k] extends DefineEffect<infer K> ?
+          K :
+          Shape[k] extends DefineRef<Model<infer K>> ?
+            ModelUnits<K> :
+            Shape[k] extends DefineRef<infer K extends Keyval<any, any, any, any>> ?
+              KeyvalUnits<K> :
+              never
+}
 
-export type KeyOrKeys = string | number | Array<string | number>;
+export type ModelOverrides<Shape extends ModelShape> = Partial<{
+  [k in keyof Shape]: Override<Shape[k]>;
+}>;
 
-export type LensShape<Shape> = {
-  __type: 'lensShape';
-} & Shape;
+export type ModelPublicApi<Shape extends ModelShape> = Partial<{
+  [k in keyof Shape]: Shape[k];
+}>
 
-export type LensItem<T> = {
-  __type: 'lensItem';
-  store: Store<T>;
-};
+export interface Model<Shape extends ModelShape> {
+  '@@type': 'model';
+  shape: Shape;
+}
 
-export type LensStore<T> = {
-  __type: 'lensStore';
-  store(): Store<T | null>;
-  store(defaultValue: T): Store<T>;
-};
+export interface Keyval<
+  InputModel extends Model<any>,
+  Overrides extends ModelOverrides<Shape>,
+  PublicApi extends ModelPublicApi<Shape>,
+  Shape extends ModelShape = InputModel extends Model<infer K> ? K : never
+> {
+  '@@type': 'keyval';
+  
+  add: EventCallable<{ id: string; data: ModelProjection<Shape> }>,
+  remove: EventCallable<{ id: string }>,
 
-export type LensEvent<T> = {
-  __type: 'lensEvent';
-  __value: T;
-};
-
-/** internal representation of model structure, unit leaf */
-export type StructUnit =
-  | {
-      type: 'structUnit';
-      unit: 'event' | 'effect';
-    }
-  | {
-      type: 'structUnit';
-      unit: 'store';
-      derived: boolean;
+  __: {
+    model: InputModel;
+    factory?: () => void | {
+        overrides?: Overrides;
+        publicApi?: PublicApi;
     };
-
-/** internal representation of model structure, model shape */
-export type StructShape = {
-  type: 'structShape';
-  shape: Record<string, StructUnit | StructKeyval>;
-};
-
-/** internal representation of model structure, keyval shape */
-export type StructKeyval = {
-  type: 'structKeyval';
-  getKey: (input: any) => string | number;
-  shape: Record<string, StructUnit | StructKeyval>;
-  defaultItem(): any;
-};
-
-export type KeyStore = Store<string | number>;
-
-export type ConvertToLensShape<Shape> = {
-  [K in keyof Shape]: Shape[K] extends StoreDef<infer V>
-    ? LensStore<V>
-    : Shape[K] extends EventDef<infer V>
-      ? LensEvent<V>
-      : Shape[K] extends EntityShapeDef<infer ChildShape>
-        ? (key: KeyStore) => LensShape<ConvertToLensShape<ChildShape>>
-        : Shape[K] extends EntityItemDef<infer V>
-          ? (key: KeyStore) => LensItem<V>
-          : Shape[K] extends Store<infer V>
-            ? LensStore<V>
-            : Shape[K] extends Event<infer V>
-              ? LensEvent<V>
-              : Shape[K] extends Keyval<any, infer V, any, infer ChildShape>
-                ? {
-                    (key: KeyStore): LensShape<ChildShape>;
-                    itemStore(key: KeyStore): Store<V>;
-                    has(key: KeyStore): Store<boolean>;
-                  }
-                : never;
-};
-
-type OneOrMany<T> = T | Array<T>;
-
-type ApiEvent<T> = void extends T
-  ?
-      | { key: string | number; data?: void }
-      | {
-          key: Array<string | number>;
-          data?: void[];
-        }
-  :
-      | { key: string | number; data: T }
-      | {
-          key: Array<string | number>;
-          data: T[];
-        };
-
-export type Keyval<Input, Enriched, Api, Shape> = {
-  type: 'keyval';
-  api: {
-    [K in keyof Api]: Api[K] extends EventCallable<infer V>
-      ? EventCallable<ApiEvent<V>>
-      : Api[K] extends Effect<infer V, any, any>
-        ? EventCallable<ApiEvent<V>>
-        : never;
+    $keyvalScope: Store<Record<string, ModelProjection<Shape>>>;
   };
-  $items: Store<Enriched[]>;
-  $keys: Store<Array<string | number>>;
-  edit: {
-    /** Add one or multiple entities to the collection */
-    add: EventCallable<OneOrMany<Input>>;
-    /** Add or replace one or multiple entities in the collection */
-    set: EventCallable<OneOrMany<Input>>;
-    /** Update one or multiple entities in the collection. Supports partial updates */
-    update: EventCallable<OneOrMany<Partial<Input>>>;
-    /** Remove multiple entities from the collection, by id or by predicate */
-    remove: EventCallable<KeyOrKeys | ((entity: Enriched) => boolean)>;
-    /** Replace current collection with provided collection */
-    replaceAll: EventCallable<Input[]>;
-    /** Update multiple entities in the collection by defining a map function */
-    map: EventCallable<{
-      keys: KeyOrKeys;
-      map: (entity: Enriched) => Partial<Input>;
-      upsert?: boolean;
-    }>;
-  };
-  editField: {
-    [K in keyof Input]-?: EventCallable<
-      | { key: string | number; data: Exclude<Input[K], undefined> }
-      | {
-          key: Array<string | number>;
-          data: Exclude<Input[K], undefined>[];
-        }
-    >;
-  };
-  // private
-  __lens: Shape;
-  // private
-  __struct: StructKeyval;
-  defaultState(): Enriched;
-  //private
-  clone(
-    isClone: boolean,
-    cloneOf: Keyval<Input, Enriched, Api, Shape> | null,
-  ): Keyval<Input, Enriched, Api, Shape>;
-  isClone: boolean;
-  // private
-  __$listState: Store<
-    ListState<
-      Enriched,
-      {
-        [K in keyof Enriched]:
-          | Store<Enriched[K]>
-          | Keyval<any, Enriched[K], any, any>;
-      },
-      Api
-    >
-  >;
-  cloneOf: Keyval<any, any, any, any> | null;
-  getCloneData(): {
-    defaultState(): Enriched;
-    structShape: StructKeyval;
-    keyField: keyof Input | null;
-    getKey(entity: Input): string | number;
-  };
+}
+
+export type KeyvalFn<
+  Shape extends ModelShape,
+  Overrides extends ModelOverrides<Shape>,
+  PublicApi extends ModelPublicApi<Shape>
+> = (units: ModelUnits<Shape>) => void | {
+  overrides?: Overrides;
+  publicApi?: PublicApi;
 };
 
-export type StoreContext<T> = {
-  type: 'storeContext';
-  readonly __: T;
-};
-
-type BuiltInObject =
-  | Error
-  | Date
-  | RegExp
-  | Int8Array
-  | Uint8Array
-  | Uint8ClampedArray
-  | Int16Array
-  | Uint16Array
-  | Int32Array
-  | Uint32Array
-  | Float32Array
-  | Float64Array
-  | ReadonlyMap<unknown, unknown>
-  | ReadonlySet<unknown>
-  | WeakMap<object, unknown>
-  | WeakSet<object>
-  | ArrayBuffer
-  | DataView
-  | Function
-  | Promise<unknown>
-  | Generator;
-
-/**
- * Force typescript to print real type instead of geneic types
- *
- * It's better to see {a: string; b: number}
- * instead of GetCombinedValue<{a: Store<string>; b: Store<number>}>
- * */
-export type Show<A extends any> = A extends BuiltInObject
-  ? A
-  : {
-      [K in keyof A]: A[K];
-    }; // & {}
-
-export type InputType<T extends Keyval<any, any, any, any>> =
-  T extends Keyval<infer Input, any, any, any> ? Input : never;
-
-/** Internal state of keyval */
-export type ListState<Enriched, Output, Api> = {
-  items: Enriched[];
-  instances: Array<Instance<Output, Api>>;
-  keys: Array<string | number>;
-};
-
-type ToPlainShape<Shape> = {
-  [K in {
-    [P in keyof Shape]: Shape[P] extends Store<unknown>
-      ? P
-      : Shape[P] extends StoreDef<unknown>
-        ? P
-        : never;
-  }[keyof Shape]]: Shape[K] extends Store<infer V>
-    ? V
-    : Shape[K] extends StoreDef<infer V>
-      ? V
-      : never;
-};
-
-type ParamsNormalize<
-  T extends {
-    [key: string]:
-      | Store<unknown>
-      | Event<unknown>
-      | Effect<unknown, unknown, unknown>
-      | StoreDef<unknown>
-      | EventDef<unknown>
-      | EffectDef<unknown, unknown, unknown>
-      | unknown;
-  },
-> = {
-  [K in keyof T]: T[K] extends Store<infer V>
-    ? T[K] | V
-    : T[K] extends Event<unknown>
-      ? T[K]
-      : T[K] extends Effect<infer V, infer Res, unknown>
-        ? T[K] | ((params: V) => Res | Promise<Res>)
-        : T[K] extends StoreDef<infer V>
-          ? Store<V> | V
-          : T[K] extends EventDef<infer V>
-            ? Event<V>
-            : T[K] extends EffectDef<infer V, infer Res, infer Err>
-              ? Effect<V, Res, Err> | ((params: V) => Res | Promise<Res>)
-              : T[K] extends (params: infer V) => infer Res
-                ?
-                    | Effect<V, Awaited<Res>, unknown>
-                    | T[K]
-                    | ((params: V) => Awaited<Res> | Promise<Awaited<Res>>)
-                : Store<T[K]> | T[K];
-};
-
-export type KeyvalWithState<Input, Output> = Keyval<
-  Input,
-  Output,
-  unknown,
-  unknown
->;
+export interface KeyvalParams<
+  InputModel extends Model<any>,
+  Overrides extends ModelOverrides<Shape>,
+  PublicApi extends ModelPublicApi<Shape>,
+  Fn extends KeyvalFn<Shape, Overrides, PublicApi>,
+  Shape extends ModelShape = InputModel extends Model<infer K> ? K : never
+> {
+  model: InputModel;
+  fn?: Fn;
+}
