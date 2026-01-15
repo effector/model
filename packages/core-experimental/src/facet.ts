@@ -1,6 +1,8 @@
 import { StoreDef, EventDef } from './define';
 
-export type FacetShape = Record<string, StoreDef<any> | EventDef<any>>;
+export type FacetShape = {
+  [key: string]: StoreDef<any> | EventDef<any> | Facet<any>;
+};
 
 export type Facet<S extends FacetShape> = {
   type: 'facet';

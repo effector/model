@@ -158,7 +158,8 @@ describe('UserUnion & Keyval', () => {
     // 3. Select Guest
     await allSettled(selectUser, { scope, params: 'guest1' });
     expect(scope.getState($currentUserName)).toBe('GuestUser');
-    expect(scope.getState($currentUserRole)).toBe('guest'); // Fallback
+    // Ensure fallback is working
+    expect(scope.getState($currentUserRole)).toBe('guest');
 
     // 4. Select Member
     await allSettled(selectUser, { scope, params: 'admin1' });

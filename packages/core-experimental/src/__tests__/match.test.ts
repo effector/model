@@ -94,4 +94,52 @@ describe('match', () => {
     // If we pass something else, it should do nothing.
     expect(() => match({ source: {}, cases: {} })).not.toThrow();
   });
+
+  it('should handle dynamic variant switching', async () => {
+    const scope = fork();
+
+    const mSwitch = model({
+      input: { $tag: define.store('A') },
+      variant: {
+        source: (i: any) => i.$tag,
+        cases: { A: (t: string) => t === 'A', B: (t: string) => t === 'B' },
+      },
+      fn: () => ({ evt: createEvent() }),
+    });
+
+    const listSwitch = keyval({ model: mSwitch });
+
+    const $tag = createStore('A');
+    await allSettled(listSwitch.add, {
+      scope,
+      params: { id: '1', input: { $tag } },
+    });
+
+    const triggerEvent = createEvent<string>();
+    const itemProxy = listSwitch.getItem(triggerEvent);
+
+    const spyA = vi.fn();
+    const spyB = vi.fn();
+
+    match({
+      source: itemProxy.activeVariant,
+      cases: {
+        A: () => spyA(),
+        B: () => spyB(),
+      },
+    });
+
+    // 1. Variant A
+    await allSettled(triggerEvent, { scope, params: '1' });
+    expect(spyA).toHaveBeenCalledTimes(1);
+    expect(spyB).toHaveBeenCalledTimes(0);
+
+    // 2. Switch to B
+    await allSettled($tag, { scope, params: 'B' });
+
+    // 3. Trigger again
+    await allSettled(triggerEvent, { scope, params: '1' });
+    expect(spyA).toHaveBeenCalledTimes(1);
+    expect(spyB).toHaveBeenCalledTimes(1);
+  });
 });

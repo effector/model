@@ -104,4 +104,33 @@ describe('lens', () => {
       .fallback(999);
     expect(scope.getState($missingDeep)).toBe(999);
   });
+
+  it('should support chained lenses', async () => {
+    const scope = fork();
+    await allSettled(list.add, {
+      scope,
+      params: { id: '1', input: { $v: createStore(10) } },
+    });
+
+    const item = list.getItem('1');
+
+    // Chain: select(item).facet('f').path(...)
+    const $val = select(item)
+      .facet('f')
+      .path((x: any) => x.$val)
+      .fallback(0);
+
+    expect(scope.getState($val)).toBe(10);
+  });
+
+  it('should be immutable', () => {
+    const item = list.getItem('1');
+    const b1 = select(item).facet('f');
+    const b2 = b1.path((x: any) => x.x);
+    const b3 = b1.path((x: any) => x.y);
+
+    // b1 should not be modified by b2 call
+    expect(b2).not.toBe(b1);
+    expect(b3).not.toBe(b1);
+  });
 });

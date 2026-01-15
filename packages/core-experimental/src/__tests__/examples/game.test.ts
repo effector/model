@@ -6,6 +6,7 @@ import {
   createEvent,
   sample,
   createEffect,
+  EventCallable,
 } from 'effector';
 import { model } from '../../model';
 import { define } from '../../define';
@@ -87,12 +88,12 @@ const statsModel = model({
 
     // Bind to lifecycle
     sample({
-      clock: game.variant.losing.enter as any,
+      clock: game.variant.losing.enter as EventCallable<void>,
       target: startTimer,
     });
 
     sample({
-      clock: game.variant.losing.leave as any,
+      clock: game.variant.losing.leave as EventCallable<void>,
       target: stopTimer,
     });
 
@@ -159,6 +160,7 @@ describe('GameModel & StatsModel', () => {
 
     // 3. Advance time
     await vi.advanceTimersByTimeAsync(1100);
+    await allSettled(scope);
     // tick should have happened
     expect(scope.getState(stats.$totalLosingTime)).toBeGreaterThan(0);
 
@@ -171,5 +173,28 @@ describe('GameModel & StatsModel', () => {
     // 5. Advance time more - should not increase
     await vi.advanceTimersByTimeAsync(2000);
     expect(scope.getState(stats.$totalLosingTime)).toBe(timeLocked);
+  });
+
+  it('should handle rapid score switching', async () => {
+    const $score = createStore(0);
+    const game = create(gameModel, { input: { $score } });
+    const scope = fork();
+
+    // Draw -> Win -> Lose -> Win
+    await allSettled($score, { scope, params: 10 });
+    await allSettled($score, { scope, params: -10 });
+    await allSettled($score, { scope, params: 5 });
+
+    expect(scope.getState(game.facets.visual.$color)).toBe('green');
+  });
+
+  it('should handle score = 0 as draw', async () => {
+    const $score = createStore(10);
+    const game = create(gameModel, { input: { $score } });
+    const scope = fork();
+
+    await allSettled($score, { scope, params: 0 });
+    expect(scope.getState(game.facets.visual.$color)).toBe('gray');
+    expect(scope.getState(game.activeVariant)).toBe('draw');
   });
 });

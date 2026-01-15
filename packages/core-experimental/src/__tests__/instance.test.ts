@@ -190,4 +190,61 @@ describe('instance', () => {
 
     expect(scope.getState(instance.activeVariant)).toBe('A'); // Stale value
   });
+
+  it('should ignore extra inputs', () => {
+    const m = model({
+      input: { $val: define.store(0) },
+      fn: ({ $val }: any) => ({ $val }),
+    });
+
+    const scope = fork();
+    const $val = createStore(10);
+
+    // Pass extra field 'extra'
+    const instance = create(m, {
+      input: {
+        $val,
+        extra: createStore(99),
+      } as any,
+    });
+
+    expect(is.store(instance.input.$val)).toBe(true);
+    expect(scope.getState(instance.input.$val)).toBe(10);
+    expect((instance.input as any).extra).toBeUndefined();
+  });
+
+  it('should allow idempotent destroy', async () => {
+    const m = model({ input: {} });
+    const instance = create(m, { input: {} });
+
+    instance.destroy();
+    expect(() => instance.destroy()).not.toThrow();
+  });
+
+  it('should destroy nested instances created via model fn', async () => {
+    const child = model({
+      input: { $v: define.store(0) },
+      fn: ({ $v }: any) => ({ $v }),
+    });
+
+    const parent = model({
+      input: { $v: define.store(0) },
+      fn: ({ $v }: any) => {
+        const c = create(child, { input: { $v } });
+        return { c };
+      },
+    });
+
+    const $v = createStore(1);
+    const instance = create(parent, { input: { $v } });
+    const scope = fork();
+
+    expect(scope.getState(instance.c.input.$v)).toBe(1);
+
+    instance.destroy();
+
+    // After destroy, updates should stop
+    await allSettled($v, { scope, params: 2 });
+    expect(scope.getState(instance.c.input.$v)).toBe(1); // Should stay 1
+  });
 });

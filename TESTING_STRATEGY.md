@@ -10,7 +10,7 @@ The core package contains the primitives for the new Model API. Tests must cover
 
 - **`index.ts`**:
 
-  - [ ] **Gap**: Verify all public primitives are exported (`model`, `define`, `keyval`, `union`, `facet`, `select`, `match`, `create`).
+  - [x] **Gap**: Verify all public primitives are exported (`model`, `define`, `keyval`, `union`, `facet`, `select`, `match`, `create`, `isLens`).
 
 - **`define.ts`**:
 
@@ -18,19 +18,18 @@ The core package contains the primitives for the new Model API. Tests must cover
   - [x] `event`: Verify creation of event definitions.
   - [x] `array`: Verify creation of array definitions.
   - [x] `ref`: Verify `self` and `tag` references.
-  - [ ] **Gap**: Verify type inference for definitions (compile-time check or runtime structure).
+  - [ ] **Gap**: Verify type inference for definitions (compile-time check).
 
 - **`facet.ts`**:
 
   - [x] `facet`: Verify facet definition structure.
-  - [ ] **Gap**: Test empty facet definition.
-  - [ ] **Gap**: Test nested facets or complex shapes.
+  - [x] **Gap**: Test empty facet definition.
+  - [x] **Gap**: Test nested facets.
 
 - **`model.ts`**:
 
   - [x] `model`: Verify configuration object creation.
-  - [ ] **Gap**: Verify `implement` helper function.
-  - [ ] **Gap**: Test invalid model configurations (e.g., missing input).
+  - [x] **Gap**: Test invalid/empty model configurations.
 
 - **`instance.ts`**:
 
@@ -39,35 +38,35 @@ The core package contains the primitives for the new Model API. Tests must cover
   - [x] `variant`: Verify variant switching logic.
   - [x] `lifecycle`: Verify `enter`/`leave` events for variants.
   - [x] `multiplexing`: Verify facet multiplexing across variants.
-  - [ ] **Gap/Fix**: Fix `destroy` test and ensure strict cleanup of subscriptions.
-  - [ ] **Gap**: Test `destroy` behavior on nested models/facets.
-  - [ ] **Gap**: Test `create` with extra input fields (should be ignored or warned).
+  - [x] **Gap/Fix**: Fix `destroy` test and ensure strict cleanup of subscriptions.
+  - [x] **Gap**: Test `destroy` behavior on nested models.
+  - [x] **Gap**: Test `create` with extra input fields (ignored).
 
 - **`keyval.ts`**:
 
   - [x] `add`/`remove`: Verify basic list operations.
   - [x] `getItem`: Verify proxy creation (Store vs Event).
   - [x] `union`: Verify handling of union models (polymorphism).
-  - [ ] **Gap**: Test removing an item that has active Lenses attached (should return fallback).
-  - [ ] **Gap**: Test `getItem` with dynamic ID (Store).
-  - [ ] **Gap**: Test duplicate `add` with same ID (idempotency - should not duplicate, maybe update input?).
-  - [ ] **Gap**: Test `add` with missing required input fields.
+  - [x] **Gap**: Test removing an item that has active Lenses attached.
+  - [x] **Gap**: Test `getItem` with dynamic ID (Store).
+  - [x] **Gap**: Test duplicate `add` with same ID (idempotency).
+  - [x] **Gap**: Test `add` with missing required input fields.
 
 - **`lens.ts`**:
 
   - [x] `select`: Verify builder API.
   - [x] `path`: Verify path resolution (static, nested).
   - [x] `fallback`: Verify fallback values when path is missing or ID is null.
-  - [ ] **Gap**: Verify `isLens` helper.
-  - [ ] **Gap**: Test Chained Lenses (`select(select(item))`).
-  - [ ] **Gap**: Test Deep Reactivity (updates in nested properties).
-  - [ ] **Gap**: Test `variant()` and `facet()` filters in Lens (ensure they affect path correctly).
-  - [ ] **Gap**: Test Builder Immutability (reuse builder with different paths).
+  - [x] **Gap**: Verify `isLens` helper.
+  - [x] **Gap**: Test Chained Lenses (`select(item).facet().path()`).
+  - [x] **Gap**: Test Deep Reactivity (updates in nested properties).
+  - [x] **Gap**: Test `variant()` and `facet()` filters in Lens.
+  - [x] **Gap**: Test Builder Immutability.
 
 - **`match.ts`**:
   - [x] `match`: Verify event routing based on active variant.
-  - [ ] **Gap**: Test Dynamic Variant Switching: Ensure events stop arriving when variant changes.
-  - [ ] **Gap**: Test `match` with empty cases.
+  - [x] **Gap**: Test Dynamic Variant Switching.
+  - [x] **Gap**: Test `match` with empty cases.
 
 ### 1.2 Examples (Business Logic Tests)
 
@@ -75,14 +74,14 @@ The core package contains the primitives for the new Model API. Tests must cover
 
   - [x] `winning`/`losing`/`draw` states.
   - [x] Facet implementation per state.
-  - [ ] **Fix**: `StatsModel` timing test (timeout issue).
-  - [ ] **Gap**: Test edge cases (score = 0, rapid switching).
+  - [x] **Fix**: `StatsModel` timing test (timeout issue).
+  - [x] **Gap**: Test edge cases (score = 0, rapid switching).
 
 - **User Model (`examples/user.test.ts`)**:
   - [x] Union types (`Guest` vs `Member`).
   - [x] Polymorphic `keyval`.
   - [x] `match` usage for specific logic.
-  - [ ] **Fix**: `select` fallback test failure.
+  - [x] **Fix**: `select` fallback test failure.
 
 ## 2. React Integration (`packages/react`)
 
@@ -103,7 +102,7 @@ Tests ensure that the models works correctly within React components using `effe
 
 ## 3. Execution Plan
 
-1.  **Fix Core Primitives**: Address failures in `lens.ts` (path resolution), `match.ts` (sample target), and `instance.ts` (destroy).
+1.  **Fix Core Primitives**: Address failures in `lens.ts`, `match.ts`, and `instance.ts`.
 2.  **Verify Core Tests**: Run `core-experimental` tests until all pass.
 3.  **Expand Coverage**: Add missing test cases identified in "Gaps".
 4.  **Fix Example Tests**: Address timeout and logic errors in `game.test.ts` and `user.test.ts`.

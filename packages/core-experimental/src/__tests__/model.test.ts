@@ -33,4 +33,9 @@ describe('model', () => {
 
     expect(m.config).toBe(config);
   });
+
+  it('should handle empty model', () => {
+    const m = model({});
+    expect(m.config).toEqual({});
+  });
 });

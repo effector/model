@@ -17,4 +17,19 @@ describe('facet', () => {
       },
     });
   });
+
+  it('should handle empty facet', () => {
+    const f = facet({});
+    expect(f.shape).toEqual({});
+  });
+
+  it('should handle nested facets', () => {
+    const child = facet({ $v: define.store(0) });
+    const parent = facet({
+      child,
+      $p: define.store(1),
+    });
+
+    expect(parent.shape.child).toBe(child);
+  });
 });
