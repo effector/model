@@ -15,15 +15,7 @@ export const fileModel = model({
     node: nodeFacet,
     visual: visualFacet,
   },
-  fn: ({
-    name,
-    id,
-    $selectedId,
-  }: {
-    name: Store<string>;
-    id: Store<string>;
-    $selectedId: Store<string | null>;
-  }) => {
+  fn: ({ name, id, $selectedId }: { name: any; id: any; $selectedId: any }) => {
     const select = createEvent();
     const rename = createEvent<string>();
 

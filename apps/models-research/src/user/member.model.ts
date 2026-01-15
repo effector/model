@@ -16,8 +16,8 @@ export const memberModel = model({
 
     sample({
       clock: promote,
-      source: role as any,
-      fn: (currentRole: 'admin' | 'user') =>
+      source: role,
+      fn: (currentRole: any) =>
         (currentRole === 'admin' ? 'user' : 'admin') as any,
       target: role,
     });
