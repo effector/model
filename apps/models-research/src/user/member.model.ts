@@ -1,5 +1,5 @@
 import { model, define } from '@effector-model/core-experimental';
-import { createEvent } from 'effector';
+import { createEvent, sample } from 'effector';
 import { chatUserFacet, memberFacet } from './facets';
 
 export const memberModel = model({
@@ -11,14 +11,26 @@ export const memberModel = model({
     user: chatUserFacet,
     membership: memberFacet,
   },
-  fn: ({ nickname, role }: any) => ({
-    user: {
-      $nickname: nickname,
-      kick: createEvent(),
-    },
-    membership: {
-      $role: role,
-      promote: createEvent(),
-    },
-  }),
+  fn: ({ nickname, role }: { nickname: any; role: any }) => {
+    const promote = createEvent();
+
+    sample({
+      clock: promote,
+      source: role as any,
+      fn: (currentRole: 'admin' | 'user') =>
+        (currentRole === 'admin' ? 'user' : 'admin') as any,
+      target: role,
+    });
+
+    return {
+      user: {
+        $nickname: nickname,
+        kick: createEvent(),
+      },
+      membership: {
+        $role: role,
+        promote,
+      },
+    };
+  },
 });

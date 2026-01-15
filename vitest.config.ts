@@ -11,6 +11,14 @@ export default defineConfig({
         __dirname,
         './packages/core-experimental/src/index.ts',
       ),
+      '@effector/model': path.resolve(
+        __dirname,
+        './packages/core/src/index.ts',
+      ),
+      '@effector/model-react': path.resolve(
+        __dirname,
+        './packages/react/src/index.tsx',
+      ),
     },
   },
   test: {

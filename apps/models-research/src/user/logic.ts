@@ -1,4 +1,10 @@
-import { createEvent, createStore, sample, Event } from 'effector';
+import {
+  createEvent,
+  createStore,
+  sample,
+  Event,
+  createEffect,
+} from 'effector';
 import { usersList } from './index';
 import { select, match } from '@effector-model/core-experimental';
 
@@ -15,10 +21,47 @@ export const $selectedUserId = createStore<string | null>(null).on(
 
 // 1. ОБЩЕЕ ДЕЙСТВИЕ (Кик)
 const userToKick = usersList.getItem(kickUser);
-// Note: userToKick.facets.user.kick is a targetable unit (Event) created by createItemProxy
+
+// Note: We cannot use select() on proxies returned for events (kickUser)
+// because they don't have a stable $id store.
+// We must manually implement the guard for the kick action.
+
+const kickAllowedFx = createEffect(
+  ({
+    state,
+    variants,
+    id,
+  }: {
+    state: Record<string, any>;
+    variants: Record<string, string | null>;
+    id: string;
+  }) => {
+    const variant = variants[id];
+    if (!variant) return true; // Maybe guest or just created?
+
+    if (variant === 'member') {
+      // Check role in state
+      // Path: membership -> $role
+      const role = state[id]?.membership?.$role;
+      return role !== 'admin';
+    }
+
+    return true; // Guests can be kicked
+  },
+);
+
 sample({
   clock: kickUser,
-  target: userToKick.facets.user.kick,
+  source: { state: usersList.$state, variants: usersList.$activeVariants },
+  fn: ({ state, variants }, id) => ({ state, variants, id }),
+  target: kickAllowedFx,
+});
+
+sample({
+  clock: kickAllowedFx.done,
+  filter: ({ result }: { result: boolean }) => result === true,
+  fn: ({ params }: { params: { id: string } }) => params.id,
+  target: [userToKick.facets.user.kick, usersList.remove],
 });
 
 // 2. СПЕЦИФИЧНОЕ ДЕЙСТВИЕ (Повышение)
@@ -30,7 +73,7 @@ match({
       // Explicitly wire the trigger to the method
       sample({
         clock: trigger,
-        target: memberScope.facets.membership.promote as Event<any>,
+        target: memberScope.facets.membership.promote as any,
       });
     },
     guest: (_: any, trigger: any) => {

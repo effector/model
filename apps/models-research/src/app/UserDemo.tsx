@@ -19,68 +19,98 @@ function UserItem({
   onSelect,
   onPromote,
   onKick,
-  onRemove,
 }: {
   id: string;
   selectedId: string | null;
   onSelect: (id: string) => void;
   onPromote: (id: string) => void;
   onKick: (id: string) => void;
-  onRemove: (id: string) => void;
 }) {
-  const $name = useMemo(() => {
-    return selectLens(usersList.getItem(id).facets.user.$nickname).fallback('');
+  const { $name, $role, $variant } = useMemo(() => {
+    const item = usersList.getItem(id);
+    return {
+      $name: selectLens(item.facets.user.$nickname).fallback(''),
+      $variant: usersList.$activeVariants.map((v) => v[id]),
+      $role: selectLens(item)
+        .variant('member')
+        .facet('membership')
+        .path((facet: any) => facet.$role)
+        .fallback('guest'),
+    };
   }, [id]);
 
-  const name = useUnit($name);
+  const [name, role, variant] = useUnit([$name, $role, $variant]);
   const isSelected = id === selectedId;
+  const isAdmin = role === 'admin';
+  // Fallback to checking role if variant is not yet consistent
+  const isMember = variant === 'member' || role === 'user' || role === 'admin';
+  const isGuest = !isMember && !isAdmin;
+
+  const containerClass = useMemo(() => {
+    const base =
+      'group flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all border';
+    const selection = isSelected
+      ? 'bg-indigo-50 border-indigo-100 ring-1 ring-indigo-200 shadow-sm'
+      : 'hover:bg-gray-50 border-transparent hover:border-gray-200';
+
+    if (isAdmin) return `${base} ${selection} ring-purple-200 bg-purple-50/30`;
+    return `${base} ${selection}`;
+  }, [isSelected, isAdmin, isGuest]);
+
+  const avatar = useMemo(() => {
+    if (isAdmin) return '😎';
+    if (isMember) return '🙂';
+    return '👋';
+  }, [isAdmin, isMember]);
 
   return (
-    <div
-      onClick={() => onSelect(id)}
-      className={`group flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all ${
-        isSelected
-          ? 'bg-indigo-50 border-indigo-100 ring-1 ring-indigo-200 shadow-sm'
-          : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
-      }`}
-    >
-      <div className="flex flex-col truncate max-w-[120px]">
-        <span className="text-sm font-medium text-gray-900 truncate">
-          {name || 'No Name'}
-        </span>
-        <span className="text-xs text-gray-400 truncate">{id}</span>
+    <div onClick={() => onSelect(id)} className={containerClass}>
+      <div className="flex items-center gap-3 truncate max-w-[140px]">
+        <span className="text-2xl">{avatar}</span>
+        <div className="flex flex-col truncate">
+          <span
+            className={`text-sm font-medium truncate ${
+              isAdmin
+                ? 'text-purple-900 font-bold'
+                : isMember
+                  ? 'text-gray-900'
+                  : 'text-gray-600'
+            }`}
+          >
+            {name || 'No Name'}
+          </span>
+          <span className="text-xs text-gray-400 truncate">{id}</span>
+        </div>
       </div>
       <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onPromote(id);
-          }}
-          title="Promote"
-          className="p-1.5 rounded hover:bg-green-100 text-gray-400 hover:text-green-600 transition-colors"
-        >
-          ↑
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onKick(id);
-          }}
-          title="Kick"
-          className="p-1.5 rounded hover:bg-red-100 text-gray-400 hover:text-red-600 transition-colors"
-        >
-          ×
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove(id);
-          }}
-          title="Remove"
-          className="p-1.5 rounded hover:bg-gray-200 text-gray-400 hover:text-gray-700 transition-colors"
-        >
-          🗑️
-        </button>
+        {isMember && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onPromote(id);
+            }}
+            title={isAdmin ? 'Demote' : 'Promote'}
+            className={`p-1.5 rounded transition-colors ${
+              isAdmin
+                ? 'hover:bg-orange-100 text-gray-400 hover:text-orange-600'
+                : 'hover:bg-green-100 text-gray-400 hover:text-green-600'
+            }`}
+          >
+            {isAdmin ? '↓' : '↑'}
+          </button>
+        )}
+        {!isAdmin && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onKick(id);
+            }}
+            title="Kick"
+            className="p-1.5 rounded hover:bg-red-100 text-gray-400 hover:text-red-600 transition-colors"
+          >
+            ×
+          </button>
+        )}
       </div>
     </div>
   );
@@ -95,7 +125,6 @@ export function UserDemo() {
   ]);
   const [kick, promote, select] = useUnit([kickUser, promoteUser, selectUser]);
   const [addG, addM] = useUnit([addGuest, addMember]);
-  const [remove] = useUnit([usersList.remove]);
 
   const [name, setName] = useState('John');
   const [userType, setUserType] = useState('guest');
@@ -210,7 +239,6 @@ export function UserDemo() {
                 onSelect={select}
                 onPromote={promote}
                 onKick={kick}
-                onRemove={remove}
               />
             ))}
           </div>
