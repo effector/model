@@ -8,10 +8,11 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.18",
-    "@vitejs/plugin-react": "^3.1.0",
+    "@vitejs/plugin-react": "latest",
     "autoprefixer": "^10.4.23",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
-    "vite": "^4.2.1"
+    "vite": "latest",
+    "@vitejs/plugin-react-swc": "latest"
   }
 }

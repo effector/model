@@ -1,17 +1,17 @@
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import react from '@vitejs/plugin-react-swc';
 import tsconfigPaths from 'vite-tsconfig-paths';
-// import { babel } from '@rollup/plugin-babel';
 
 export default defineConfig({
   esbuild: {
     loader: 'tsx',
   },
   cacheDir: '../../../node_modules/.vite/models-research',
-  plugins: [
-    tsconfigPaths(),
-    // babel({ extensions: ['.ts', '.tsx'], babelHelpers: 'bundled' }),
-    react(),
-  ],
-  build: { outDir: '../../../dist/apps/models-research' },
+  plugins: [tsconfigPaths(), react()],
+  build: {
+    outDir: '../../../dist/apps/models-research',
+    rollupOptions: {
+      // Future-proofing for Rolldown
+    },
+  },
 });
