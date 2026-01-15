@@ -48,6 +48,11 @@ export const $currentUserRole = select($currentUser)
   .path((facet: any) => facet.$role)
   .fallback('guest');
 
+export const $currentUserName = select($currentUser)
+  .facet('user')
+  .path((facet: any) => facet.$nickname)
+  .fallback('');
+
 // Helper to add users
 export const addGuest = createEvent<string>();
 export const addMember = createEvent<{ name: string; role: string }>();
