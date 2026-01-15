@@ -4,3 +4,4 @@ node_modules
 *.log
 .nx
 .vscode
+packages/core-experimental/coverage/prettify.css

@@ -34,9 +34,16 @@ export const define = {
   }),
 };
 
-export const self = { type: 'ref', kind: 'self' } as const;
-
 export const ref = {
   self: { type: 'ref', kind: 'self' } as const,
   tag: (name: string): RefDef => ({ type: 'ref', kind: 'tag', name }),
 };
+
+export function isRef(value: any): value is RefDef {
+  return (
+    value &&
+    typeof value === 'object' &&
+    'type' in value &&
+    value.type === 'ref'
+  );
+}

@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { GameDemo } from './GameDemo';
 import { UserDemo } from './UserDemo';
+import { TreeDemo } from './TreeDemo';
 
 export default function App() {
-  const [tab, setTab] = useState<'game' | 'user'>('game');
+  const [tab, setTab] = useState<'game' | 'user' | 'tree'>('game');
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8 font-sans text-gray-900">
@@ -34,9 +35,22 @@ export default function App() {
           >
             Chat User (Polymorphism)
           </button>
+          <button
+            disabled={tab === 'tree'}
+            onClick={() => setTab('tree')}
+            className={`px-4 py-2 rounded-md transition-colors duration-200 whitespace-nowrap ${
+              tab === 'tree'
+                ? 'bg-indigo-100 text-indigo-700 font-medium'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            Recursive Tree
+          </button>
         </div>
 
-        {tab === 'game' ? <GameDemo /> : <UserDemo />}
+        {tab === 'game' && <GameDemo />}
+        {tab === 'user' && <UserDemo />}
+        {tab === 'tree' && <TreeDemo />}
       </div>
     </div>
   );

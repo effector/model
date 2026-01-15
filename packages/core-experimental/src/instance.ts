@@ -10,6 +10,7 @@ import {
   Unit,
 } from 'effector';
 import { Model } from './model';
+import { isRef } from './define';
 
 export function create(
   modelDef: Model<any, any, any>,
@@ -131,7 +132,20 @@ export function create(
       const facetInstance: Record<string, any> = {};
 
       for (const [fieldName, fieldDef] of Object.entries(facetShape)) {
-        const def = fieldDef as any;
+        let def = fieldDef as any;
+
+        if (isRef(def)) {
+          if (def.kind === 'tag' && def.name) {
+            if (reactiveInputs[def.name]) {
+              facetInstance[fieldName] = reactiveInputs[def.name];
+              continue;
+            }
+            if (fnResult[def.name]) {
+              facetInstance[fieldName] = fnResult[def.name];
+              continue;
+            }
+          }
+        }
 
         if (def.type === 'store') {
           const variantsForField: Record<string, Store<any>> = {};
@@ -286,6 +300,19 @@ export function create(
           }
 
           facetInstance[fieldName] = mainEvent;
+        } else if (def.type === 'array') {
+          // Arrays behave like stores of instances
+          let baseStore = (fnResult[facetName]?.impl || fnResult[facetName])?.[
+            fieldName
+          ];
+          if (baseStore === undefined) {
+            // Try to find in reactiveInputs if it matches by name
+            baseStore = reactiveInputs[fieldName];
+          }
+
+          facetInstance[fieldName] = is.store(baseStore)
+            ? baseStore
+            : createStore(baseStore || [], { skipVoid: false });
         }
       }
       facets[facetName] = facetInstance;
@@ -305,6 +332,9 @@ export function create(
     }
     // Deep destroy fn results
     const inputs = new Set(Object.values(inputStores));
+    if (typeof fnResult.destroy === 'function') {
+      fnResult.destroy();
+    }
     for (const val of Object.values(fnResult)) {
       if (val && typeof val === 'object') {
         if (is.unit(val) && !inputs.has(val)) {

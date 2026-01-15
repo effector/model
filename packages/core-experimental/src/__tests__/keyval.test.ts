@@ -160,16 +160,27 @@ describe('keyval', () => {
   });
 
   it('should clean up on remove', async () => {
-    // Mock destroy on instance
-    // Since we can't easily mock return of create() inside keyval,
-    // we rely on the fact that instance.ts returns an object with destroy().
-    // We can verify that destroy() is called by checking side effects.
-    // But instance.destroy() is internal.
-    // However, we can check if memory is reclaimed or subscriptions stopped?
-    // Not easily in unit test.
-    // We can trust coverage of instance.destroy() in instance.test.ts
-    // and coverage of list.remove calling it here.
-    // We covered remove() above.
+    const onCleanup = vi.fn();
+    const mWithCleanup = model({
+      input: {},
+      fn: () => ({
+        destroy: onCleanup,
+      }),
+    });
+
+    const list = keyval({ model: mWithCleanup });
+    const scope = fork();
+
+    await allSettled(list.add, {
+      scope,
+      params: { id: '1', input: {} },
+    });
+
+    expect(scope.getState(list.$items)).toEqual(['1']);
+
+    await allSettled(list.remove, { scope, params: '1' });
+    expect(scope.getState(list.$items)).toEqual([]);
+    expect(onCleanup).toHaveBeenCalled();
   });
 
   it('should handle removing item with active lens', async () => {

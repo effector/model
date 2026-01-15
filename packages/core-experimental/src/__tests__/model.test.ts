@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { model } from '../model';
+import { model, implement } from '../model';
 import { define } from '../define';
 import { facet } from '../facet';
 
@@ -37,5 +37,16 @@ describe('model', () => {
   it('should handle empty model', () => {
     const m = model({});
     expect(m.config).toEqual({});
+  });
+
+  it('should create implementation via implement()', () => {
+    const f = facet({ $val: define.store(0) });
+    const impl = implement(f, { $val: define.store(10) });
+
+    expect(impl).toEqual({
+      type: 'implementation',
+      facet: f,
+      impl: { $val: define.store(10) },
+    });
   });
 });

@@ -1,5 +1,6 @@
 import { model } from '@effector-model/core-experimental';
-import { createStore, sample, createEvent, createEffect } from 'effector';
+import { createStore, sample, createEvent } from 'effector';
+import { interval } from 'patronum';
 import { gameModel } from '../game/model';
 
 export const statsModel = model({
@@ -9,34 +10,19 @@ export const statsModel = model({
   fn: ({ game }: any) => {
     const $totalLosingTime = createStore(0);
 
-    // Custom Interval Implementation
-    const startTimer = createEvent();
-    const stopTimer = createEvent();
-    const tick = createEvent();
-    const $isRunning = createStore(false)
-      .on(startTimer, () => true)
-      .on(stopTimer, () => false);
-
-    const loopFx = createEffect(async () => {
-      await new Promise((r) => setTimeout(r, 1000));
-    });
-
-    sample({
-      clock: [startTimer, loopFx.done],
-      source: $isRunning,
-      filter: (running) => running,
-      target: [tick, loopFx],
-    });
+    const start = createEvent();
+    const stop = createEvent();
+    const { tick } = interval({ timeout: 1000, start, stop });
 
     // Bind to lifecycle
     sample({
       clock: game.variant.losing.enter as any,
-      target: startTimer,
+      target: start,
     } as any);
 
     sample({
       clock: game.variant.losing.leave as any,
-      target: stopTimer,
+      target: stop,
     } as any);
 
     sample({
