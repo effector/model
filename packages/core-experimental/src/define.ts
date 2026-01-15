@@ -20,7 +20,6 @@ export type RefDef = {
   kind: 'self' | 'tag';
   name?: string;
 };
-
 export const define = {
   store: <T extends unknown>(initial?: T): StoreDef<T> => ({
     type: 'store',
@@ -34,6 +33,8 @@ export const define = {
     item,
   }),
 };
+
+export const self = { type: 'ref', kind: 'self' } as const;
 
 export const ref = {
   self: { type: 'ref', kind: 'self' } as const,

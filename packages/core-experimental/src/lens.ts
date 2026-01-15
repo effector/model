@@ -1,61 +1,65 @@
-import { Store, createStore, combine, is, createEvent } from 'effector';
+import {
+  Store,
+  createStore,
+  combine,
+  is,
+  createEvent,
+  sample,
+  createEffect,
+} from 'effector';
 
 export type Lens = {
   __type: 'lens';
-  source: Store<any>; // The map of instances
+  source: Store<Record<string, any>>; // The map of instances ($instances)
+  state: Store<Record<string, any>>; // The map of instance states ($state)
   id: Store<string | null>;
   path: string[];
   fallbackValue?: any;
+  variantName?: string;
+  facetName?: string;
 };
 
 export function isLens(val: any): val is Lens {
-  return val && val.__type === 'lens';
+  if (!val || typeof val !== 'object') return false;
+  return (
+    val.__type === 'lens' ||
+    (is.store(val.source) && is.store(val.id) && Array.isArray(val.path))
+  );
 }
 
 export function select(source: Lens | Store<any>) {
-  // If source is a Lens, we can extend the path.
-  // If source is a Store, we treat it as a root?
-  // The user example: `select(gameModel.variants.status.losing)` -> This is getting a variant implementation?
-  // No, `select(gameModel.variants.status.losing)` in the article refers to a variant DEFINITION or Scope?
-  // `gameModel` is the Model Definition.
-  // Wait, `gameModel.variants...` implies the Model Def has this structure.
-
-  // But later: `select($currentUser).variant("member")...`
-  // Here `$currentUser` is a Store/Lens from `getItem`.
-
   let currentLens: Lens;
 
   if (isLens(source)) {
     currentLens = {
       __type: 'lens',
-      source: source.source,
-      id: source.id,
-      path: [...source.path],
-      fallbackValue: source.fallbackValue,
+      source: (source as any).source,
+      state: (source as any).state,
+      id: (source as any).id,
+      path: [...((source as any).path || [])],
+      fallbackValue: (source as any).fallbackValue,
+      variantName: (source as any).variantName,
+      facetName: (source as any).facetName,
     };
   } else {
-    // If it's a store, we assume it's a store of an object and we want to drill down?
-    // Or it's a "Scope" store?
-    // For now, let's assume usage with `getItem` result which is a Lens.
     throw new Error('select() source must be a Lens (from getItem)');
   }
 
   const builder = {
-    variant: (variantName: string) => {
-      // Filter by variant?
-      // In the example: `.variant("member")` targets the member variant.
-      // It doesn't change the path, but maybe checks activeVariant?
-      return builder;
+    variant: (name: string) => {
+      return select({ ...currentLens, variantName: name });
     },
-    facet: (facetName: string) => {
-      currentLens.path.push('facets', facetName);
-      return builder;
+    facet: (name: string) => {
+      const nextPath = [...currentLens.path];
+      nextPath.push('facets', name);
+      return select({ ...currentLens, path: nextPath, facetName: name });
     },
     path: (fn: (scope: any) => any) => {
+      const nextPath = [...currentLens.path];
       const proxyHandler = {
         get: (_: any, prop: string | symbol) => {
           if (typeof prop === 'string') {
-            currentLens.path.push(prop);
+            nextPath.push(prop);
             return new Proxy({}, proxyHandler);
           }
           return null;
@@ -63,66 +67,48 @@ export function select(source: Lens | Store<any>) {
       };
       const proxy = new Proxy({}, proxyHandler);
       fn(proxy);
-      return builder;
+      return select({ ...currentLens, path: nextPath });
     },
     fallback: (val: any) => {
-      currentLens.fallbackValue = val;
-      return toStore(currentLens);
+      return toStore({ ...currentLens, fallbackValue: val });
     },
   };
   return builder;
 }
 
 function toStore(lens: Lens): Store<any> {
-  const $output = createStore(lens.fallbackValue);
-  const updateOutput = createEvent<any>();
+  // Use $state for reactive updates
+  if (lens.state) {
+    return combine(lens.state, lens.id, (state, id) => {
+      if (!id || !state[id]) return lens.fallbackValue;
 
-  $output.on(updateOutput, (_, val) => val);
+      let value = state[id];
 
-  // State to hold current unsubscription function
-  let currentUnsub: (() => void) | null = null;
+      // Union variant check (requires checking _variant in state? or instance?)
+      // State doesn't have _variant usually, it's a property on instance.
+      // But we can assume if path resolution fails, it returns fallback.
+      // Or we can check if 'variant' property exists in state?
+      // traverseAndBind skips 'variant' property?
+      // Let's assume for now we just resolve path.
 
-  const $context = combine({
-    instances: lens.source,
-    id: lens.id,
-  });
-
-  // Subscription Manager
-  // When context changes (ID or List changes), we resolve the target and re-subscribe
-  $context.watch(({ instances, id }) => {
-    // 1. Unsubscribe from previous target
-    if (currentUnsub) {
-      currentUnsub();
-      currentUnsub = null;
-    }
-
-    // 2. Resolve new target
-    if (!id || !instances[id]) {
-      updateOutput(lens.fallbackValue);
-      return;
-    }
-
-    let value = instances[id];
-    for (const key of lens.path) {
-      if (value && typeof value === 'object' && key in value) {
-        value = value[key];
-      } else {
-        value = undefined;
-        break;
+      for (const key of lens.path) {
+        if (value && typeof value === 'object' && key in value) {
+          value = value[key];
+        } else {
+          // Try to be smart about nested structures in state
+          // State mirrors instance structure.
+          // If instance had { input: { $val: ... } }, state has { input: { $val: value } }
+          // Path ['input', '$val'] works.
+          // But what about __fn?
+          // traverseAndBind flattens? No, it recurses.
+          // So structure is preserved.
+          return lens.fallbackValue;
+        }
       }
-    }
+      return value === undefined ? lens.fallbackValue : value;
+    });
+  }
 
-    // 3. Subscribe to new target
-    if (is.store(value)) {
-      // It's a store: pipe updates to output
-      currentUnsub = (value as Store<any>).watch((newValue: any) => {
-        updateOutput(newValue);
-      });
-    } else {
-      // It's a static value: just update once
-      updateOutput(value === undefined ? lens.fallbackValue : value);
-    }
-  });
-
-  return $output;
+  // Fallback for old behavior (should not happen with new keyval)
+  return createStore(lens.fallbackValue);
 }

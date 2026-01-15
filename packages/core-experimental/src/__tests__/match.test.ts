@@ -119,13 +119,20 @@ describe('match', () => {
     const itemProxy = listSwitch.getItem(triggerEvent);
 
     const spyA = vi.fn();
+    const triggerA = createEvent();
+    triggerA.watch(spyA);
+
     const spyB = vi.fn();
+    const triggerB = createEvent();
+    triggerB.watch(spyB);
 
     match({
       source: itemProxy.activeVariant,
       cases: {
-        A: () => spyA(),
-        B: () => spyB(),
+        A: (scope, trigger) =>
+          sample({ clock: trigger as Event<any>, target: triggerA }),
+        B: (scope, trigger) =>
+          sample({ clock: trigger as Event<any>, target: triggerB }),
       },
     });
 

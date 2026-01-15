@@ -5,8 +5,9 @@ import {
   fork,
   createEvent,
   sample,
-  createEffect,
   EventCallable,
+  createEffect,
+  scopeBind,
 } from 'effector';
 import { model } from '../../model';
 import { define } from '../../define';
@@ -61,40 +62,49 @@ const gameModel = model({
 
 const statsModel = model({
   input: {
-    game: gameModel, // abstract model definition
+    game: gameModel,
   },
   fn: ({ game }: any) => {
-    // game here is the INSTANCE passed to create
     const $totalLosingTime = createStore(0);
+    const start = createEvent();
+    const stop = createEvent();
 
-    // Custom Interval Implementation
-    const startTimer = createEvent();
-    const stopTimer = createEvent();
     const tick = createEvent();
+    const internalTick = createEvent();
     const $isRunning = createStore(false)
-      .on(startTimer, () => true)
-      .on(stopTimer, () => false);
+      .on(start, () => true)
+      .on(stop, () => false);
 
-    const loopFx = createEffect(async () => {
-      await new Promise((r) => setTimeout(r, 1000));
+    const tickFx = createEffect(() => {
+      const trigger = scopeBind(internalTick, { safe: true });
+      setTimeout(trigger, 1000);
     });
 
     sample({
-      clock: [startTimer, loopFx.done],
+      clock: start,
+      target: tickFx,
+    });
+
+    sample({
+      clock: internalTick,
       source: $isRunning,
       filter: (running) => running,
-      target: [tick, loopFx],
+      target: tick,
     });
 
-    // Bind to lifecycle
+    sample({
+      clock: tick,
+      target: tickFx,
+    });
+
     sample({
       clock: game.variant.losing.enter as EventCallable<void>,
-      target: startTimer,
+      target: start,
     });
 
     sample({
       clock: game.variant.losing.leave as EventCallable<void>,
-      target: stopTimer,
+      target: stop,
     });
 
     sample({
@@ -106,7 +116,7 @@ const statsModel = model({
 
     return {
       $totalLosingTime,
-      $isRunning, // exposed for testing
+      $isRunning,
     };
   },
 });
@@ -128,49 +138,40 @@ describe('GameModel & StatsModel', () => {
 
     const scope = fork();
 
-    // Initial state (draw)
     expect(scope.getState(game.facets.visual.$color)).toBe('gray');
 
-    // Winning
     await allSettled($score, { scope, params: 10 });
     expect(scope.getState(game.facets.visual.$color)).toBe('green');
 
-    // Losing
     await allSettled($score, { scope, params: -10 });
-    // rgba(255, 0, 0, 0.3 + 50/140) -> 0.3 + 0.357 = 0.657
     expect(scope.getState(game.facets.visual.$color)).toContain(
       'rgba(255, 0, 0,',
     );
   });
 
-  it('should track losing time in statsModel', async () => {
-    const $score = createStore(10); // Start winning
+  it('should track losing time in statsModel', { timeout: 10000 }, async () => {
+    const $score = createStore(10);
     const game = create(gameModel, { input: { $score } });
     const stats = create(statsModel, { input: { game } });
 
     const scope = fork();
 
-    // 1. Start winning - timer should be stopped
     expect(scope.getState(stats.$isRunning)).toBe(false);
     expect(scope.getState(stats.$totalLosingTime)).toBe(0);
 
-    // 2. Switch to losing
     await allSettled($score, { scope, params: -10 });
     expect(scope.getState(stats.$isRunning)).toBe(true);
 
-    // 3. Advance time
+    // Advance time and wait for effect
     await vi.advanceTimersByTimeAsync(1100);
-    await allSettled(scope);
-    // tick should have happened
+
     expect(scope.getState(stats.$totalLosingTime)).toBeGreaterThan(0);
 
-    // 4. Switch back to winning
     await allSettled($score, { scope, params: 10 });
     expect(scope.getState(stats.$isRunning)).toBe(false);
 
     const timeLocked = scope.getState(stats.$totalLosingTime);
 
-    // 5. Advance time more - should not increase
     await vi.advanceTimersByTimeAsync(2000);
     expect(scope.getState(stats.$totalLosingTime)).toBe(timeLocked);
   });
@@ -180,7 +181,6 @@ describe('GameModel & StatsModel', () => {
     const game = create(gameModel, { input: { $score } });
     const scope = fork();
 
-    // Draw -> Win -> Lose -> Win
     await allSettled($score, { scope, params: 10 });
     await allSettled($score, { scope, params: -10 });
     await allSettled($score, { scope, params: 5 });

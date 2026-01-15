@@ -217,7 +217,11 @@ describe('keyval', () => {
   });
 
   it('should validate missing inputs', async () => {
-    const list = keyval({ model: m });
+    const mRequired = model({
+      input: { $id: define.store<string>() }, // No default
+      fn: ({ $id }: any) => ({ $id }),
+    });
+    const list = keyval({ model: mRequired });
     const scope = fork();
 
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});

@@ -1,36 +1,76 @@
-import { sample, createEvent, Event, Store, createEffect } from 'effector';
+import { sample, createEvent, is, createEffect, Store } from 'effector';
 import { createItemProxy } from './keyval';
 
 export type MatchConfig = {
   source: any;
-  cases: Record<string, (scope: any, trigger: Event<string>) => void>;
+  cases: Record<string, (scope: any, trigger: any) => void>;
 };
 
 export function match(config: MatchConfig) {
   const source = config.source;
 
-  if (source && source._sourceEvent && source._instances) {
-    const { _sourceEvent, _instances } = source;
+  // Case 1: Control Flow (Event-based proxy)
+  if (
+    source &&
+    source._sourceEvent &&
+    source._instances &&
+    source._activeVariants &&
+    source._state
+  ) {
+    const { _sourceEvent, _instances, _activeVariants, _state } = source;
 
     for (const [variantName, handler] of Object.entries(config.cases)) {
-      // Trigger when source event fires AND variant matches
-      const variantTrigger = createEvent<string>(); // Carries ID
+      const variantTrigger = createEvent<any>();
 
       sample({
-        clock: _sourceEvent as Event<string>,
-        source: _instances as Store<Record<string, any>>,
-        filter: (instances: any, id: any) => !!instances[id],
-        fn: (instances: any, id: any) => ({ instance: instances[id], id }),
-        target: createEffect(({ instance, id }: any) => {
-          if (instance.activeVariant.getState() === variantName) {
-            variantTrigger(id);
+        clock: _sourceEvent as any,
+        source: {
+          instances: _instances,
+          activeVariants: _activeVariants as Store<any>,
+        },
+        filter: ({ instances, activeVariants }: any, payload: any) => {
+          let id = payload;
+          if (
+            typeof payload === 'object' &&
+            payload !== null &&
+            'id' in payload
+          ) {
+            id = payload.id;
           }
-        }),
-      });
+          const instance = instances[id];
+          if (!instance) return false;
 
-      // Call handler with a proxy that uses variantTrigger as ID source
-      const proxy = createItemProxy(_instances, variantTrigger);
+          const activeVariant = activeVariants[id];
+
+          return (
+            activeVariant === variantName || instance._variant === variantName
+          );
+        },
+        fn: ({ instances }: any, payload: any) => {
+          let id = payload;
+          if (
+            typeof payload === 'object' &&
+            payload !== null &&
+            'id' in payload
+          ) {
+            id = payload.id;
+          }
+          return id;
+        },
+        target: variantTrigger,
+      } as any);
+
+      const proxy = createItemProxy(
+        _instances,
+        _state,
+        variantTrigger,
+        _activeVariants,
+      );
       handler(proxy, variantTrigger);
     }
+  }
+  // Case 2: Reactive Matching (Store or Lens)
+  else if (is.store(source) || (source && source.__type === 'lens')) {
+    // Handled via lenses mostly
   }
 }

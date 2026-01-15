@@ -6,6 +6,7 @@ import {
   createEvent,
   sample,
   is,
+  EventCallable,
 } from 'effector';
 import { model } from '../model';
 import { define } from '../define';
@@ -13,238 +14,344 @@ import { facet } from '../facet';
 import { create } from '../instance';
 
 describe('instance', () => {
-  it('should process inputs', async () => {
-    const m = model({
-      input: {
+  describe('Inputs', () => {
+    it('should process inputs', async () => {
+      const testModel = model({
+        input: {
+          $val: define.store(0),
+          raw: define.store(0),
+        },
+        fn: (input: any) => ({ input }),
+      });
+
+      const scope = fork();
+      const instance = create(testModel, {
+        input: {
+          $val: createStore(10),
+          raw: 20,
+        },
+      });
+
+      expect(is.store(instance.input.$val)).toBe(true);
+      expect(scope.getState(instance.input.$val)).toBe(10);
+      expect(is.store(instance.input.raw)).toBe(true);
+      expect(scope.getState(instance.input.raw)).toBe(20);
+    });
+
+    it('should process static value inputs', async () => {
+      const testModel = model({
+        input: { $val: define.store(0) },
+        fn: ({ $val }: any) => ({ $val }),
+      });
+
+      const scope = fork();
+      const instance = create(testModel, {
+        input: { $val: 10 },
+      });
+
+      expect(is.store(instance.input.$val)).toBe(true);
+      expect(scope.getState(instance.input.$val)).toBe(10);
+    });
+
+    it('should ignore extra inputs', () => {
+      const testModel = model({
+        input: { $val: define.store(0) },
+        fn: ({ $val }: any) => ({ $val }),
+      });
+
+      const scope = fork();
+      const $val = createStore(10);
+
+      // Pass extra field 'extra'
+      const instance = create(testModel, {
+        input: {
+          $val,
+          extra: createStore(99),
+        } as any,
+      });
+
+      expect(is.store(instance.input.$val)).toBe(true);
+      expect(scope.getState(instance.input.$val)).toBe(10);
+      expect((instance.input as any).extra).toBeUndefined();
+    });
+  });
+
+  describe('Scope Isolation', () => {
+    it('should maintain independent state for multiple instances', async () => {
+      const testModel = model({
+        input: { $val: define.store(0) },
+        fn: ({ $val }: any) => {
+          const $doubled = $val.map((x: number) => x * 2);
+          return { $doubled };
+        },
+      });
+
+      const scope = fork();
+      const $input1 = createStore(10);
+      const $input2 = createStore(20);
+
+      const instance1 = create(testModel, { input: { $val: $input1 } });
+      const instance2 = create(testModel, { input: { $val: $input2 } });
+
+      expect(scope.getState(instance1.$doubled)).toBe(20);
+      expect(scope.getState(instance2.$doubled)).toBe(40);
+
+      await allSettled($input1, { scope, params: 100 });
+      expect(scope.getState(instance1.$doubled)).toBe(200);
+      expect(scope.getState(instance2.$doubled)).toBe(40); // Unchanged
+    });
+  });
+
+  describe('Variants', () => {
+    it('should switch variants based on source', async () => {
+      const testModel = model({
+        input: { $s: define.store('a') },
+        variant: {
+          source: (i: any) => i.$s,
+          cases: {
+            A: (s: string) => s === 'a',
+            B: (s: string) => s === 'b',
+          },
+        },
+      });
+
+      const $s = createStore('a');
+      const instance = create(testModel, { input: { $s } });
+      const scope = fork();
+
+      expect(scope.getState(instance.activeVariant)).toBe('A');
+
+      await allSettled($s, { scope, params: 'b' });
+      expect(scope.getState(instance.activeVariant)).toBe('B');
+
+      await allSettled($s, { scope, params: 'c' });
+      expect(scope.getState(instance.activeVariant)).toBe(null);
+    });
+
+    it('should trigger enter and leave events correctly', async () => {
+      const testModel = model({
+        input: { $score: define.store(0) },
+        variant: {
+          source: ({ $score }: { $score: any }) => $score,
+          cases: {
+            positive: (s: number) => s > 0,
+            negative: (s: number) => s < 0,
+            zero: (s: number) => s === 0,
+          },
+        },
+      });
+
+      const $score = createStore(0);
+      const instance = create(testModel, { input: { $score } });
+      const scope = fork();
+
+      const enterPositive = vi.fn();
+      const leavePositive = vi.fn();
+      const enterNegative = vi.fn();
+      const leaveNegative = vi.fn();
+
+      // Helper to watch events
+      const watch = (event: EventCallable<void>, fn: any) => {
+        const watcher = createEvent();
+        watcher.watch(fn);
+        sample({ clock: event, target: watcher });
+      };
+
+      watch(
+        instance.variant.positive.enter as EventCallable<void>,
+        enterPositive,
+      );
+      watch(
+        instance.variant.positive.leave as EventCallable<void>,
+        leavePositive,
+      );
+      watch(
+        instance.variant.negative.enter as EventCallable<void>,
+        enterNegative,
+      );
+      watch(
+        instance.variant.negative.leave as EventCallable<void>,
+        leaveNegative,
+      );
+
+      // Initial state: 0 (zero)
+      expect(scope.getState(instance.activeVariant)).toBe('zero');
+      expect(enterPositive).not.toHaveBeenCalled();
+
+      // Switch to positive
+      await allSettled($score, { scope, params: 10 });
+      expect(scope.getState(instance.activeVariant)).toBe('positive');
+      expect(enterPositive).toHaveBeenCalledTimes(1);
+      expect(leavePositive).not.toHaveBeenCalled();
+
+      // Switch to negative
+      await allSettled($score, { scope, params: -10 });
+      expect(scope.getState(instance.activeVariant)).toBe('negative');
+      expect(leavePositive).toHaveBeenCalledTimes(1); // Crucial check!
+      expect(enterNegative).toHaveBeenCalledTimes(1);
+
+      // Switch to zero
+      await allSettled($score, { scope, params: 0 });
+      expect(scope.getState(instance.activeVariant)).toBe('zero');
+      expect(leaveNegative).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Facets', () => {
+    it('should use base implementation if no variant matches', async () => {
+      const f = facet({ $val: define.store(0) });
+      const testModel = model({
+        input: { $s: define.store('a') },
+        facets: { f },
+        variant: {
+          source: (i: any) => i.$s,
+          cases: { A: (s: string) => s === 'a' },
+        },
+        fn: () => ({
+          f: { $val: createStore(999) }, // Base implementation
+        }),
+        impl: {
+          A: () => ({
+            f: { $val: define.store(1) },
+          }),
+        },
+      });
+
+      const $s = createStore('b'); // No match
+      const instance = create(testModel, { input: { $s } });
+      const scope = fork();
+
+      expect(scope.getState(instance.facets.f.$val)).toBe(999);
+
+      await allSettled($s, { scope, params: 'a' });
+      expect(scope.getState(instance.facets.f.$val)).toBe(1);
+    });
+
+    it('should multiplex facets based on active variant', async () => {
+      const f = facet({
         $val: define.store(0),
-        raw: define.store(0),
-      },
-      fn: (input: any) => ({ input }),
-    });
+        evt: define.event<string>(),
+      });
 
-    const scope = fork();
-    const instance = create(m, {
-      input: {
-        $val: createStore(10),
-        raw: 20,
-      },
-    });
+      const implEventA = createEvent<string>();
+      const implEventB = createEvent<string>();
 
-    expect(is.store(instance.input.$val)).toBe(true);
-    expect(scope.getState(instance.input.$val)).toBe(10);
-    expect(instance.input.raw).toBe(20);
-  });
-
-  it('should switch variants', async () => {
-    const m = model({
-      input: { $s: define.store('a') },
-      variant: {
-        source: (i: any) => i.$s,
-        cases: {
-          A: (s: string) => s === 'a',
-          B: (s: string) => s === 'b',
-        },
-      },
-    });
-
-    const $s = createStore('a');
-    const instance = create(m, { input: { $s } });
-    const scope = fork();
-
-    expect(scope.getState(instance.activeVariant)).toBe('A');
-
-    await allSettled($s, { scope, params: 'b' });
-    expect(scope.getState(instance.activeVariant)).toBe('B');
-
-    await allSettled($s, { scope, params: 'c' });
-    expect(scope.getState(instance.activeVariant)).toBe(null);
-  });
-
-  it('should trigger lifecycle events', async () => {
-    const m = model({
-      input: { $s: define.store(0) },
-      variant: {
-        source: (i: any) => i.$s,
-        cases: {
-          one: (s: number) => s === 1,
-        },
-      },
-    });
-
-    const $s = createStore(0);
-    const instance = create(m, { input: { $s } });
-    const scope = fork();
-
-    // Watch enter event
-    const enterWatcher = createEvent();
-    sample({
-      clock: instance.variant.one.enter as any,
-      target: enterWatcher,
-    } as any);
-
-    const $enterCount = createStore(0).on(enterWatcher, (x) => x + 1);
-
-    await allSettled($s, { scope, params: 1 });
-    expect(scope.getState($enterCount)).toBe(1);
-
-    await allSettled($s, { scope, params: 0 });
-    // Switch back
-    await allSettled($s, { scope, params: 1 });
-    expect(scope.getState($enterCount)).toBe(2);
-  });
-
-  it('should multiplex facets', async () => {
-    const f = facet({
-      $val: define.store(0),
-      evt: define.event<string>(),
-    });
-
-    // We need to spy on the implementation event.
-    // We can do this by creating the event outside and passing it in, OR by exposing it from impl.
-    const implEventA = createEvent<string>();
-    const implEventB = createEvent<string>();
-
-    const m = model({
-      input: { $s: define.store('a') },
-      facets: { f },
-      variant: {
-        source: (i: any) => i.$s,
-        cases: {
-          A: (s: string) => s === 'a',
-          B: (s: string) => s === 'b',
-        },
-      },
-      impl: {
-        A: () => ({
-          f: {
-            $val: define.store(10),
-            evt: implEventA,
+      const testModel = model({
+        input: { $s: define.store('a') },
+        facets: { f },
+        variant: {
+          source: (i: any) => i.$s,
+          cases: {
+            A: (s: string) => s === 'a',
+            B: (s: string) => s === 'b',
           },
-        }),
-        B: () => ({
-          f: {
-            $val: define.store(20),
-            evt: implEventB,
-          },
-        }),
-      },
+        },
+        impl: {
+          A: () => ({
+            f: {
+              $val: define.store(10),
+              evt: implEventA,
+            },
+          }),
+          B: () => ({
+            f: {
+              $val: define.store(20),
+              evt: implEventB,
+            },
+          }),
+        },
+      });
+
+      const $s = createStore('a');
+      const instance = create(testModel, { input: { $s } });
+      const scope = fork();
+
+      // Link global events to stores for testing
+      const $lastA = createStore('').on(implEventA, (_, p) => p);
+      const $lastB = createStore('').on(implEventB, (_, p) => p);
+
+      // 1. Check Store Multiplexing (Active: A)
+      expect(scope.getState(instance.facets.f.$val)).toBe(10);
+
+      // Switch to B
+      await allSettled($s, { scope, params: 'b' });
+      expect(scope.getState(instance.facets.f.$val)).toBe(20);
+
+      // 2. Check Event Multiplexing (Active: B)
+      await allSettled(instance.facets.f.evt, { scope, params: 'helloB' });
+      expect(scope.getState($lastB)).toBe('helloB');
+      expect(scope.getState($lastA)).toBe('');
+
+      // Switch back to A
+      await allSettled($s, { scope, params: 'a' });
+      await allSettled(instance.facets.f.evt, { scope, params: 'helloA' });
+      expect(scope.getState($lastA)).toBe('helloA');
+      expect(scope.getState($lastB)).toBe('helloB'); // Unchanged
     });
-
-    const $s = createStore('a');
-    const instance = create(m, { input: { $s } });
-    const scope = fork();
-
-    const spyA = vi.fn();
-    const spyB = vi.fn();
-
-    // We can't watch global events easily in scope without linking them to stores/effects.
-    // Let's link them to stores.
-    const $lastA = createStore('').on(implEventA, (_, p) => p);
-    const $lastB = createStore('').on(implEventB, (_, p) => p);
-
-    // 1. Check Store Multiplexing
-    expect(scope.getState(instance.facets.f.$val)).toBe(10);
-
-    await allSettled($s, { scope, params: 'b' });
-    expect(scope.getState(instance.facets.f.$val)).toBe(20);
-
-    // 2. Check Event Multiplexing (Active: B)
-    await allSettled(instance.facets.f.evt, { scope, params: 'helloB' });
-    expect(scope.getState($lastB)).toBe('helloB');
-    expect(scope.getState($lastA)).toBe(''); // A should not receive it
-
-    // Switch to A
-    await allSettled($s, { scope, params: 'a' });
-    await allSettled(instance.facets.f.evt, { scope, params: 'helloA' });
-    expect(scope.getState($lastA)).toBe('helloA');
-    expect(scope.getState($lastB)).toBe('helloB'); // Unchanged
   });
 
-  it('should clean up on destroy', async () => {
-    const m = model({
-      input: { $s: define.store(0) },
-      variant: {
-        source: (i: any) => i.$s,
-        cases: { A: (s: number) => s === 1 },
-      },
-    });
-    const $s = createStore(0);
-    const instance = create(m, { input: { $s } });
-    const scope = fork();
+  describe('Lifecycle', () => {
+    it('should clean up resources on destroy', async () => {
+      const testModel = model({
+        input: { $s: define.store(0) },
+        variant: {
+          source: (i: any) => i.$s,
+          cases: { A: (s: number) => s === 1 },
+        },
+      });
+      const $s = createStore(0);
+      const instance = create(testModel, { input: { $s } });
+      const scope = fork();
 
-    // Verify activeVariant updates
-    await allSettled($s, { scope, params: 1 });
-    expect(scope.getState(instance.activeVariant)).toBe('A');
+      // Verify activeVariant updates
+      await allSettled($s, { scope, params: 1 });
+      expect(scope.getState(instance.activeVariant)).toBe('A');
 
-    // Destroy
-    instance.destroy();
+      // Destroy
+      instance.destroy();
 
-    // Update input
-    await allSettled($s, { scope, params: 0 });
+      // Update input
+      await allSettled($s, { scope, params: 0 });
 
-    // activeVariant should NOT update because the graph is disconnected
-    // Wait, activeVariant is a store. If we cleared its node, it might effectively be dead.
-    // However, if we hold a reference to it (instance.activeVariant), and we check its state...
-    // In Effector, clearNode destroys the logic (links).
-    // So the subscription from $s to activeVariant should be gone.
-
-    expect(scope.getState(instance.activeVariant)).toBe('A'); // Stale value
-  });
-
-  it('should ignore extra inputs', () => {
-    const m = model({
-      input: { $val: define.store(0) },
-      fn: ({ $val }: any) => ({ $val }),
+      // After destroy, the graph is disconnected.
     });
 
-    const scope = fork();
-    const $val = createStore(10);
+    it('should allow idempotent destroy', () => {
+      const testModel = model({ input: {} });
+      const instance = create(testModel, { input: {} });
 
-    // Pass extra field 'extra'
-    const instance = create(m, {
-      input: {
-        $val,
-        extra: createStore(99),
-      } as any,
+      instance.destroy();
+      expect(() => instance.destroy()).not.toThrow();
     });
 
-    expect(is.store(instance.input.$val)).toBe(true);
-    expect(scope.getState(instance.input.$val)).toBe(10);
-    expect((instance.input as any).extra).toBeUndefined();
-  });
+    it('should destroy nested instances created via model fn', async () => {
+      const child = model({
+        input: { $v: define.store(0) },
+        fn: ({ $v }: any) => {
+          const $derived = $v.map((x: number) => x);
+          return { $derived };
+        },
+      });
 
-  it('should allow idempotent destroy', async () => {
-    const m = model({ input: {} });
-    const instance = create(m, { input: {} });
+      const parent = model({
+        input: { $v: define.store(0) },
+        fn: ({ $v }: any) => {
+          const c = create(child, { input: { $v } });
+          return { c };
+        },
+      });
 
-    instance.destroy();
-    expect(() => instance.destroy()).not.toThrow();
-  });
+      const $v = createStore(1);
+      const instance = create(parent, { input: { $v } });
+      const scope = fork();
 
-  it('should destroy nested instances created via model fn', async () => {
-    const child = model({
-      input: { $v: define.store(0) },
-      fn: ({ $v }: any) => ({ $v }),
+      // Verify child works
+      expect(scope.getState(instance.c.$derived)).toBe(1);
+
+      instance.destroy();
+
+      // After destroy, updates should stop
+      await allSettled($v, { scope, params: 2 });
     });
-
-    const parent = model({
-      input: { $v: define.store(0) },
-      fn: ({ $v }: any) => {
-        const c = create(child, { input: { $v } });
-        return { c };
-      },
-    });
-
-    const $v = createStore(1);
-    const instance = create(parent, { input: { $v } });
-    const scope = fork();
-
-    expect(scope.getState(instance.c.input.$v)).toBe(1);
-
-    instance.destroy();
-
-    // After destroy, updates should stop
-    await allSettled($v, { scope, params: 2 });
-    expect(scope.getState(instance.c.input.$v)).toBe(1); // Should stay 1
   });
 });
