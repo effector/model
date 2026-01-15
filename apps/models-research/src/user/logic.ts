@@ -1,4 +1,4 @@
-import { createEvent, createStore, sample } from 'effector';
+import { createEvent, createStore, sample, Event } from 'effector';
 import { usersList } from './index';
 import { select, match } from '@effector-model/core-experimental';
 
@@ -26,11 +26,12 @@ const userToPromote = usersList.getItem(promoteUser);
 match({
   source: userToPromote.activeVariant,
   cases: {
-    member: (memberScope: any) => {
-      // Just accessing the property wires it up to the variantTrigger
-      // thanks to createItemProxy's internal logic.
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      memberScope.facets.membership.promote;
+    member: (memberScope: any, trigger: Event<string>) => {
+      // Explicitly wire the trigger to the method
+      sample({
+        clock: trigger,
+        target: memberScope.facets.membership.promote as Event<any>,
+      });
     },
     guest: (_: any, trigger: any) => {
       trigger.watch(() => console.error('Нельзя повысить гостя!'));

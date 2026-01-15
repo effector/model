@@ -19,6 +19,7 @@ export function UserDemo() {
   ]);
   const [kick, promote, select] = useUnit([kickUser, promoteUser, selectUser]);
   const [addG, addM] = useUnit([addGuest, addMember]);
+  const [remove] = useUnit([usersList.remove]);
 
   const [name, setName] = useState('John');
 
@@ -78,6 +79,15 @@ export function UserDemo() {
                   title="Kick"
                 >
                   ×
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    remove(id);
+                  }}
+                  title="Remove"
+                >
+                  🗑️
                 </button>
               </div>
             </div>
