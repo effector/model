@@ -19,14 +19,13 @@ export function match(config: MatchConfig) {
       sample({
         clock: _sourceEvent as Event<string>,
         source: _instances as Store<Record<string, any>>,
-        filter: (instances: any, id: any) => {
-          const instance = instances[id];
-          return (
-            !!instance && instance.activeVariant.getState() === variantName
-          );
-        },
-        fn: (instances: any, id: any) => id,
-        target: variantTrigger,
+        filter: (instances: any, id: any) => !!instances[id],
+        fn: (instances: any, id: any) => ({ instance: instances[id], id }),
+        target: createEffect(({ instance, id }: any) => {
+          if (instance.activeVariant.getState() === variantName) {
+            variantTrigger(id);
+          }
+        }),
       });
 
       // Call handler with a proxy that uses variantTrigger as ID source
