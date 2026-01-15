@@ -104,7 +104,7 @@ function toStore(lens: Lens): Store<any> {
 
     let value = instances[id];
     for (const key of lens.path) {
-      if (value && typeof value === 'object' && key in value) {
+      if (value && typeof value === 'object') {
         value = value[key];
       } else {
         value = undefined;

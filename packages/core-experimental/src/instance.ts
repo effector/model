@@ -188,25 +188,32 @@ export function create(
 
   const destroy = () => {
     clearNode($activeVariant);
-    Object.values(variantEvents).forEach(({ enter, leave }) => {
-      clearNode(enter);
-      clearNode(leave);
-    });
-    // Clear facets
-    Object.values(facets).forEach((facetInstance) => {
-      Object.values(facetInstance).forEach((unit) => {
-        if (is.unit(unit)) clearNode(unit as Unit<any>);
+    if (variantEvents) {
+      Object.values(variantEvents).forEach(({ enter, leave }) => {
+        clearNode(enter);
+        clearNode(leave);
       });
-    });
+    }
+    // Clear facets
+    if (facets) {
+      Object.values(facets).forEach((facetInstance) => {
+        if (facetInstance) {
+          Object.values(facetInstance).forEach((unit) => {
+            if (is.unit(unit)) clearNode(unit as Unit<any>);
+          });
+        }
+      });
+    }
     // Clear implementation results (if they contain units)
-    Object.values(variantImpls).forEach((implResult) => {
-      if (implResult && typeof implResult === 'object') {
-        Object.values(implResult).forEach((val) => {
-          if (is.unit(val)) clearNode(val as Unit<any>);
-          // Deep cleanup might be needed if impl returns nested structures
-        });
-      }
-    });
+    if (variantImpls) {
+      Object.values(variantImpls).forEach((implResult) => {
+        if (implResult && typeof implResult === 'object') {
+          Object.values(implResult).forEach((val) => {
+            if (is.unit(val)) clearNode(val as Unit<any>);
+          });
+        }
+      });
+    }
     // Clear fn result
     if (fnResult && typeof fnResult === 'object') {
       Object.values(fnResult).forEach((val) => {

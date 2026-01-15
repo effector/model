@@ -88,7 +88,10 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
     return rest;
   });
 
-  $items.on(add, (items, { id }) => [...items, id]);
+  $items.on(add, (items, { id }) => {
+    if (items.includes(id)) return items;
+    return [...items, id];
+  });
   $items.on(remove, (items, id) => items.filter((x) => x !== id));
 
   const proxyCache = new Map<any, any>();

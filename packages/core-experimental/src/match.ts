@@ -1,4 +1,4 @@
-import { sample, createEvent, Event, Store } from 'effector';
+import { sample, createEvent, Event, Store, createEffect } from 'effector';
 import { createItemProxy } from './keyval';
 
 export type MatchConfig = {
@@ -19,13 +19,13 @@ export function match(config: MatchConfig) {
       sample({
         clock: _sourceEvent as Event<string>,
         source: _instances as Store<Record<string, any>>,
-        filter: (instances, id) => {
+        filter: (instances: any, id: any) => {
           const instance = instances[id];
-          // Check active variant
-          // instance.activeVariant is a Store.
-          return instance?.activeVariant?.getState() === variantName;
+          return (
+            !!instance && instance.activeVariant.getState() === variantName
+          );
         },
-        fn: (instances, id) => id,
+        fn: (instances: any, id: any) => id,
         target: variantTrigger,
       });
 
