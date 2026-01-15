@@ -1,4 +1,5 @@
 import { model, define } from '@effector-model/core-experimental';
+import { Store } from 'effector';
 import { visualFacet } from './facets';
 
 export const gameModel = model({
@@ -9,11 +10,11 @@ export const gameModel = model({
     visual: visualFacet,
   },
   variant: {
-    source: (input) => input.$score,
+    source: (input: { $score: Store<number> }) => input.$score,
     cases: {
-      winning: (score) => score > 0,
-      losing: (score) => score < 0,
-      draw: (score) => score === 0,
+      winning: (score: number) => score > 0,
+      losing: (score: number) => score < 0,
+      draw: (score: number) => score === 0,
     },
   },
   impl: {
@@ -23,7 +24,7 @@ export const gameModel = model({
     draw: () => ({
       visual: { $color: define.store('gray') },
     }),
-    losing: ({ $score }) => {
+    losing: ({ $score }: { $score: Store<number> }) => {
       const $intensity = $score.map((s: number) =>
         Math.min(Math.abs(s) * 5, 100),
       );

@@ -27,13 +27,13 @@ match({
   source: userToPromote.activeVariant,
   cases: {
     member: (memberScope: any) => {
-      sample({
-        clock: promoteUser,
-        target: memberScope.facets.membership.promote,
-      });
+      // Just accessing the property wires it up to the variantTrigger
+      // thanks to createItemProxy's internal logic.
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      memberScope.facets.membership.promote;
     },
-    guest: () => {
-      console.error('Нельзя повысить гостя!');
+    guest: (_: any, trigger: any) => {
+      trigger.watch(() => console.error('Нельзя повысить гостя!'));
     },
   },
 });
@@ -53,17 +53,17 @@ export const addMember = createEvent<{ name: string; role: string }>();
 
 sample({
   clock: addGuest,
-  fn: (name) => ({
+  fn: (name: string) => ({
     id: Math.random().toString(36).substr(2, 9),
     variant: 'guest',
     input: { nickname: createStore(name) },
   }),
-  target: usersList.add,
+  target: usersList.add as any,
 });
 
 sample({
   clock: addMember,
-  fn: ({ name, role }) => ({
+  fn: ({ name, role }: { name: string; role: string }) => ({
     id: Math.random().toString(36).substr(2, 9),
     variant: 'member',
     input: {
@@ -71,5 +71,5 @@ sample({
       role: createStore(role),
     },
   }),
-  target: usersList.add,
+  target: usersList.add as any,
 });

@@ -3,9 +3,9 @@ import { $score, updateScore, game, stats } from '../game/instance';
 
 export function GameDemo() {
   const [score, update] = useUnit([$score, updateScore]);
-  const color = useUnit(game.facets.visual.$color);
-  const totalLosingTime = useUnit(stats.$totalLosingTime);
-  const activeVariant = useUnit(game.activeVariant);
+  const color = useUnit(game.facets.visual.$color) as any;
+  const totalLosingTime = useUnit((stats as any).$totalLosingTime) as any;
+  const activeVariant = useUnit(game.activeVariant) as any;
 
   return (
     <div style={{ padding: 20, border: '1px solid #ccc', borderRadius: 8 }}>
