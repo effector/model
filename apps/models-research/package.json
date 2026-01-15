@@ -1,0 +1,13 @@
+{
+  "name": "@effector/model-models-research-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "dependencies": {
+    "effector-action": "^1.1.3"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^3.1.0",
+    "vite": "^4.2.1"
+  }
+}
