@@ -1,0 +1,87 @@
+{
+  "name": "core-experimental",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/core-experimental/src",
+  "projectType": "library",
+  "targets": {
+    "pack": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node tools/scripts/typepack.mjs --package core-experimental"
+      },
+      "dependsOn": [
+        {
+          "projects": "self",
+          "target": "build"
+        }
+      ]
+    },
+    "build": {
+      "executor": "@nrwl/rollup:rollup",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/core-experimental",
+        "entryFile": "packages/core-experimental/index.ts",
+        "tsConfig": "packages/core-experimental/tsconfig.build.json",
+        "project": "packages/core-experimental/package.json",
+        "format": ["esm", "cjs"],
+        "generateExportsField": true,
+        "compiler": "babel"
+      }
+    },
+    "publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node tools/scripts/publish.mjs core-experimental"
+      },
+      "dependsOn": [
+        {
+          "projects": "self",
+          "target": "pack"
+        }
+      ]
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/core-experimental/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/vite:test",
+      "options": {
+        "config": "packages/core-experimental/vite.config.mts",
+        "passWithNoTests": true
+      }
+    },
+    "test_watch": {
+      "executor": "@nrwl/vite:test",
+      "options": {
+        "watch": true,
+        "config": "packages/core-experimental/vite.config.mts",
+        "passWithNoTests": true
+      }
+    },
+    "typetest": {
+      "executor": "@nrwl/vite:test",
+      "options": {
+        "mode": "typecheck"
+      }
+    },
+    "size": {
+      "executor": "./tools/executors/size-limit:size-limit",
+      "options": {
+        "limit": "75 kB",
+        "outputPath": "dist/packages/core-experimental"
+      },
+      "dependsOn": [
+        {
+          "projects": "self",
+          "target": "build"
+        }
+      ]
+    }
+  },
+  "tags": []
+}

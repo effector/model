@@ -1,0 +1,8 @@
+{
+  "name": "@effector-model/core-experimental",
+  "version": "0.0.8",
+  "type": "module",
+  "peerDependencies": {
+    "effector": "^23.3.0"
+  }
+}
