@@ -4,4 +4,6 @@ node_modules
 *.log
 .nx
 .vscode
-packages/core-experimental/coverage/prettify.css
+packages/core-experimental/coverage/*
+apps/models-research/src/tree/__tests__/__screenshots__/*
+packages/react/src/__tests__/examples/__screenshots__/*
