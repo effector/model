@@ -197,6 +197,12 @@ export function createItemProxy(
     {},
     {
       get: (target, prop) => {
+        // Expose Lens properties on the root proxy
+        if (prop === '__type') return 'lens';
+        if (prop === 'source') return $instances;
+        if (prop === 'id') return $id;
+        if (prop === 'path') return [];
+
         if (prop === 'facets') {
           return new Proxy(
             {},

@@ -1,9 +1,9 @@
-import { sample, createEvent } from 'effector';
+import { sample, createEvent, Event, Store } from 'effector';
 import { createItemProxy } from './keyval';
 
 export type MatchConfig = {
   source: any;
-  cases: Record<string, (scope: any) => void>;
+  cases: Record<string, (scope: any, trigger: Event<string>) => void>;
 };
 
 export function match(config: MatchConfig) {
@@ -17,21 +17,21 @@ export function match(config: MatchConfig) {
       const variantTrigger = createEvent<string>(); // Carries ID
 
       sample({
-        clock: _sourceEvent as any,
-        source: _instances,
-        filter: (instances: any, id: string) => {
+        clock: _sourceEvent as Event<string>,
+        source: _instances as Store<Record<string, any>>,
+        filter: (instances, id) => {
           const instance = instances[id];
           // Check active variant
           // instance.activeVariant is a Store.
           return instance?.activeVariant?.getState() === variantName;
         },
-        fn: (instances: any, id: string) => id,
+        fn: (instances, id) => id,
         target: variantTrigger,
       });
 
       // Call handler with a proxy that uses variantTrigger as ID source
       const proxy = createItemProxy(_instances, variantTrigger);
-      handler(proxy);
+      handler(proxy, variantTrigger);
     }
   }
 }

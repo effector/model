@@ -22,14 +22,14 @@ export type RefDef = {
 };
 
 export const define = {
-  store: <T>(initial?: T): StoreDef<T> => ({
+  store: <T extends unknown>(initial?: T): StoreDef<T> => ({
     type: 'store',
     initial,
   }),
-  event: <T>(): EventDef<T> => ({
+  event: <T extends unknown>(): EventDef<T> => ({
     type: 'event',
   }),
-  array: <T>(item: any): ArrayDef<T> => ({
+  array: <T extends unknown>(item: any): ArrayDef<T> => ({
     type: 'array',
     item,
   }),

@@ -179,7 +179,7 @@ export function create(
   }
 
   // 5. Run `fn` if present (for simple models or extra logic)
-  let fnResult = {};
+  let fnResult: any = {};
   if (modelConfig.fn) {
     fnResult = modelConfig.fn(inputStores);
   }
@@ -191,5 +191,5 @@ export function create(
     ...fnResult, // Expose things returned by fn
     // Also expose internals for `select`?
     __impls: variantImpls,
-  };
+  } as any;
 }
