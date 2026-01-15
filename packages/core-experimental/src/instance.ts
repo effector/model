@@ -6,6 +6,8 @@ import {
   Store,
   Event,
   is,
+  clearNode,
+  Unit,
 } from 'effector';
 import { Model } from './model';
 import { define } from './define';
@@ -184,6 +186,35 @@ export function create(
     fnResult = modelConfig.fn(inputStores);
   }
 
+  const destroy = () => {
+    clearNode($activeVariant);
+    Object.values(variantEvents).forEach(({ enter, leave }) => {
+      clearNode(enter);
+      clearNode(leave);
+    });
+    // Clear facets
+    Object.values(facets).forEach((facetInstance) => {
+      Object.values(facetInstance).forEach((unit) => {
+        if (is.unit(unit)) clearNode(unit as Unit<any>);
+      });
+    });
+    // Clear implementation results (if they contain units)
+    Object.values(variantImpls).forEach((implResult) => {
+      if (implResult && typeof implResult === 'object') {
+        Object.values(implResult).forEach((val) => {
+          if (is.unit(val)) clearNode(val as Unit<any>);
+          // Deep cleanup might be needed if impl returns nested structures
+        });
+      }
+    });
+    // Clear fn result
+    if (fnResult && typeof fnResult === 'object') {
+      Object.values(fnResult).forEach((val) => {
+        if (is.unit(val)) clearNode(val as Unit<any>);
+      });
+    }
+  };
+
   return {
     facets,
     variant: variantEvents, // Expose enter/leave
@@ -191,5 +222,6 @@ export function create(
     ...fnResult, // Expose things returned by fn
     // Also expose internals for `select`?
     __impls: variantImpls,
+    destroy,
   } as any;
 }

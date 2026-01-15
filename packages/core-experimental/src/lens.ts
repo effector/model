@@ -1,4 +1,4 @@
-import { Store, createStore, combine, is } from 'effector';
+import { Store, createStore, combine, is, createEvent } from 'effector';
 
 export type Lens = {
   __type: 'lens';
@@ -76,55 +76,55 @@ export function select(source: Lens | Store<any>) {
 }
 
 function toStore(lens: Lens): Store<any> {
-  // Create a store that combines instances, id, and path.
-  // This is the "expensive" part that `select` hides.
-  return combine(
-    lens.source,
-    lens.id,
-    (instances, id) => {
-      if (!id || !instances[id]) return lens.fallbackValue;
+  const $output = createStore(lens.fallbackValue);
+  const updateOutput = createEvent<any>();
 
-      const instance = instances[id];
-      let value = instance;
+  $output.on(updateOutput, (_, val) => val);
 
-      for (const key of lens.path) {
-        if (value && value[key]) {
-          value = value[key];
-        } else {
-          return lens.fallbackValue;
-        }
+  // State to hold current unsubscription function
+  let currentUnsub: (() => void) | null = null;
+
+  const $context = combine({
+    instances: lens.source,
+    id: lens.id,
+  });
+
+  // Subscription Manager
+  // When context changes (ID or List changes), we resolve the target and re-subscribe
+  $context.watch(({ instances, id }) => {
+    // 1. Unsubscribe from previous target
+    if (currentUnsub) {
+      currentUnsub();
+      currentUnsub = null;
+    }
+
+    // 2. Resolve new target
+    if (!id || !instances[id]) {
+      updateOutput(lens.fallbackValue);
+      return;
+    }
+
+    let value = instances[id];
+    for (const key of lens.path) {
+      if (value && value[key]) {
+        value = value[key];
+      } else {
+        value = undefined;
+        break;
       }
+    }
 
-      // If the result is a Store (nested store), we need to extract its value.
-      // BUT we are inside `combine`. We cannot read a store's value reactively inside combine!
-      // This confirms `select` must return a Store that flattens this.
-      // Effector doesn't support this "Higher Order Store" natively easily.
+    // 3. Subscribe to new target
+    if (is.store(value)) {
+      // It's a store: pipe updates to output
+      currentUnsub = (value as Store<any>).watch((newValue: any) => {
+        updateOutput(newValue);
+      });
+    } else {
+      // It's a static value: just update once
+      updateOutput(value === undefined ? lens.fallbackValue : value);
+    }
+  });
 
-      // HACK: For this prototype, we assume the values in instances are NOT stores, but VALUES.
-      // BUT `create()` puts Stores in facets.
-      // So `instance.facets.visual.$color` is a Store.
-
-      // To make this work, `create()` should perhaps return an object where properties are VALUES,
-      // and the whole instance object is updated whenever any property changes?
-      // That would be a huge object update.
-
-      // Alternative: `select` returns a store that subscribes to the specific nested store.
-      // This requires a custom Effect or subscription management.
-
-      // For the sake of the prototype and "dev mode", we can use `getState()` inside the combine *if* we force updates.
-      // But `getState` is not reactive.
-
-      // Let's rely on the fact that `instance` properties are stable references (Stores).
-      // We only need to switch which Store we are listening to when ID changes.
-      // This is exactly what `switch` pattern does.
-      // But we have arbitrary nesting.
-
-      if (is.store(value)) {
-        return value.getState(); // NON-REACTIVE HACK for prototype?
-        // If we want reactivity, we need to return a Store that updates.
-      }
-      return value;
-    },
-    { skipVoid: false },
-  );
+  return $output;
 }

@@ -1,6 +1,7 @@
 import {
   Store,
   Event,
+  EventCallable,
   createStore,
   createEvent,
   sample,
@@ -34,8 +35,11 @@ export type KeyvalConfig<M> = {
 export type Keyval<M> = {
   type: 'keyval';
   model: M;
-  add: Event<{ id: string; variant?: string; input: any }>;
-  getItem: (id: string | Store<string | null> | Event<string>) => any;
+  add: EventCallable<{ id: string; variant?: string; input: any }>;
+  remove: EventCallable<string>;
+  getItem: (
+    id: string | Store<string | null> | Event<string> | Event<{ id: string }>,
+  ) => any;
   $items: Store<string[]>;
 };
 
@@ -45,6 +49,7 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
   const $items = createStore<string[]>([]);
   const $instances = createStore<Record<string, any>>({});
   const add = createEvent<{ id: string; variant?: string; input: any }>();
+  const remove = createEvent<string>();
 
   $instances.on(add, (instances, { id, variant, input }) => {
     if (instances[id]) return instances;
@@ -71,18 +76,43 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
     return { ...instances, [id]: instance };
   });
 
+  $instances.on(remove, (instances, id) => {
+    const instance = instances[id];
+    if (!instance) return instances;
+
+    if (instance.destroy && typeof instance.destroy === 'function') {
+      instance.destroy();
+    }
+
+    const { [id]: _, ...rest } = instances;
+    return rest;
+  });
+
   $items.on(add, (items, { id }) => [...items, id]);
+  $items.on(remove, (items, id) => items.filter((x) => x !== id));
+
+  const proxyCache = new Map<any, any>();
 
   const getItem = (
-    idOrStore: string | Store<string | null> | Event<string>,
+    idOrStore:
+      | string
+      | Store<string | null>
+      | Event<string>
+      | Event<{ id: string }>,
   ) => {
-    return createItemProxy($instances, idOrStore);
+    if (proxyCache.has(idOrStore)) {
+      return proxyCache.get(idOrStore);
+    }
+    const proxy = createItemProxy($instances, idOrStore);
+    proxyCache.set(idOrStore, proxy);
+    return proxy;
   };
 
   return {
     type: 'keyval',
     model: config.model,
     add,
+    remove,
     getItem,
     $items,
   };
@@ -90,7 +120,11 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
 
 export function createItemProxy(
   $instances: Store<Record<string, any>>,
-  idOrStore: string | Store<string | null> | Event<string>,
+  idOrStore:
+    | string
+    | Store<string | null>
+    | Event<string>
+    | Event<{ id: string }>,
 ) {
   // If it's a string, wrap in store
   let $id: Store<string | null>;
@@ -99,6 +133,9 @@ export function createItemProxy(
   } else if (is.store(idOrStore)) {
     $id = idOrStore;
   } else if (is.event(idOrStore)) {
+    // Cache for created units
+    const unitsCache = new Map<string, any>();
+
     // It's an event (Action routing)
     // Return a proxy that handles events
     return new Proxy(
@@ -120,6 +157,11 @@ export function createItemProxy(
                     {},
                     {
                       get: (_, fieldName: string) => {
+                        const cacheKey = `${facetName}.${fieldName}`;
+                        if (unitsCache.has(cacheKey)) {
+                          return unitsCache.get(cacheKey);
+                        }
+
                         // This returns a Unit that triggers the instance method
                         const trigger = createEvent<any>();
 
@@ -134,47 +176,33 @@ export function createItemProxy(
                           },
                         );
 
+                        // MANUAL WIRING ONLY
+                        // The user must sample to `trigger`.
+                        // We extract ID from the trigger payload.
+
                         sample({
-                          clock: idOrStore as Event<string>, // The ID event
+                          clock: trigger,
                           source: $instances,
-                          fn: (instances, id) => ({
-                            instances,
-                            id,
-                            payload: undefined,
-                          }), // We lose payload if trigger is ID-only
+                          fn: (instances, payload) => {
+                            let id = payload;
+                            // Extract ID if payload is object and has id
+                            if (
+                              typeof payload === 'object' &&
+                              payload !== null &&
+                              'id' in payload
+                            ) {
+                              id = payload.id;
+                            }
+                            return {
+                              instances,
+                              id,
+                              payload, // Pass full payload to method
+                            };
+                          },
                           target: fx,
                         });
 
-                        // If the user triggers the returned unit directly?
-                        // `sample({ clock: kickUser, target: userToKick.facets.user.kick })`
-                        // Here `kickUser` IS `idOrStore`.
-                        // And `target` IS `trigger`.
-                        // Wait, `target` expects a Unit. `trigger` is a Unit.
-                        // But `kickUser` is already connected to `fx` above?
-                        // No, `kickUser` is passed to `getItem`.
-
-                        // The user does:
-                        // `const userToKick = usersList.getItem(kickUser);`
-                        // `sample({ clock: kickUser, target: userToKick.facets.user.kick })`
-
-                        // If `kickUser` fires, `userToKick...kick` (which is `trigger`) fires?
-                        // No, `target` receives the payload from `clock`.
-                        // `kickUser` payload is ID.
-                        // So `trigger` receives ID.
-
-                        // We need to use `trigger` to fire the effect.
-
-                        sample({
-                          clock: trigger, // Receives ID
-                          source: $instances,
-                          fn: (instances, id) => ({
-                            instances,
-                            id,
-                            payload: undefined,
-                          }),
-                          target: fx,
-                        });
-
+                        unitsCache.set(cacheKey, trigger);
                         return trigger;
                       },
                     },
