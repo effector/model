@@ -1,6 +1,4 @@
-# Implementation Plan: Effector Models Research & Optimization
-
-This document outlines the strategy for implementing the finalized Effector Models API, refining the research examples, and optimizing the build stack for maximum performance.
+# Improvements
 
 ## 1. Core API Completion (`packages/core-experimental`)
 
@@ -37,16 +35,7 @@ This document outlines the strategy for implementing the finalized Effector Mode
 - **Rolldown**: Switch to Rolldown for production builds to achieve the target 2x speedup.
 - **Dev Mode Optimization**: Enable optimized bundling in dev to prevent excessive file requests.
 
-## 4. Testing & Quality Assurance
-
-### Coverage Goal: 100%
-
-- **Unit Tests**: Full coverage of all core operators in `core-experimental`.
-- **Integration Tests**: End-to-end business logic verification for Game and User examples.
-- **React Integration**: Verify UI synchronization using `effector-react` with `fork` scopes.
-- **Tooling**: Use `vitest` with `v8` coverage reporting.
-
-## 5. Implementation Roadmap
+## 4. Implementation Roadmap
 
 1.  **Phase 1: API Core**: Implement `implement`, `ref.self`, and `ref.tag`.
 2.  **Phase 2: Build Upgrade**: Update Vite, OXC, and Rolldown configuration.

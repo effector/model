@@ -222,6 +222,9 @@ importers:
       vite:
         specifier: ^5.4.0
         version: 5.4.0(@types/node@20.14.15)(lightningcss@1.30.2)
+      vite-plugin-singlefile:
+        specifier: ^2.3.0
+        version: 2.3.0(rollup@4.20.0)(vite@5.4.0(@types/node@20.14.15)(lightningcss@1.30.2))
       vite-tsconfig-paths:
         specifier: ^5.0.1
         version: 5.0.1(typescript@5.5.4)(vite@5.4.0(@types/node@20.14.15)(lightningcss@1.30.2))
@@ -5459,6 +5462,10 @@ packages:
     resolution: {integrity: sha512-LPP/3KorzCwBxfeUuZmaR6bG2kdeHSbe0P2tY3FLRU4vYrjYz5hI4QZwV0njUx3jeuKe67YukQ1LSPZBKDqO/Q==}
     engines: {node: '>=8.6'}
 
+  micromatch@4.0.8:
+    resolution: {integrity: sha512-PXwfBhYu0hBCPw8Dn0E+WDYb7af3dSLVWKi3HGv84IdF4TyFoC0ysxFd0Goxw7nSv4T/PzEJQxsYsEiFCKo2BA==}
+    engines: {node: '>=8.6'}
+
   mime-db@1.52.0:
     resolution: {integrity: sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg==}
     engines: {node: '>= 0.6'}
@@ -7456,6 +7463,13 @@ packages:
   vfile@3.0.1:
     resolution: {integrity: sha512-y7Y3gH9BsUSdD4KzHsuMaCzRjglXN0W2EcMf0gpvu6+SbsGhMje7xDc8AEoeXy6mIwCKMI6BkjMsRjzQbhMEjQ==}
 
+  vite-plugin-singlefile@2.3.0:
+    resolution: {integrity: sha512-DAcHzYypM0CasNLSz/WG0VdKOCxGHErfrjOoyIPiNxTPTGmO6rRD/te93n1YL/s+miXq66ipF1brMBikf99c6A==}
+    engines: {node: '>18.0.0'}
+    peerDependencies:
+      rollup: ^4.44.1
+      vite: ^5.4.11 || ^6.0.0 || ^7.0.0
+
   vite-tsconfig-paths@5.0.1:
     resolution: {integrity: sha512-yqwv+LstU7NwPeNqajZzLEBVpUFU6Dugtb2P84FXuvaoYA+/70l9MHE+GYfYAycVyPSDYZ7mjOFuYBRqlEpTig==}
     peerDependencies:
@@ -8863,7 +8877,7 @@ snapshots:
       '@changesets/types': 6.0.0
       '@manypkg/get-packages': 1.1.3
       fs-extra: 7.0.1
-      micromatch: 4.0.5
+      micromatch: 4.0.7
 
   '@changesets/errors@0.2.0':
     dependencies:
@@ -8896,7 +8910,7 @@ snapshots:
       '@changesets/types': 6.0.0
       '@manypkg/get-packages': 1.1.3
       is-subdir: 1.2.0
-      micromatch: 4.0.5
+      micromatch: 4.0.7
       spawndamnit: 2.0.0
 
   '@changesets/logger@0.1.0':
@@ -9445,21 +9459,6 @@ snapshots:
       - typescript
       - verdaccio
 
-  '@nrwl/js@19.5.7(@babel/traverse@7.28.6)(@swc/core@1.15.8)(@types/node@20.14.15)(nx@19.5.7(@swc/core@1.15.8))(typescript@5.4.5)':
-    dependencies:
-      '@nx/js': 19.5.7(@babel/traverse@7.28.6)(@swc/core@1.15.8)(@types/node@20.14.15)(nx@19.5.7(@swc/core@1.15.8))(typescript@5.4.5)
-    transitivePeerDependencies:
-      - '@babel/traverse'
-      - '@swc-node/register'
-      - '@swc/core'
-      - '@swc/wasm'
-      - '@types/node'
-      - debug
-      - nx
-      - supports-color
-      - typescript
-      - verdaccio
-
   '@nrwl/js@19.5.7(@babel/traverse@7.28.6)(@swc/core@1.15.8)(@types/node@20.14.15)(nx@19.5.7(@swc/core@1.15.8))(typescript@5.5.4)':
     dependencies:
       '@nx/js': 19.5.7(@babel/traverse@7.28.6)(@swc/core@1.15.8)(@types/node@20.14.15)(nx@19.5.7(@swc/core@1.15.8))(typescript@5.5.4)
@@ -9665,7 +9664,7 @@ snapshots:
       '@babel/preset-env': 7.25.3(@babel/core@7.25.2)
       '@babel/preset-typescript': 7.24.7(@babel/core@7.25.2)
       '@babel/runtime': 7.25.0
-      '@nrwl/js': 19.5.7(@babel/traverse@7.28.6)(@swc/core@1.15.8)(@types/node@20.14.15)(nx@19.5.7(@swc/core@1.15.8))(typescript@5.4.5)
+      '@nrwl/js': 19.5.7(@babel/traverse@7.28.6)(@swc/core@1.15.8)(@types/node@20.14.15)(nx@19.5.7(@swc/core@1.15.8))(typescript@5.5.4)
       '@nx/devkit': 19.5.7(nx@19.5.7(@swc/core@1.15.8))
       '@nx/workspace': 19.5.7(@swc/core@1.15.8)
       babel-plugin-const-enum: 1.2.0(@babel/core@7.25.2)
@@ -12430,7 +12429,7 @@ snapshots:
       '@nodelib/fs.walk': 1.2.8
       glob-parent: 5.1.2
       merge2: 1.4.1
-      micromatch: 4.0.5
+      micromatch: 4.0.7
 
   fast-glob@3.2.7:
     dependencies:
@@ -12438,7 +12437,7 @@ snapshots:
       '@nodelib/fs.walk': 1.2.8
       glob-parent: 5.1.2
       merge2: 1.4.1
-      micromatch: 4.0.5
+      micromatch: 4.0.7
 
   fast-glob@3.3.2:
     dependencies:
@@ -12446,7 +12445,7 @@ snapshots:
       '@nodelib/fs.walk': 1.2.8
       glob-parent: 5.1.2
       merge2: 1.4.1
-      micromatch: 4.0.5
+      micromatch: 4.0.7
 
   fast-json-stable-stringify@2.1.0: {}
 
@@ -12521,7 +12520,7 @@ snapshots:
 
   find-yarn-workspace-root2@1.2.16:
     dependencies:
-      micromatch: 4.0.5
+      micromatch: 4.0.7
       pkg-dir: 4.2.0
 
   flat-cache@2.0.1:
@@ -13295,7 +13294,7 @@ snapshots:
       '@types/stack-utils': 2.0.1
       chalk: 4.1.2
       graceful-fs: 4.2.11
-      micromatch: 4.0.5
+      micromatch: 4.0.7
       pretty-format: 29.7.0
       slash: 3.0.0
       stack-utils: 2.0.6
@@ -13651,6 +13650,11 @@ snapshots:
       picomatch: 2.3.1
 
   micromatch@4.0.7:
+    dependencies:
+      braces: 3.0.3
+      picomatch: 2.3.1
+
+  micromatch@4.0.8:
     dependencies:
       braces: 3.0.3
       picomatch: 2.3.1
@@ -15948,6 +15952,12 @@ snapshots:
       replace-ext: 1.0.0
       unist-util-stringify-position: 1.1.2
       vfile-message: 1.1.1
+
+  vite-plugin-singlefile@2.3.0(rollup@4.20.0)(vite@5.4.0(@types/node@20.14.15)(lightningcss@1.30.2)):
+    dependencies:
+      micromatch: 4.0.8
+      rollup: 4.20.0
+      vite: 5.4.0(@types/node@20.14.15)(lightningcss@1.30.2)
 
   vite-tsconfig-paths@5.0.1(typescript@5.5.4)(vite@5.4.0(@types/node@20.14.15)(lightningcss@1.30.2)):
     dependencies:
