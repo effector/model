@@ -1,0 +1,20 @@
+[
+  {
+    "type": "sauce",
+    "name": "Сырный соус",
+    "description": "Классический сырный соус",
+    "basePrice": 35
+  },
+  {
+    "type": "sauce",
+    "name": "Чесночный соус",
+    "description": "Ароматный чесночный соус",
+    "basePrice": 35
+  },
+  {
+    "type": "sauce",
+    "name": "Барбекю",
+    "description": "Соус с дымком",
+    "basePrice": 35
+  }
+]

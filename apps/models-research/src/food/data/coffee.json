@@ -1,0 +1,49 @@
+[
+  {
+    "type": "coffee",
+    "name": "Капучино",
+    "description": "Классический кофе с молочной пенкой",
+    "basePrice": 149,
+    "sizes": [
+      { "id": "S", "label": "0.2 л", "price": 0 },
+      { "id": "M", "label": "0.3 л", "price": 40 },
+      { "id": "L", "label": "0.4 л", "price": 80 }
+    ],
+    "additions": [
+      { "id": "sugar", "name": "Сахар", "price": 0 },
+      { "id": "syrup", "name": "Карамельный сироп", "price": 29 },
+      { "id": "cinnamon", "name": "Корица", "price": 0 }
+    ],
+    "defaultSize": "M"
+  },
+  {
+    "type": "coffee",
+    "name": "Латте",
+    "description": "Мягкий кофейный напиток с большим количеством молока",
+    "basePrice": 159,
+    "sizes": [
+      { "id": "M", "label": "0.3 л", "price": 0 },
+      { "id": "L", "label": "0.4 л", "price": 40 }
+    ],
+    "additions": [
+      { "id": "sugar", "name": "Сахар", "price": 0 },
+      { "id": "syrup", "name": "Ванильный сироп", "price": 29 }
+    ],
+    "defaultSize": "M"
+  },
+  {
+    "type": "coffee",
+    "name": "Американо",
+    "description": "Эспрессо с горячей водой",
+    "basePrice": 109,
+    "sizes": [
+      { "id": "S", "label": "0.2 л", "price": 0 },
+      { "id": "M", "label": "0.3 л", "price": 30 }
+    ],
+    "additions": [
+      { "id": "sugar", "name": "Сахар", "price": 0 },
+      { "id": "milk", "name": "Молоко", "price": 20 }
+    ],
+    "defaultSize": "M"
+  }
+]

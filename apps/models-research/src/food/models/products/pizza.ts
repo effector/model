@@ -8,16 +8,19 @@ import {
   setupProductTrait,
   setupIngredientsFacet,
 } from '../traits';
+import { SizeOption, IngredientOption } from '../../types';
 
 export const pizzaModel = model({
   input: {
     basePrice: define.store(0),
     name: define.store(''),
     description: define.store(''),
-    ingredientPrices: define.store<Record<string, number>>({}),
-    sizePrices: define.store<Record<string, number>>({}),
-    defaultSize: define.store('30'),
-    defaultDough: define.store('Traditional'),
+    sizes: define.store<SizeOption[]>([]),
+    doughs: define.store<{ id: string; label: string }[]>([]),
+    extraIngredients: define.store<IngredientOption[]>([]),
+    defaultIngredients: define.store<{ id: string; name: string }[]>([]),
+    defaultSize: define.store(''),
+    defaultDough: define.store(''),
   },
   facets: {
     product: productTrait,
@@ -37,20 +40,23 @@ export const pizzaModel = model({
     sample({ source: ctx.defaultDough, target: ctx.dough.$dough });
 
     // 3. Price Calculation Logic
-    // Cost = Base + Size + Ingredients
+    // Cost = Base + Size + Extras (Removed defaults do not reduce price)
 
     const $sizeCost = combine(
       ctx.size.$size,
-      ctx.sizePrices,
-      (size, prices) => prices[size] || 0,
+      ctx.sizes,
+      (id: string, sizes: SizeOption[]) => {
+        return sizes.find((s) => s.id === id)?.price || 0;
+      },
     );
 
-    const $ingredientsCost = combine(
-      ctx.ingredients.$selected,
-      ctx.ingredientPrices,
-      (selected, prices) => {
-        return Object.keys(selected).reduce((sum, id) => {
-          return sum + (prices[id] || 0);
+    const $extrasCost = combine(
+      ctx.ingredients.$selectedExtras,
+      ctx.extraIngredients,
+      (selected: Record<string, boolean>, extras: IngredientOption[]) => {
+        return extras.reduce((sum, ing) => {
+          if (selected[ing.id]) return sum + ing.price;
+          return sum;
         }, 0);
       },
     );
@@ -58,8 +64,8 @@ export const pizzaModel = model({
     const $calculatedPrice = combine(
       ctx.basePrice,
       $sizeCost,
-      $ingredientsCost,
-      (base, size, ing) => base + size + ing,
+      $extrasCost,
+      (base, size, extras) => base + size + extras,
     );
 
     // Update the ProductTrait's price store

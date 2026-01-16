@@ -1,0 +1,32 @@
+[
+  {
+    "type": "drink",
+    "name": "Добрый Кола",
+    "description": "Классический вкус колы",
+    "basePrice": 99,
+    "sizes": [
+      { "id": "0.5", "label": "0.5 л", "price": 0 },
+      { "id": "1.0", "label": "1 л", "price": 60 }
+    ],
+    "defaultSize": "0.5"
+  },
+  {
+    "type": "drink",
+    "name": "Апельсиновый сок",
+    "description": "Rich Апельсин",
+    "basePrice": 119,
+    "sizes": [
+      { "id": "0.3", "label": "0.3 л", "price": 0 },
+      { "id": "0.5", "label": "0.5 л", "price": 50 }
+    ],
+    "defaultSize": "0.3"
+  },
+  {
+    "type": "drink",
+    "name": "Вода без газа",
+    "description": "Святой источник",
+    "basePrice": 69,
+    "sizes": [{ "id": "0.5", "label": "0.5 л", "price": 0 }],
+    "defaultSize": "0.5"
+  }
+]

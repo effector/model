@@ -1,0 +1,22 @@
+[
+  {
+    "type": "cocktail",
+    "name": "Клубничный молочный коктейль",
+    "description": "Молочный коктейль с клубничным сиропом",
+    "basePrice": 179,
+    "decorations": [
+      { "id": "cream", "name": "Взбитые сливки", "price": 30 },
+      { "id": "topping", "name": "Клубничный топпинг", "price": 20 }
+    ]
+  },
+  {
+    "type": "cocktail",
+    "name": "Шоколадный молочный коктейль",
+    "description": "Молочный коктейль с какао и шоколадным сиропом",
+    "basePrice": 179,
+    "decorations": [
+      { "id": "cream", "name": "Взбитые сливки", "price": 30 },
+      { "id": "marshmallow", "name": "Маршмеллоу", "price": 25 }
+    ]
+  }
+]

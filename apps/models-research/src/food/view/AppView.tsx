@@ -1,42 +1,29 @@
 import { useUnit } from 'effector-react';
 import { cartModel } from '../models/cart';
 import { CartScreen } from './CartScreen';
-import { DrinkInput, PizzaInput } from '../types';
+import {
+  DrinkData,
+  PizzaData,
+  CoffeeData,
+  CocktailData,
+  SauceData,
+  ProductData,
+} from '../types';
+
+import pizzas from '../data/pizzas.json';
+import drinks from '../data/drinks.json';
+import coffee from '../data/coffee.json';
+import cocktails from '../data/cocktails.json';
+import sauces from '../data/sauces.json';
 
 export const AppView = () => {
   const add = useUnit(cartModel.add);
 
-  const addPizza = () => {
-    const input: PizzaInput = {
-      name: 'Pepperoni',
-      description: 'Spicy pepperoni, mozzarella, tomato sauce',
-      basePrice: 10,
-      sizePrices: { '25': 0, '30': 2, '35': 4 },
-      ingredientPrices: { cheese: 1, jalapeno: 0.5 },
-      defaultSize: '30',
-      defaultDough: 'Traditional',
-    };
-
+  const addItem = (item: any) => {
     add({
       id: crypto.randomUUID(),
-      variant: 'pizza',
-      input,
-    });
-  };
-
-  const addDrink = () => {
-    const input: DrinkInput = {
-      name: 'Coca-Cola',
-      description: 'Chilled soda',
-      basePrice: 2,
-      sizePrices: { '0.3': 0, '0.5': 0.5 },
-      defaultSize: '0.5',
-    };
-
-    add({
-      id: crypto.randomUUID(),
-      variant: 'drink',
-      input,
+      variant: item.type,
+      input: item,
     });
   };
 
@@ -51,37 +38,38 @@ export const AppView = () => {
       }}
     >
       <div style={{ padding: '20px', borderRight: '1px solid #eee' }}>
-        <h2 style={{ marginBottom: '20px' }}>Menu</h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <button
-            onClick={addPizza}
-            style={{
-              padding: '12px',
-              fontSize: '1em',
-              cursor: 'pointer',
-              backgroundColor: '#ff6900',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-            }}
-          >
-            Add Pepperoni Pizza ($10+)
-          </button>
-          <button
-            onClick={addDrink}
-            style={{
-              padding: '12px',
-              fontSize: '1em',
-              cursor: 'pointer',
-              backgroundColor: '#444',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-            }}
-          >
-            Add Coca-Cola ($2+)
-          </button>
-        </div>
+        <h2 style={{ marginBottom: '20px' }}>Menu (Dodo Pizza Moscow)</h2>
+
+        <CategorySection
+          title="Пицца"
+          items={pizzas}
+          onAdd={addItem}
+          color="#ff6900"
+        />
+        <CategorySection
+          title="Кофе"
+          items={coffee}
+          onAdd={addItem}
+          color="#6f4e37"
+        />
+        <CategorySection
+          title="Напитки"
+          items={drinks}
+          onAdd={addItem}
+          color="#d00000"
+        />
+        <CategorySection
+          title="Коктейли"
+          items={cocktails}
+          onAdd={addItem}
+          color="#00a86b"
+        />
+        <CategorySection
+          title="Соусы"
+          items={sauces}
+          onAdd={addItem}
+          color="#f4a460"
+        />
       </div>
       <div>
         <CartScreen />
@@ -89,3 +77,36 @@ export const AppView = () => {
     </div>
   );
 };
+
+const CategorySection = ({ title, items, onAdd, color }: any) => (
+  <div style={{ marginBottom: '20px' }}>
+    <h3 style={{ marginBottom: '10px', color: '#333' }}>{title}</h3>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px' }}>
+      {items.map((item: any) => (
+        <button
+          key={item.name}
+          onClick={() => onAdd(item)}
+          style={{
+            padding: '10px',
+            fontSize: '0.9em',
+            cursor: 'pointer',
+            backgroundColor: 'white',
+            color: '#333',
+            border: `1px solid ${color}`,
+            borderLeft: `4px solid ${color}`,
+            borderRadius: '4px',
+            textAlign: 'left',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <span style={{ fontWeight: 500 }}>{item.name}</span>
+          <span style={{ fontSize: '0.8em', color: '#666' }}>
+            {item.basePrice} ₽
+          </span>
+        </button>
+      ))}
+    </div>
+  </div>
+);

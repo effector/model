@@ -1,0 +1,79 @@
+[
+  {
+    "type": "pizza",
+    "name": "Пепперони",
+    "description": "Пикантная пепперони, увеличенная порция моцареллы, фирменный томатный соус",
+    "basePrice": 499,
+    "sizes": [
+      { "id": "25", "label": "25 см", "price": 0 },
+      { "id": "30", "label": "30 см", "price": 200 },
+      { "id": "35", "label": "35 см", "price": 400 }
+    ],
+    "doughs": [
+      { "id": "traditional", "label": "Традиционное" },
+      { "id": "thin", "label": "Тонкое" }
+    ],
+    "defaultIngredients": [
+      { "id": "mozzarella", "name": "Моцарелла" },
+      { "id": "sauce", "name": "Томатный соус" },
+      { "id": "pepperoni", "name": "Пепперони" }
+    ],
+    "extraIngredients": [
+      { "id": "cheese", "name": "Сырный бортик", "price": 99 },
+      { "id": "jalapeno", "name": "Острый халапеньо", "price": 49 },
+      { "id": "mushrooms", "name": "Шампиньоны", "price": 39 }
+    ],
+    "defaultSize": "30",
+    "defaultDough": "traditional"
+  },
+  {
+    "type": "pizza",
+    "name": "Маргарита",
+    "description": "Увеличенная порция моцареллы, томаты, итальянские травы, фирменный томатный соус",
+    "basePrice": 449,
+    "sizes": [
+      { "id": "25", "label": "25 см", "price": 0 },
+      { "id": "30", "label": "30 см", "price": 180 },
+      { "id": "35", "label": "35 см", "price": 350 }
+    ],
+    "doughs": [
+      { "id": "traditional", "label": "Традиционное" },
+      { "id": "thin", "label": "Тонкое" }
+    ],
+    "defaultIngredients": [
+      { "id": "mozzarella", "name": "Моцарелла" },
+      { "id": "sauce", "name": "Томатный соус" },
+      { "id": "tomatoes", "name": "Томаты" }
+    ],
+    "extraIngredients": [
+      { "id": "cheese", "name": "Сырный бортик", "price": 99 },
+      { "id": "feta", "name": "Брынза", "price": 59 }
+    ],
+    "defaultSize": "30",
+    "defaultDough": "traditional"
+  },
+  {
+    "type": "pizza",
+    "name": "Четыре сыра",
+    "description": "Сыр блю чиз, смесь сыров чеддер и пармезан, моцарелла, фирменный соус альфредо",
+    "basePrice": 549,
+    "sizes": [
+      { "id": "25", "label": "25 см", "price": 0 },
+      { "id": "30", "label": "30 см", "price": 250 },
+      { "id": "35", "label": "35 см", "price": 450 }
+    ],
+    "doughs": [
+      { "id": "traditional", "label": "Традиционное" },
+      { "id": "thin", "label": "Тонкое" }
+    ],
+    "defaultIngredients": [
+      { "id": "mozzarella", "name": "Моцарелла" },
+      { "id": "alfredo", "name": "Соус альфредо" },
+      { "id": "bluecheese", "name": "Блю чиз" },
+      { "id": "cheddar", "name": "Чеддер" }
+    ],
+    "extraIngredients": [{ "id": "honey", "name": "Мёд", "price": 30 }],
+    "defaultSize": "30",
+    "defaultDough": "traditional"
+  }
+]

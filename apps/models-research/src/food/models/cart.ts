@@ -1,11 +1,17 @@
 import { keyval, union } from '@effector-model/core-experimental';
 import { pizzaModel } from './products/pizza';
 import { drinkModel } from './products/drink';
+import { coffeeModel } from './products/coffee';
+import { cocktailModel } from './products/cocktail';
+import { sauceModel } from './products/sauce';
 
 export const cartModel = keyval({
   model: union({
     pizza: pizzaModel,
     drink: drinkModel,
+    coffee: coffeeModel,
+    cocktail: cocktailModel,
+    sauce: sauceModel,
   }),
 });
 

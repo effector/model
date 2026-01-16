@@ -21,9 +21,13 @@ export const productTrait = facet({
 });
 
 export const ingredientsFacet = facet({
-  // Record<IngredientID, boolean>
-  $selected: define.store<Record<string, boolean>>({}),
-  toggle: define.event<string>(),
+  // Extras that are added
+  $selectedExtras: define.store<Record<string, boolean>>({}),
+  // Defaults that are removed
+  $removedDefaults: define.store<Record<string, boolean>>({}),
+
+  toggleExtra: define.event<string>(),
+  toggleDefault: define.event<string>(),
 });
 
 export const sizeFacet = facet({
@@ -84,12 +88,14 @@ export function setupProductTrait(t: {
 }
 
 export function setupIngredientsFacet(t: {
-  $selected: any;
-  toggle: Event<string>;
+  $selectedExtras: any;
+  $removedDefaults: any;
+  toggleExtra: Event<string>;
+  toggleDefault: Event<string>;
 }) {
   sample({
-    clock: t.toggle,
-    source: t.$selected,
+    clock: t.toggleExtra,
+    source: t.$selectedExtras,
     fn: (selected: any, id: string) => {
       const next = { ...selected };
       if (next[id]) {
@@ -99,6 +105,21 @@ export function setupIngredientsFacet(t: {
       }
       return next;
     },
-    target: t.$selected,
+    target: t.$selectedExtras,
+  });
+
+  sample({
+    clock: t.toggleDefault,
+    source: t.$removedDefaults,
+    fn: (removed: any, id: string) => {
+      const next = { ...removed };
+      if (next[id]) {
+        delete next[id];
+      } else {
+        next[id] = true;
+      }
+      return next;
+    },
+    target: t.$removedDefaults,
   });
 }
