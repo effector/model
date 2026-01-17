@@ -1,12 +1,6 @@
 import { model, define } from '@effector-model/core-experimental';
 import { sample, combine } from 'effector';
-import {
-  productTrait,
-  sizeFacet,
-  ingredientsFacet,
-  setupProductTrait,
-  setupIngredientsFacet,
-} from '../traits';
+import { productTrait, sizeFacet, ingredientsFacet } from '../traits';
 import { SizeOption, IngredientOption } from '../../types';
 
 export const coffeeModel = model({
@@ -23,26 +17,18 @@ export const coffeeModel = model({
     size: sizeFacet,
     ingredients: ingredientsFacet,
   },
-  impl: (ctx: any) => {
-    setupProductTrait(ctx.product);
-    setupIngredientsFacet(ctx.ingredients);
-
-    sample({ source: ctx.name, target: ctx.product.$name });
-    sample({ source: ctx.description, target: ctx.product.$description });
-    sample({ source: ctx.defaultSize, target: ctx.size.$size });
-
-    const $sizeCost = combine(
-      ctx.size.$size,
-      ctx.sizes,
-      (id: string, sizes: SizeOption[]) => {
-        return sizes.find((s) => s.id === id)?.price || 0;
-      },
-    );
+  init: (data: any) => ({
+    size: { $size: data.defaultSize },
+  }),
+  impl: (input, facets) => {
+    const $sizeCost = combine(facets.size.$size, input.sizes, (id, sizes) => {
+      return sizes.find((s) => s.id === id)?.price || 0;
+    });
 
     const $additionsCost = combine(
-      ctx.ingredients.$selectedExtras,
-      ctx.additions,
-      (selected: Record<string, boolean>, additions: IngredientOption[]) => {
+      facets.ingredients.$selectedExtras,
+      input.additions,
+      (selected, additions) => {
         return additions.reduce((sum, item) => {
           if (selected[item.id]) return sum + item.price;
           return sum;
@@ -51,15 +37,18 @@ export const coffeeModel = model({
     );
 
     const $calculatedPrice = combine(
-      ctx.basePrice,
+      input.basePrice,
       $sizeCost,
       $additionsCost,
       (base, size, add) => base + size + add,
     );
 
-    sample({
-      source: $calculatedPrice,
-      target: ctx.product.$price,
-    });
+    return {
+      product: {
+        $name: input.name,
+        $description: input.description,
+        $price: $calculatedPrice,
+      },
+    };
   },
 });

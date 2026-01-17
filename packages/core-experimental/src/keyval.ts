@@ -32,10 +32,37 @@ export type KeyvalConfig<M> = {
   model: M;
 };
 
+// Helper types for LensProxy
+type Lensify<T> =
+  T extends Store<infer V>
+    ? Lens // Store<V> becomes Lens (which resolves to V)
+    : T extends EventCallable<infer P>
+      ? EventCallable<P>
+      : T extends Record<string, any>
+        ? { [K in keyof T]: Lensify<T[K]> }
+        : any;
+
+type ModelInstanceType<M> =
+  M extends Model<any, any, any>
+    ? M['_InstanceType']
+    : M extends Union<infer U>
+      ? U[keyof U]['_InstanceType'] // Intersection or Union? For lens access, intersection of common fields or specific variant access
+      : never;
+
+type LensProxy<M> = Lensify<ModelInstanceType<M>> &
+  Lens & {
+    activeVariant: Lens;
+    match: (config: {
+      source?: any;
+      cases: Record<string, (scope: any) => any>;
+    }) => any;
+  };
+
 export type Keyval<M> = {
   type: 'keyval';
   model: M;
-  add: EventCallable<{ id: string; variant?: string; input: any }>;
+  add: EventCallable<{ id: string; variant?: string; input: any; state?: any }>;
+  update: EventCallable<{ id: string; input?: any; state?: any }>;
   remove: EventCallable<string>;
   getItem: (
     idOrStore:
@@ -43,7 +70,7 @@ export type Keyval<M> = {
       | Store<string | null>
       | Event<string>
       | Event<{ id: string }>,
-  ) => any;
+  ) => LensProxy<M>;
   $items: Store<string[]>;
   $activeVariants: Store<Record<string, string | null>>;
   $state: Store<Record<string, any>>;
@@ -57,14 +84,77 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
   const $activeVariants = createStore<Record<string, string | null>>({});
   const $state = createStore<Record<string, any>>({});
 
-  const add = createEvent<{ id: string; variant?: string; input: any }>();
+  const add = createEvent<{
+    id: string;
+    variant?: string;
+    input: any;
+    state?: any;
+  }>();
+  const update = createEvent<{ id: string; input?: any; state?: any }>();
   const remove = createEvent<string>();
-  const addValid = createEvent<{ id: string; variant?: string; input: any }>();
+  const addValid = createEvent<{
+    id: string;
+    variant?: string;
+    input: any;
+    state?: any;
+  }>();
   const updateState = createEvent<{
     id: string;
     path: string[];
     value: any;
   }>();
+
+  // Update Logic
+  const updateInstanceFx = createEffect(
+    ({
+      instances,
+      id,
+      input,
+      state,
+    }: {
+      instances: Record<string, any>;
+      id: string;
+      input?: any;
+      state?: any;
+    }) => {
+      const instance = instances[id];
+      if (!instance) return;
+
+      // Update Inputs
+      if (input) {
+        // instance.input contains stores
+        for (const [key, val] of Object.entries(input)) {
+          const store = (instance.input as any)[key];
+          if (store && (store as any).rehydrate) {
+            (store as any).rehydrate(val);
+          }
+        }
+      }
+
+      // Update State (Facets)
+      if (state) {
+        // Traverse state and update stores
+        for (const [facetName, facetState] of Object.entries(state)) {
+          const facet = instance.facets?.[facetName];
+          if (facet && typeof facetState === 'object') {
+            for (const [fieldName, val] of Object.entries(facetState as any)) {
+              const store = facet[fieldName];
+              if (store && (store as any).rehydrate) {
+                (store as any).rehydrate(val);
+              }
+            }
+          }
+        }
+      }
+    },
+  );
+
+  sample({
+    clock: update,
+    source: $instances,
+    fn: (instances, { id, input, state }) => ({ instances, id, input, state }),
+    target: updateInstanceFx,
+  });
 
   $state.on(updateState, (state, { id, path, value }) => {
     const newState = { ...state };
@@ -88,11 +178,6 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
   sample({
     clock: add,
     filter: ({ id, variant, input }) => {
-      if (!input) {
-        console.error(`Input missing for item ${id}`);
-        return false;
-      }
-
       let modelDef: Model<any, any, any>;
       if ((config.model as any).type === 'union') {
         const unionModel = config.model as Union<any>;
@@ -105,11 +190,12 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
         modelDef = config.model as Model<any, any, any>;
       }
 
-      const modelInputDef = modelDef.config.input || {};
-      for (const key in modelInputDef) {
-        const def = modelInputDef[key];
+      const modelExtraDef =
+        modelDef.config.extra || modelDef.config.input || {};
+      for (const key in modelExtraDef) {
+        const def = modelExtraDef[key];
         if (def.type === 'store' && def.initial === undefined) {
-          if (input[key] === undefined) {
+          if (!input || input[key] === undefined) {
             console.error(`Required input "${key}" missing for item ${id}`);
             return false;
           }
@@ -132,7 +218,17 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
   });
 
   const createInstanceFx = createEffect(
-    ({ id, variant, input }: { id: string; variant?: string; input: any }) => {
+    ({
+      id,
+      variant,
+      input,
+      state,
+    }: {
+      id: string;
+      variant?: string;
+      input: any;
+      state?: any;
+    }) => {
       let modelDef: Model<any, any, any>;
       if ((config.model as any).type === 'union') {
         const unionModel = config.model as Union<any>;
@@ -141,7 +237,7 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
         modelDef = config.model as Model<any, any, any>;
       }
 
-      const instance = create(modelDef, { input });
+      const instance = create(modelDef, { input, state });
       if ((config.model as any).type === 'union') {
         (instance as any)._variant = variant;
       }
@@ -151,10 +247,8 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
         fn: (v: any) => ({ id, variant: v }),
         target: updateVariant,
       } as any);
-      // Initial variant value
       updateVariant({ id, variant: instance.activeVariant.getState() });
 
-      // Bind instance stores to $state
       traverseAndBind(instance, [], id, updateState);
 
       return { id, instance };
@@ -203,6 +297,7 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
       $instances,
       $state,
       idOrStore,
+      config.model, // Pass model def
       $activeVariants,
     );
     proxyCache.set(key, proxy);
@@ -213,6 +308,7 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
     type: 'keyval',
     model: config.model,
     add,
+    update,
     remove,
     getItem,
     $items,
@@ -248,33 +344,86 @@ function traverseAndBind(
         fn: (value) => ({ id, path: [...path, key], value }),
         target: updateState,
       });
-      // Initial value
       updateState({ id, path: [...path, key], value: val.getState() });
     } else if (is.event(val) || is.effect(val)) {
       // Ignore events/effects for state
     } else if (typeof val === 'object') {
       traverseAndBind(val, [...path, key], id, updateState, visited);
     } else {
-      // Static value
       updateState({ id, path: [...path, key], value: val });
     }
   }
+}
+
+function getFieldDef(
+  model: Model<any, any, any> | Union<any>,
+  facetName: string,
+  fieldName: string,
+) {
+  if ((model as any).type === 'union') {
+    const union = model as Union<any>;
+    for (const subModel of Object.values(union.models)) {
+      const def = (subModel as Model<any, any, any>).config.facets?.[facetName]
+        ?.shape?.[fieldName];
+      if (def) return def;
+    }
+  } else {
+    const m = model as Model<any, any, any>;
+    return m.config.facets?.[facetName]?.shape?.[fieldName];
+  }
+  return null;
+}
+
+function getTrigger(
+  $instances: Store<Record<string, any>>,
+  facetName: string,
+  fieldName: string,
+  unitsCache: Map<string, any>,
+) {
+  const cacheKey = `${facetName}.${fieldName}`;
+  if (unitsCache.has(cacheKey)) return unitsCache.get(cacheKey);
+
+  const trigger = createEvent<any>();
+  const fx = createEffect(({ instances, id, payload }: any) => {
+    const instance = instances[id];
+    const facet = instance?.facets?.[facetName];
+    const unit = facet?.impl?.[fieldName] || facet?.[fieldName];
+
+    if (is.event(unit) || is.effect(unit)) (unit as any)(payload);
+  });
+
+  sample({
+    clock: trigger,
+    source: $instances,
+    fn: (instances, payload) => {
+      let id = payload;
+      if (typeof payload === 'object' && payload !== null && 'id' in payload)
+        id = payload.id;
+      return { instances, id, payload };
+    },
+    target: fx,
+  });
+
+  unitsCache.set(cacheKey, trigger);
+  return trigger;
 }
 
 export function createItemProxy(
   $instances: Store<Record<string, any>>,
   $state: Store<Record<string, any>>,
   idOrStore: any,
+  modelDef: Model<any, any, any> | Union<any>,
   $activeVariants?: Store<Record<string, string | null>>,
 ) {
+  const unitsCache = new Map<string, any>();
   let $id: Store<string | null>;
+
   if (typeof idOrStore === 'string') {
     $id = createStore(idOrStore);
   } else if (is.store(idOrStore)) {
     $id = idOrStore as any;
   } else if (is.event(idOrStore)) {
-    const unitsCache = new Map<string, any>();
-
+    // Event-based proxy (Keep logic for now, but share getTrigger)
     return new Proxy(
       {},
       {
@@ -296,42 +445,12 @@ export function createItemProxy(
                     {},
                     {
                       get: (_, fieldName: string) => {
-                        const cacheKey = `${facetName}.${fieldName}`;
-                        if (unitsCache.has(cacheKey))
-                          return unitsCache.get(cacheKey);
-
-                        const trigger = createEvent<any>();
-                        const fx = createEffect(
-                          ({ instances, id, payload }: any) => {
-                            const instance = instances[id];
-                            const facet = instance?.facets?.[facetName];
-                            // Support both direct and implement() wrapped
-                            const unit =
-                              facet?.impl?.[fieldName] || facet?.[fieldName];
-
-                            if (is.event(unit) || is.effect(unit))
-                              (unit as any)(payload);
-                          },
+                        return getTrigger(
+                          $instances,
+                          facetName,
+                          fieldName,
+                          unitsCache,
                         );
-
-                        sample({
-                          clock: trigger,
-                          source: $instances,
-                          fn: (instances, payload) => {
-                            let id = payload;
-                            if (
-                              typeof payload === 'object' &&
-                              payload !== null &&
-                              'id' in payload
-                            )
-                              id = payload.id;
-                            return { instances, id, payload };
-                          },
-                          target: fx,
-                        });
-
-                        unitsCache.set(cacheKey, trigger);
-                        return trigger;
                       },
                     },
                   );
@@ -357,6 +476,25 @@ export function createItemProxy(
         if (prop === 'id') return $id;
         if (prop === 'path') return [];
 
+        if (prop === 'match') {
+          // Mock match for now, or implement a basic version that returns lens builder
+          return (config: any) => {
+            // This is a complex topic. 'match' in view usually returns a React Node or similar.
+            // But here we want a 'Lens' that switches based on variant?
+            // Or 'match' is just a helper to execute logic?
+            // In view: match({ source: item.activeVariant, cases: ... })
+            // Here 'item.match' could be a shortcut.
+            return {
+              __type: 'lens',
+              source: $instances,
+              state: $state,
+              id: $id,
+              path: [], // Root?
+              // Match metadata
+            };
+          };
+        }
+
         if (prop === 'facets') {
           return new Proxy(
             {},
@@ -366,6 +504,17 @@ export function createItemProxy(
                   {},
                   {
                     get: (_, fieldName: string) => {
+                      // Check Definition
+                      const def = getFieldDef(modelDef, facetName, fieldName);
+                      if (def && def.type === 'event') {
+                        return getTrigger(
+                          $instances,
+                          facetName,
+                          fieldName,
+                          unitsCache,
+                        );
+                      }
+
                       return {
                         __type: 'lens',
                         source: $instances,

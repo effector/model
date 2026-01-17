@@ -5,8 +5,6 @@ import {
   sizeFacet,
   doughFacet,
   ingredientsFacet,
-  setupProductTrait,
-  setupIngredientsFacet,
 } from '../traits';
 import { SizeOption, IngredientOption } from '../../types';
 
@@ -19,8 +17,6 @@ export const pizzaModel = model({
     doughs: define.store<{ id: string; label: string }[]>([]),
     extraIngredients: define.store<IngredientOption[]>([]),
     defaultIngredients: define.store<{ id: string; name: string }[]>([]),
-    defaultSize: define.store(''),
-    defaultDough: define.store(''),
   },
   facets: {
     product: productTrait,
@@ -28,32 +24,24 @@ export const pizzaModel = model({
     dough: doughFacet,
     ingredients: ingredientsFacet,
   },
-  impl: (ctx: any) => {
-    // 1. Setup Reusable Logic
-    setupProductTrait(ctx.product);
-    setupIngredientsFacet(ctx.ingredients);
-
+  init: (data: any) => ({
+    size: { $size: data.defaultSize },
+    dough: { $dough: data.defaultDough },
+  }),
+  impl: (input, facets) => {
     // 2. Initialize Product Metadata
-    sample({ source: ctx.name, target: ctx.product.$name });
-    sample({ source: ctx.description, target: ctx.product.$description });
-    sample({ source: ctx.defaultSize, target: ctx.size.$size });
-    sample({ source: ctx.defaultDough, target: ctx.dough.$dough });
+    // No need to sample if we return them in the structure
+    // But name/description are in extra, needs to be in product facet.
 
     // 3. Price Calculation Logic
-    // Cost = Base + Size + Extras (Removed defaults do not reduce price)
-
-    const $sizeCost = combine(
-      ctx.size.$size,
-      ctx.sizes,
-      (id: string, sizes: SizeOption[]) => {
-        return sizes.find((s) => s.id === id)?.price || 0;
-      },
-    );
+    const $sizeCost = combine(facets.size.$size, input.sizes, (id, sizes) => {
+      return sizes.find((s) => s.id === id)?.price || 0;
+    });
 
     const $extrasCost = combine(
-      ctx.ingredients.$selectedExtras,
-      ctx.extraIngredients,
-      (selected: Record<string, boolean>, extras: IngredientOption[]) => {
+      facets.ingredients.$selectedExtras,
+      input.extraIngredients,
+      (selected, extras) => {
         return extras.reduce((sum, ing) => {
           if (selected[ing.id]) return sum + ing.price;
           return sum;
@@ -62,16 +50,18 @@ export const pizzaModel = model({
     );
 
     const $calculatedPrice = combine(
-      ctx.basePrice,
+      input.basePrice,
       $sizeCost,
       $extrasCost,
       (base, size, extras) => base + size + extras,
     );
 
-    // Update the ProductTrait's price store
-    sample({
-      source: $calculatedPrice,
-      target: ctx.product.$price,
-    });
+    return {
+      product: {
+        $name: input.name,
+        $description: input.description,
+        $price: $calculatedPrice,
+      },
+    };
   },
 });

@@ -1,6 +1,6 @@
 import { model, define } from '@effector-model/core-experimental';
 import { sample, combine } from 'effector';
-import { productTrait, sizeFacet, setupProductTrait } from '../traits';
+import { productTrait, sizeFacet } from '../traits';
 import { SizeOption } from '../../types';
 
 export const drinkModel = model({
@@ -15,30 +15,26 @@ export const drinkModel = model({
     product: productTrait,
     size: sizeFacet,
   },
-  impl: (ctx: any) => {
-    setupProductTrait(ctx.product);
-
-    sample({ source: ctx.name, target: ctx.product.$name });
-    sample({ source: ctx.description, target: ctx.product.$description });
-    sample({ source: ctx.defaultSize, target: ctx.size.$size });
-
-    const $sizeCost = combine(
-      ctx.size.$size,
-      ctx.sizes,
-      (id: string, sizes: SizeOption[]) => {
-        return sizes.find((s) => s.id === id)?.price || 0;
-      },
-    );
+  init: (data: any) => ({
+    size: { $size: data.defaultSize },
+  }),
+  impl: (input, facets) => {
+    const $sizeCost = combine(facets.size.$size, input.sizes, (id, sizes) => {
+      return sizes.find((s) => s.id === id)?.price || 0;
+    });
 
     const $calculatedPrice = combine(
-      ctx.basePrice,
+      input.basePrice,
       $sizeCost,
       (base, size) => base + size,
     );
 
-    sample({
-      source: $calculatedPrice,
-      target: ctx.product.$price,
-    });
+    return {
+      product: {
+        $name: input.name,
+        $description: input.description,
+        $price: $calculatedPrice,
+      },
+    };
   },
 });

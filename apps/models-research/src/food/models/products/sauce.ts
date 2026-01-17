@@ -1,6 +1,6 @@
 import { model, define } from '@effector-model/core-experimental';
 import { sample } from 'effector';
-import { productTrait, setupProductTrait } from '../traits';
+import { productTrait } from '../traits';
 
 export const sauceModel = model({
   input: {
@@ -11,10 +11,13 @@ export const sauceModel = model({
   facets: {
     product: productTrait,
   },
-  impl: (ctx: any) => {
-    setupProductTrait(ctx.product);
-    sample({ source: ctx.name, target: ctx.product.$name });
-    sample({ source: ctx.description, target: ctx.product.$description });
-    sample({ source: ctx.basePrice, target: ctx.product.$price });
+  impl: (input, facets) => {
+    return {
+      product: {
+        $name: input.name,
+        $description: input.description,
+        $price: input.basePrice,
+      },
+    };
   },
 });

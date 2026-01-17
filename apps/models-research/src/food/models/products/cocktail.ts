@@ -1,11 +1,6 @@
 import { model, define } from '@effector-model/core-experimental';
 import { sample, combine } from 'effector';
-import {
-  productTrait,
-  ingredientsFacet,
-  setupProductTrait,
-  setupIngredientsFacet,
-} from '../traits';
+import { productTrait, ingredientsFacet } from '../traits';
 import { IngredientOption } from '../../types';
 
 export const cocktailModel = model({
@@ -19,17 +14,11 @@ export const cocktailModel = model({
     product: productTrait,
     ingredients: ingredientsFacet,
   },
-  impl: (ctx: any) => {
-    setupProductTrait(ctx.product);
-    setupIngredientsFacet(ctx.ingredients);
-
-    sample({ source: ctx.name, target: ctx.product.$name });
-    sample({ source: ctx.description, target: ctx.product.$description });
-
+  impl: (input, facets) => {
     const $decorationsCost = combine(
-      ctx.ingredients.$selectedExtras,
-      ctx.decorations,
-      (selected: Record<string, boolean>, decorations: IngredientOption[]) => {
+      facets.ingredients.$selectedExtras,
+      input.decorations,
+      (selected, decorations) => {
         return decorations.reduce((sum, item) => {
           if (selected[item.id]) return sum + item.price;
           return sum;
@@ -38,14 +27,17 @@ export const cocktailModel = model({
     );
 
     const $calculatedPrice = combine(
-      ctx.basePrice,
+      input.basePrice,
       $decorationsCost,
       (base, decor) => base + decor,
     );
 
-    sample({
-      source: $calculatedPrice,
-      target: ctx.product.$price,
-    });
+    return {
+      product: {
+        $name: input.name,
+        $description: input.description,
+        $price: $calculatedPrice,
+      },
+    };
   },
 });
