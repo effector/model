@@ -64,6 +64,7 @@ export type Keyval<M> = {
   add: EventCallable<{ id: string; variant?: string; input: any; state?: any }>;
   update: EventCallable<{ id: string; input?: any; state?: any }>;
   remove: EventCallable<string>;
+  reset: EventCallable<void>;
   getItem: (
     idOrStore:
       | string
@@ -92,6 +93,7 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
   }>();
   const update = createEvent<{ id: string; input?: any; state?: any }>();
   const remove = createEvent<string>();
+  const reset = createEvent();
   const addValid = createEvent<{
     id: string;
     variant?: string;
@@ -174,18 +176,24 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
     const { [id]: _, ...rest } = state;
     return rest;
   });
+  $state.reset(reset);
 
   sample({
     clock: add,
     filter: ({ id, variant, input }) => {
+      const actualVariant = variant || (input as any)?.type;
+      console.log(
+        `[keyval] Validating add for ${id} (variant: ${actualVariant})`,
+      );
+
       let modelDef: Model<any, any, any>;
       if ((config.model as any).type === 'union') {
         const unionModel = config.model as Union<any>;
-        if (!variant || !unionModel.models[variant]) {
-          console.error(`Variant ${variant} not found in union`);
+        if (!actualVariant || !unionModel.models[actualVariant]) {
+          console.error(`[keyval] Variant ${actualVariant} not found in union`);
           return false;
         }
-        modelDef = unionModel.models[variant];
+        modelDef = unionModel.models[actualVariant];
       } else {
         modelDef = config.model as Model<any, any, any>;
       }
@@ -194,9 +202,13 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
         modelDef.config.extra || modelDef.config.input || {};
       for (const key in modelExtraDef) {
         const def = modelExtraDef[key];
+        // Only check if it's a required input (no initial value)
         if (def.type === 'store' && def.initial === undefined) {
           if (!input || input[key] === undefined) {
-            console.error(`Required input "${key}" missing for item ${id}`);
+            console.error(
+              `[keyval] Required input "${key}" missing for item ${id}. Input:`,
+              input,
+            );
             return false;
           }
         }
@@ -216,6 +228,7 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
     const { [id]: _, ...rest } = state;
     return rest;
   });
+  $activeVariants.reset(reset);
 
   const createInstanceFx = createEffect(
     ({
@@ -230,24 +243,28 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
       state?: any;
     }) => {
       let modelDef: Model<any, any, any>;
+      const resolvedVariant = variant || (input as any)?.type;
       if ((config.model as any).type === 'union') {
         const unionModel = config.model as Union<any>;
-        modelDef = unionModel.models[variant!];
+        modelDef = unionModel.models[resolvedVariant!];
       } else {
         modelDef = config.model as Model<any, any, any>;
       }
 
       const instance = create(modelDef, { input, state });
-      if ((config.model as any).type === 'union') {
-        (instance as any)._variant = variant;
-      }
+      (instance as any)._variant =
+        resolvedVariant || instance.activeVariant.getState();
 
       sample({
         clock: instance.activeVariant,
         fn: (v: any) => ({ id, variant: v }),
         target: updateVariant,
       } as any);
-      updateVariant({ id, variant: instance.activeVariant.getState() });
+
+      const initialVariant = instance.activeVariant.getState();
+      if (initialVariant !== null) {
+        updateVariant({ id, variant: initialVariant });
+      }
 
       traverseAndBind(instance, [], id, updateState);
 
@@ -258,15 +275,28 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
   sample({
     clock: addValid,
     source: $instances,
-    filter: (instances, { id }) => !instances[id],
-    fn: (_, payload) => payload,
+    fn: (instances, { id, variant, input, state }) => {
+      console.log(
+        `[keyval] addValid triggered for ${id}. Variant: ${variant}. Input keys:`,
+        Object.keys(input || {}),
+      );
+      const existing = instances[id];
+      if (existing) {
+        console.log(`[keyval] Destroying existing instance ${id}`);
+        if (existing.destroy) existing.destroy();
+      }
+      return { id, variant, input, state };
+    },
     target: createInstanceFx,
   });
 
-  $instances.on(createInstanceFx.doneData, (instances, { id, instance }) => ({
-    ...instances,
-    [id]: instance,
-  }));
+  createInstanceFx.fail.watch((error) => {
+    console.error('[keyval] createInstanceFx failed:', error);
+  });
+
+  createInstanceFx.done.watch(({ params, result }) => {
+    console.log(`[keyval] createInstanceFx done for ${params.id}`, result);
+  });
 
   $instances.on(remove, (instances, id) => {
     const instance = instances[id];
@@ -276,11 +306,25 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
     return rest;
   });
 
+  $instances.on(createInstanceFx.doneData, (instances, { id, instance }) => ({
+    ...instances,
+    [id]: instance,
+  }));
+
+  $instances.on(reset, (instances) => {
+    Object.values(instances).forEach((instance) => {
+      if (instance && instance.destroy) instance.destroy();
+    });
+    return {};
+  });
+  $instances.reset(reset);
+
   $items.on(createInstanceFx.doneData, (items, { id }) => {
     if (items.includes(id)) return items;
     return [...items, id];
   });
   $items.on(remove, (items, id) => items.filter((x) => x !== id));
+  $items.reset(reset);
 
   const proxyCache = new Map<any, any>();
 
@@ -310,10 +354,12 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
     add,
     update,
     remove,
+    reset,
     getItem,
     $items,
     $activeVariants,
     $state,
+    $instances,
   } as any;
 }
 
@@ -397,9 +443,24 @@ function getTrigger(
     source: $instances,
     fn: (instances, payload) => {
       let id = payload;
-      if (typeof payload === 'object' && payload !== null && 'id' in payload)
+      let realPayload = payload;
+
+      if (
+        typeof payload === 'object' &&
+        payload !== null &&
+        '__bound' in payload
+      ) {
         id = payload.id;
-      return { instances, id, payload };
+        realPayload = payload.value;
+      } else if (
+        typeof payload === 'object' &&
+        payload !== null &&
+        'id' in payload
+      ) {
+        id = payload.id;
+      }
+
+      return { instances, id, payload: realPayload };
     },
     target: fx,
   });
@@ -416,6 +477,7 @@ export function createItemProxy(
   $activeVariants?: Store<Record<string, string | null>>,
 ) {
   const unitsCache = new Map<string, any>();
+  const boundEventsCache = new Map<string, any>();
   let $id: Store<string | null>;
 
   if (typeof idOrStore === 'string') {
@@ -507,12 +569,32 @@ export function createItemProxy(
                       // Check Definition
                       const def = getFieldDef(modelDef, facetName, fieldName);
                       if (def && def.type === 'event') {
-                        return getTrigger(
+                        const cacheKey = `${facetName}.${fieldName}`;
+                        if (boundEventsCache.has(cacheKey)) {
+                          return boundEventsCache.get(cacheKey);
+                        }
+
+                        const trigger = getTrigger(
                           $instances,
                           facetName,
                           fieldName,
                           unitsCache,
                         );
+                        const bound = createEvent<any>();
+
+                        sample({
+                          clock: bound,
+                          source: $id,
+                          fn: (id, payload) => ({
+                            __bound: true,
+                            id,
+                            value: payload,
+                          }),
+                          target: trigger,
+                        });
+
+                        boundEventsCache.set(cacheKey, bound);
+                        return bound;
                       }
 
                       return {

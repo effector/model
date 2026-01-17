@@ -3,18 +3,56 @@
     "type": "sauce",
     "name": "Сырный соус",
     "description": "Классический сырный соус",
-    "basePrice": 35
+    "basePrice": 35,
+    "nutritionalInfo": { "calories": 90, "weight": 25 }
   },
   {
     "type": "sauce",
     "name": "Чесночный соус",
     "description": "Ароматный чесночный соус",
-    "basePrice": 35
+    "basePrice": 35,
+    "nutritionalInfo": { "calories": 85, "weight": 25 }
   },
   {
     "type": "sauce",
     "name": "Барбекю",
     "description": "Соус с дымком",
-    "basePrice": 35
+    "basePrice": 35,
+    "nutritionalInfo": { "calories": 40, "weight": 25 }
+  },
+  {
+    "type": "sauce",
+    "name": "Ранч",
+    "description": "Сливочно-чесночный соус с травами",
+    "basePrice": 35,
+    "nutritionalInfo": { "calories": 95, "weight": 25 }
+  },
+  {
+    "type": "sauce",
+    "name": "Бургер",
+    "description": "Пикантный соус для любителей бургеров",
+    "basePrice": 35,
+    "nutritionalInfo": { "calories": 80, "weight": 25 }
+  },
+  {
+    "type": "sauce",
+    "name": "Малиновое варенье",
+    "description": "Сладкое дополнение к десертам и сырникам",
+    "basePrice": 35,
+    "nutritionalInfo": { "calories": 70, "weight": 25 }
+  },
+  {
+    "type": "sauce",
+    "name": "Сгущенное молоко",
+    "description": "Классическая сгущенка",
+    "basePrice": 35,
+    "nutritionalInfo": { "calories": 80, "weight": 25 }
+  },
+  {
+    "type": "sauce",
+    "name": "Карри",
+    "description": "Пряный индийский соус",
+    "basePrice": 35,
+    "nutritionalInfo": { "calories": 60, "weight": 25 }
   }
 ]

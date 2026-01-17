@@ -1,9 +1,10 @@
 [
   {
     "type": "pizza",
-    "name": "Пепперони",
-    "description": "Пикантная пепперони, увеличенная порция моцареллы, фирменный томатный соус",
-    "basePrice": 499,
+    "name": "Додо Пицца",
+    "description": "Легендарная пицца. Бекон, митболы из говядины, пикантная пепперони, моцарелла, томаты, шампиньоны, сладкий перец, красный лук, чеснок, томатный соус",
+    "basePrice": 639,
+    "nutritionalInfo": { "calories": 260, "weight": 580 },
     "sizes": [
       { "id": "25", "label": "25 см", "price": 0 },
       { "id": "30", "label": "30 см", "price": 200 },
@@ -14,39 +15,131 @@
       { "id": "thin", "label": "Тонкое" }
     ],
     "defaultIngredients": [
+      { "id": "bacon", "name": "Бекон" },
+      { "id": "meatballs", "name": "Митболы" },
+      { "id": "pepperoni", "name": "Пепперони" },
       { "id": "mozzarella", "name": "Моцарелла" },
-      { "id": "sauce", "name": "Томатный соус" },
-      { "id": "pepperoni", "name": "Пепперони" }
+      { "id": "tomatoes", "name": "Томаты" },
+      { "id": "mushrooms", "name": "Шампиньоны" },
+      { "id": "sweet_pepper", "name": "Сладкий перец" },
+      { "id": "red_onion", "name": "Красный лук" },
+      { "id": "garlic", "name": "Чеснок" },
+      { "id": "tomato_sauce", "name": "Томатный соус" }
     ],
     "extraIngredients": [
-      { "id": "cheese", "name": "Сырный бортик", "price": 99 },
       { "id": "jalapeno", "name": "Острый халапеньо", "price": 49 },
-      { "id": "mushrooms", "name": "Шампиньоны", "price": 39 }
+      { "id": "cheese_crust", "name": "Сырный бортик", "price": 99 },
+      { "id": "mushrooms", "name": "Шампиньоны", "price": 39 },
+      { "id": "cheddar_parmesan", "name": "Чеддер и пармезан", "price": 59 },
+      { "id": "bacon", "name": "Бекон", "price": 59 },
+      { "id": "feta", "name": "Брынза", "price": 59 },
+      { "id": "red_onion", "name": "Красный лук", "price": 29 }
     ],
     "defaultSize": "30",
     "defaultDough": "traditional"
   },
   {
     "type": "pizza",
-    "name": "Маргарита",
-    "description": "Увеличенная порция моцареллы, томаты, итальянские травы, фирменный томатный соус",
-    "basePrice": 449,
+    "name": "Мексиканская",
+    "description": "Острая пицца с перчинкой. Цыпленок, острый перец халапеньо, соус сальса, томаты, сладкий перец, красный лук, моцарелла, томатный соус",
+    "basePrice": 589,
+    "nutritionalInfo": { "calories": 245, "weight": 560 },
     "sizes": [
       { "id": "25", "label": "25 см", "price": 0 },
-      { "id": "30", "label": "30 см", "price": 180 },
-      { "id": "35", "label": "35 см", "price": 350 }
+      { "id": "30", "label": "30 см", "price": 200 },
+      { "id": "35", "label": "35 см", "price": 400 }
     ],
     "doughs": [
       { "id": "traditional", "label": "Традиционное" },
       { "id": "thin", "label": "Тонкое" }
     ],
     "defaultIngredients": [
+      { "id": "chicken", "name": "Цыпленок" },
+      { "id": "jalapeno", "name": "Халапеньо" },
+      { "id": "salsa_sauce", "name": "Соус сальса" },
+      { "id": "tomatoes", "name": "Томаты" },
+      { "id": "sweet_pepper", "name": "Сладкий перец" },
+      { "id": "red_onion", "name": "Красный лук" },
       { "id": "mozzarella", "name": "Моцарелла" },
-      { "id": "sauce", "name": "Томатный соус" },
+      { "id": "tomato_sauce", "name": "Томатный соус" }
+    ],
+    "extraIngredients": [
+      { "id": "cheese_crust", "name": "Сырный бортик", "price": 99 },
+      { "id": "chicken_extra", "name": "Цыпленок", "price": 59 },
+      { "id": "jalapeno", "name": "Острый халапеньо", "price": 49 },
+      { "id": "mushrooms", "name": "Шампиньоны", "price": 39 },
+      { "id": "cheddar_parmesan", "name": "Чеддер и пармезан", "price": 59 },
+      { "id": "bacon", "name": "Бекон", "price": 59 },
+      { "id": "feta", "name": "Брынза", "price": 59 },
+      { "id": "red_onion", "name": "Красный лук", "price": 29 }
+    ],
+    "defaultSize": "30",
+    "defaultDough": "traditional"
+  },
+  {
+    "type": "pizza",
+    "name": "Сырный цыпленок",
+    "description": "Нежный вкус. Цыпленок, моцарелла, сыры чеддер и пармезан, сырный соус, томаты",
+    "basePrice": 539,
+    "nutritionalInfo": { "calories": 290, "weight": 540 },
+    "sizes": [
+      { "id": "25", "label": "25 см", "price": 0 },
+      { "id": "30", "label": "30 см", "price": 200 },
+      { "id": "35", "label": "35 см", "price": 400 }
+    ],
+    "doughs": [
+      { "id": "traditional", "label": "Традиционное" },
+      { "id": "thin", "label": "Тонкое" }
+    ],
+    "defaultIngredients": [
+      { "id": "chicken", "name": "Цыпленок" },
+      { "id": "mozzarella", "name": "Моцарелла" },
+      { "id": "cheddar", "name": "Сыр чеддер" },
+      { "id": "parmesan", "name": "Сыр пармезан" },
+      { "id": "cheese_sauce", "name": "Сырный соус" },
       { "id": "tomatoes", "name": "Томаты" }
     ],
     "extraIngredients": [
-      { "id": "cheese", "name": "Сырный бортик", "price": 99 },
+      { "id": "bacon", "name": "Бекон", "price": 59 },
+      { "id": "jalapeno", "name": "Острый халапеньо", "price": 49 },
+      { "id": "cheese_crust", "name": "Сырный бортик", "price": 99 },
+      { "id": "mushrooms", "name": "Шампиньоны", "price": 39 },
+      { "id": "cheddar_parmesan", "name": "Чеддер и пармезан", "price": 59 },
+      { "id": "feta", "name": "Брынза", "price": 59 },
+      { "id": "red_onion", "name": "Красный лук", "price": 29 }
+    ],
+    "defaultSize": "30",
+    "defaultDough": "traditional"
+  },
+  {
+    "type": "pizza",
+    "name": "Чизбургер-пицца",
+    "description": "Вкус любимого бургера. Мясной соус болоньезе, моцарелла, красный лук, томаты, соленые огурчики, соус бургер",
+    "basePrice": 539,
+    "nutritionalInfo": { "calories": 270, "weight": 550 },
+    "sizes": [
+      { "id": "25", "label": "25 см", "price": 0 },
+      { "id": "30", "label": "30 см", "price": 200 },
+      { "id": "35", "label": "35 см", "price": 400 }
+    ],
+    "doughs": [
+      { "id": "traditional", "label": "Традиционное" },
+      { "id": "thin", "label": "Тонкое" }
+    ],
+    "defaultIngredients": [
+      { "id": "bolognese", "name": "Соус болоньезе" },
+      { "id": "mozzarella", "name": "Моцарелла" },
+      { "id": "red_onion", "name": "Красный лук" },
+      { "id": "tomatoes", "name": "Томаты" },
+      { "id": "pickles", "name": "Соленые огурчики" },
+      { "id": "burger_sauce", "name": "Соус бургер" }
+    ],
+    "extraIngredients": [
+      { "id": "jalapeno", "name": "Острый халапеньо", "price": 49 },
+      { "id": "cheese_crust", "name": "Сырный бортик", "price": 99 },
+      { "id": "mushrooms", "name": "Шампиньоны", "price": 39 },
+      { "id": "cheddar_parmesan", "name": "Чеддер и пармезан", "price": 59 },
+      { "id": "bacon", "name": "Бекон", "price": 59 },
       { "id": "feta", "name": "Брынза", "price": 59 }
     ],
     "defaultSize": "30",
@@ -54,25 +147,136 @@
   },
   {
     "type": "pizza",
-    "name": "Четыре сыра",
-    "description": "Сыр блю чиз, смесь сыров чеддер и пармезан, моцарелла, фирменный соус альфредо",
-    "basePrice": 549,
+    "name": "Ветчина и грибы",
+    "description": "Классическое сочетание. Ветчина, шампиньоны, увеличенная порция моцареллы, томатный соус",
+    "basePrice": 489,
+    "nutritionalInfo": { "calories": 230, "weight": 520 },
     "sizes": [
       { "id": "25", "label": "25 см", "price": 0 },
-      { "id": "30", "label": "30 см", "price": 250 },
-      { "id": "35", "label": "35 см", "price": 450 }
+      { "id": "30", "label": "30 см", "price": 200 },
+      { "id": "35", "label": "35 см", "price": 400 }
     ],
     "doughs": [
       { "id": "traditional", "label": "Традиционное" },
       { "id": "thin", "label": "Тонкое" }
     ],
     "defaultIngredients": [
+      { "id": "ham", "name": "Ветчина" },
+      { "id": "mushrooms", "name": "Шампиньоны" },
       { "id": "mozzarella", "name": "Моцарелла" },
-      { "id": "alfredo", "name": "Соус альфредо" },
-      { "id": "bluecheese", "name": "Блю чиз" },
-      { "id": "cheddar", "name": "Чеддер" }
+      { "id": "tomato_sauce", "name": "Томатный соус" }
     ],
-    "extraIngredients": [{ "id": "honey", "name": "Мёд", "price": 30 }],
+    "extraIngredients": [
+      { "id": "cheese_crust", "name": "Сырный бортик", "price": 99 },
+      { "id": "feta", "name": "Брынза", "price": 59 },
+      { "id": "jalapeno", "name": "Острый халапеньо", "price": 49 },
+      { "id": "cheddar_parmesan", "name": "Чеддер и пармезан", "price": 59 },
+      { "id": "bacon", "name": "Бекон", "price": 59 },
+      { "id": "red_onion", "name": "Красный лук", "price": 29 }
+    ],
+    "defaultSize": "30",
+    "defaultDough": "traditional"
+  },
+  {
+    "type": "pizza",
+    "name": "Пепперони Фреш",
+    "description": "Легкая версия любимой классики. Пикантная пепперони, увеличенная порция моцареллы, томаты, томатный соус",
+    "basePrice": 289,
+    "nutritionalInfo": { "calories": 250, "weight": 500 },
+    "sizes": [
+      { "id": "25", "label": "25 см", "price": 0 },
+      { "id": "30", "label": "30 см", "price": 200 },
+      { "id": "35", "label": "35 см", "price": 400 }
+    ],
+    "doughs": [
+      { "id": "traditional", "label": "Традиционное" },
+      { "id": "thin", "label": "Тонкое" }
+    ],
+    "defaultIngredients": [
+      { "id": "pepperoni", "name": "Пепперони" },
+      { "id": "mozzarella", "name": "Моцарелла" },
+      { "id": "tomatoes", "name": "Томаты" },
+      { "id": "tomato_sauce", "name": "Томатный соус" }
+    ],
+    "extraIngredients": [
+      { "id": "cheese_crust", "name": "Сырный бортик", "price": 99 },
+      { "id": "jalapeno", "name": "Острый халапеньо", "price": 49 },
+      { "id": "mushrooms", "name": "Шампиньоны", "price": 39 },
+      { "id": "cheddar_parmesan", "name": "Чеддер и пармезан", "price": 59 },
+      { "id": "bacon", "name": "Бекон", "price": 59 },
+      { "id": "feta", "name": "Брынза", "price": 59 },
+      { "id": "red_onion", "name": "Красный лук", "price": 29 }
+    ],
+    "defaultSize": "30",
+    "defaultDough": "traditional"
+  },
+  {
+    "type": "pizza",
+    "name": "Аррива!",
+    "description": "Яркая и острая. Цыпленок, острая чоризо, соус бургер, сладкий перец, красный лук, томаты, моцарелла, соус ранч, чеснок",
+    "basePrice": 589,
+    "nutritionalInfo": { "calories": 280, "weight": 570 },
+    "sizes": [
+      { "id": "25", "label": "25 см", "price": 0 },
+      { "id": "30", "label": "30 см", "price": 200 },
+      { "id": "35", "label": "35 см", "price": 400 }
+    ],
+    "doughs": [
+      { "id": "traditional", "label": "Традиционное" },
+      { "id": "thin", "label": "Тонкое" }
+    ],
+    "defaultIngredients": [
+      { "id": "chicken", "name": "Цыпленок" },
+      { "id": "chorizo", "name": "Острая чоризо" },
+      { "id": "burger_sauce", "name": "Соус бургер" },
+      { "id": "sweet_pepper", "name": "Сладкий перец" },
+      { "id": "red_onion", "name": "Красный лук" },
+      { "id": "tomatoes", "name": "Томаты" },
+      { "id": "mozzarella", "name": "Моцарелла" },
+      { "id": "ranch_sauce", "name": "Соус ранч" },
+      { "id": "garlic", "name": "Чеснок" }
+    ],
+    "extraIngredients": [
+      { "id": "jalapeno", "name": "Острый халапеньо", "price": 49 },
+      { "id": "cheese_crust", "name": "Сырный бортик", "price": 99 },
+      { "id": "mushrooms", "name": "Шампиньоны", "price": 39 },
+      { "id": "cheddar_parmesan", "name": "Чеддер и пармезан", "price": 59 },
+      { "id": "bacon", "name": "Бекон", "price": 59 },
+      { "id": "feta", "name": "Брынза", "price": 59 }
+    ],
+    "defaultSize": "30",
+    "defaultDough": "traditional"
+  },
+  {
+    "type": "pizza",
+    "name": "Овощи и грибы",
+    "description": "Сочная и легкая. Томатный соус, моцарелла, сладкий перец, шампиньоны, красный лук, томаты, маслины, брынза",
+    "basePrice": 499,
+    "nutritionalInfo": { "calories": 190, "weight": 530 },
+    "sizes": [
+      { "id": "25", "label": "25 см", "price": 0 },
+      { "id": "30", "label": "30 см", "price": 200 },
+      { "id": "35", "label": "35 см", "price": 400 }
+    ],
+    "doughs": [
+      { "id": "traditional", "label": "Традиционное" },
+      { "id": "thin", "label": "Тонкое" }
+    ],
+    "defaultIngredients": [
+      { "id": "tomato_sauce", "name": "Томатный соус" },
+      { "id": "mozzarella", "name": "Моцарелла" },
+      { "id": "sweet_pepper", "name": "Сладкий перец" },
+      { "id": "mushrooms", "name": "Шампиньоны" },
+      { "id": "red_onion", "name": "Красный лук" },
+      { "id": "tomatoes", "name": "Томаты" },
+      { "id": "olives", "name": "Маслины" },
+      { "id": "feta", "name": "Брынза" }
+    ],
+    "extraIngredients": [
+      { "id": "cheese_crust", "name": "Сырный бортик", "price": 99 },
+      { "id": "jalapeno", "name": "Острый халапеньо", "price": 49 },
+      { "id": "cheddar_parmesan", "name": "Чеддер и пармезан", "price": 59 }
+    ],
     "defaultSize": "30",
     "defaultDough": "traditional"
   }

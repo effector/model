@@ -6,7 +6,7 @@ export const ProductView = ({
   mode = 'full',
 }: {
   item: any;
-  mode?: 'full' | 'selectors' | 'ingredients';
+  mode?: 'full' | 'selectors' | 'ingredients' | 'cart';
 }) => {
   return (
     <div className="space-y-8">
@@ -25,18 +25,162 @@ export const ProductView = ({
   );
 };
 
-export const Match = ({ model, cases, mode }: any) => {
-  const variant = useLens(model.activeVariant, null);
+export const Match = ({
+  model,
+  cases,
+  mode,
+}: {
+  model: any;
+  cases: Record<string, React.ComponentType<any>>;
+  mode: string;
+}) => {
+  const variant = useLens(model.activeVariant, null) as any;
   const Component = cases[variant];
-  if (!Component) return null;
+
+  if (!Component) {
+    return (
+      <div className="p-4 bg-red-50 text-red-600 rounded-lg">
+        Unknown variant: {variant}. Available: {Object.keys(cases).join(', ')}
+      </div>
+    );
+  }
+
+  if (mode === 'cart') {
+    return <CartSummary item={model} variant={variant} />;
+  }
+
   return <Component item={model} mode={mode} />;
+};
+
+const CartSummary = ({ item, variant }: { item: any; variant: string }) => {
+  if (variant === 'pizza') {
+    const sizeId = useLens(item.facets.size.$size, '');
+    const doughId = useLens(item.facets.dough.$dough, '');
+    const rawSizes = useLens(item.facets.size.$options, []);
+    const rawDoughs = useLens(item.facets.dough.$options, []);
+
+    const sizeLabel =
+      (Array.isArray(rawSizes) ? rawSizes : Object.values(rawSizes || {})).find(
+        (s: any) => s.id === sizeId,
+      )?.label || '';
+    const doughLabel =
+      (Array.isArray(rawDoughs)
+        ? rawDoughs
+        : Object.values(rawDoughs || {})
+      ).find((d: any) => d.id === doughId)?.label || '';
+
+    const selectedExtras = useLens(
+      item.facets.ingredients.$selectedExtras,
+      {},
+    ) as Record<string, boolean>;
+    const removedDefaults = useLens(
+      item.facets.ingredients.$removedDefaults,
+      {},
+    ) as Record<string, boolean>;
+    const rawExtra = useLens(item.input.extraIngredients, []);
+    const rawDefault = useLens(item.input.defaultIngredients, []);
+
+    const extras = (
+      Array.isArray(rawExtra) ? rawExtra : Object.values(rawExtra || {})
+    )
+      .filter((ing: any) => selectedExtras[ing.id])
+      .map((ing: any) => `+ ${ing.name}`);
+
+    const removed = (
+      Array.isArray(rawDefault) ? rawDefault : Object.values(rawDefault || {})
+    )
+      .filter((ing: any) => removedDefaults[ing.id])
+      .map((ing: any) => `- ${ing.name}`);
+
+    const config = [sizeLabel, doughLabel].filter(Boolean).join(', ');
+    const mods = [...extras, ...removed].join(', ');
+
+    return (
+      <div className="space-y-0.5 mt-0.5">
+        {config && <div className="text-gray-600 text-sm">{config}</div>}
+        {mods && <div className="text-gray-400 italic text-sm">{mods}</div>}
+      </div>
+    );
+  }
+
+  if (variant === 'coffee' || variant === 'drink') {
+    const sizeId = useLens(item.facets.size.$size, '');
+    const rawSizes = useLens(item.facets.size.$options, []);
+    const sizeLabel =
+      (
+        (Array.isArray(rawSizes)
+          ? rawSizes
+          : Object.values(rawSizes || {})) as any[]
+      ).find((s: any) => s.id === sizeId)?.label || '';
+
+    let mods = '';
+    if (variant === 'coffee') {
+      const selectedExtras = useLens(
+        item.facets.ingredients.$selectedExtras,
+        {},
+      ) as Record<string, boolean>;
+      const rawAdditions = useLens(item.input.additions, []);
+      mods = (
+        Array.isArray(rawAdditions)
+          ? rawAdditions
+          : Object.values(rawAdditions || {})
+      )
+        .filter((ing: any) => selectedExtras[ing.id])
+        .map((ing: any) => `+ ${ing.name}`)
+        .join(', ');
+    }
+
+    return (
+      <div className="space-y-0.5">
+        {sizeLabel && (
+          <div className="text-gray-500 font-medium">{sizeLabel}</div>
+        )}
+        {mods && (
+          <div className="text-gray-400 italic text-[0.7rem]">{mods}</div>
+        )}
+      </div>
+    );
+  }
+
+  if (variant === 'cocktail') {
+    const selectedExtras = useLens(
+      item.facets.ingredients.$selectedExtras,
+      {},
+    ) as Record<string, boolean>;
+    const rawDecorations = useLens(item.input.decorations, []);
+    const mods = (
+      Array.isArray(rawDecorations)
+        ? rawDecorations
+        : Object.values(rawDecorations || {})
+    )
+      .filter((ing: any) => selectedExtras[ing.id])
+      .map((ing: any) => `+ ${ing.name}`)
+      .join(', ');
+
+    return (
+      <div className="space-y-0.5">
+        {mods && (
+          <div className="text-gray-400 italic text-[0.7rem]">{mods}</div>
+        )}
+      </div>
+    );
+  }
+
+  return null;
 };
 
 export const PizzaDetails = ({ item, mode }: { item: any; mode: string }) => {
   const size = useLens(item.facets.size.$size, '');
   const dough = useLens(item.facets.dough.$dough, '');
-  const sizes = useLens(item.input.sizes, []);
-  const doughs = useLens(item.input.doughs, []);
+  const rawSizes = useLens(item.facets.size.$options, []);
+  const sizes = (
+    Array.isArray(rawSizes) ? rawSizes : Object.values(rawSizes || {})
+  ) as any[];
+
+  const rawDoughs = useLens(item.facets.dough.$options, []);
+  const doughs = (
+    Array.isArray(rawDoughs) ? rawDoughs : Object.values(rawDoughs || {})
+  ) as any[];
 
   const selectedExtras = useLens(
     item.facets.ingredients.$selectedExtras,
@@ -47,15 +191,27 @@ export const PizzaDetails = ({ item, mode }: { item: any; mode: string }) => {
     {} as Record<string, boolean>,
   );
 
-  const extraIngredients = useLens(item.input.extraIngredients, []);
-  const defaultIngredients = useLens(item.input.defaultIngredients, []);
+  const rawExtra = useLens(item.input.extraIngredients, []);
+  const extraIngredients = (
+    Array.isArray(rawExtra) ? rawExtra : Object.values(rawExtra || {})
+  ) as any[];
 
-  const { toggleExtra, toggleDefault, setSize, setDough } = useUnit({
-    toggleExtra: item.facets.ingredients.toggleExtra,
-    toggleDefault: item.facets.ingredients.toggleDefault,
-    setSize: item.facets.size.setSize,
-    setDough: item.facets.dough.setDough,
+  const rawDefault = useLens(item.input.defaultIngredients, []);
+  const defaultIngredients = (
+    Array.isArray(rawDefault) ? rawDefault : Object.values(rawDefault || {})
+  ) as any[];
+
+  const units = useUnit({
+    toggleExtra: item.facets.ingredients.toggleExtra as any,
+    toggleDefault: item.facets.ingredients.toggleDefault as any,
+    setSize: item.facets.size.setSize as any,
+    setDough: item.facets.dough.setDough as any,
   });
+
+  const toggleExtra = units.toggleExtra as (id: string) => void;
+  const toggleDefault = units.toggleDefault as (id: string) => void;
+  const setSize = units.setSize as (id: string) => void;
+  const setDough = units.setDough as (id: string) => void;
 
   const showSelectors = mode === 'full' || mode === 'selectors';
   const showIngredients = mode === 'full' || mode === 'ingredients';
@@ -65,7 +221,7 @@ export const PizzaDetails = ({ item, mode }: { item: any; mode: string }) => {
       {/* Selectors */}
       {showSelectors && (
         <div className="space-y-3">
-          {sizes.length > 0 && (
+          {sizes.length > 0 ? (
             <div className="flex bg-gray-100 p-1 rounded-xl">
               {sizes.map((s: any) => (
                 <button
@@ -79,8 +235,12 @@ export const PizzaDetails = ({ item, mode }: { item: any; mode: string }) => {
                 </button>
               ))}
             </div>
+          ) : (
+            <div className="text-red-500 text-xs p-2 bg-red-50 rounded">
+              No Sizes ({sizes.length}).
+            </div>
           )}
-          {doughs.length > 0 && (
+          {doughs.length > 0 ? (
             <div className="flex bg-gray-100 p-1 rounded-xl">
               {doughs.map((d: any) => (
                 <button
@@ -94,58 +254,101 @@ export const PizzaDetails = ({ item, mode }: { item: any; mode: string }) => {
                 </button>
               ))}
             </div>
+          ) : (
+            <div className="text-red-500 text-xs p-2 bg-red-50 rounded">
+              No Doughs ({doughs.length}).
+            </div>
           )}
         </div>
       )}
 
-      {/* Defaults */}
-      {showIngredients && defaultIngredients.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="font-bold text-lg text-gray-800">Ingredients</h3>
-          <div className="flex flex-wrap gap-2">
-            {defaultIngredients.map((ing: any) => (
+      {/* Extras - Liquid Glass Design - Static Dimensions */}
+      {showIngredients && extraIngredients.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="font-bold text-lg text-gray-800">Добавить по вкусу</h3>
+          <div className="grid grid-cols-3 gap-3">
+            {extraIngredients.map((ing: any) => (
               <button
                 key={ing.id}
-                className={`px-4 py-2 rounded-full border text-sm font-medium transition-all flex items-center gap-2 ${
-                  removedDefaults[ing.id]
-                    ? 'bg-gray-50 border-transparent text-gray-400 line-through'
-                    : 'bg-white border-gray-200 text-gray-700 shadow-sm'
+                className={`flex flex-col items-center p-2 rounded-3xl transition-all duration-200 text-center h-full relative group overflow-hidden border-2 ${
+                  selectedExtras[ing.id]
+                    ? 'bg-white shadow-lg border-[#ff6900]'
+                    : 'bg-white/80 backdrop-blur-md border-white shadow-sm hover:shadow-md hover:bg-white'
                 }`}
-                onClick={() => toggleDefault(ing.id)}
+                onClick={() => toggleExtra(ing.id)}
               >
-                {ing.name} {!removedDefaults[ing.id] && '✕'}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                {selectedExtras[ing.id] && (
+                  <div className="absolute top-1.5 right-1.5 bg-[#ff6900] text-white w-5 h-5 rounded-full flex items-center justify-center shadow-sm animate-in zoom-in duration-200 z-20">
+                    <svg
+                      className="w-3 h-3"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                )}
+
+                <div className="relative z-10 w-full flex flex-col items-center">
+                  <img
+                    src={`https://picsum.photos/seed/${ing.name}/100/100`}
+                    alt=""
+                    className="w-12 h-12 object-cover mb-1.5 rounded-2xl shadow-sm"
+                  />
+                  <div className="text-[0.65rem] font-bold leading-tight mb-1 min-h-[2.4em] flex items-center justify-center px-1">
+                    {ing.name}
+                  </div>
+                  <div className="text-[0.75rem] font-black text-[#ff6900]">
+                    {ing.price} ₽
+                  </div>
+                </div>
               </button>
             ))}
           </div>
         </div>
       )}
 
-      {/* Extras */}
-      {showIngredients && extraIngredients.length > 0 && (
+      {/* Defaults */}
+      {showIngredients && defaultIngredients.length > 0 && (
         <div className="space-y-3">
-          <h3 className="font-bold text-lg text-gray-800">Add to taste</h3>
-          <div className="grid grid-cols-3 gap-3">
-            {extraIngredients.map((ing: any) => (
+          <h3 className="font-bold text-lg text-gray-800">
+            Убрать ингредиенты
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {defaultIngredients.map((ing: any) => (
               <button
                 key={ing.id}
-                className={`flex flex-col items-center p-3 rounded-2xl border transition-all text-center h-full ${
-                  selectedExtras[ing.id]
-                    ? 'border-[#ff6900] bg-orange-50 shadow-sm ring-1 ring-[#ff6900]'
-                    : 'border-transparent bg-white shadow-sm hover:shadow-md'
+                className={`px-4 py-2 rounded-full border text-sm font-medium transition-all flex items-center gap-2 ${
+                  removedDefaults[ing.id]
+                    ? 'bg-gray-100 border-transparent text-gray-400 line-through'
+                    : 'bg-white border-gray-200 text-gray-700 shadow-sm'
                 }`}
-                onClick={() => toggleExtra(ing.id)}
+                onClick={() => toggleDefault(ing.id)}
               >
-                <img
-                  src={`https://placehold.co/100x100/fff0e6/ff6900?text=${ing.name.substring(0, 2)}`}
-                  alt=""
-                  className="w-12 h-12 object-contain mb-2"
-                />
-                <div className="text-[0.7rem] font-bold leading-tight mb-1 flex-1 flex items-center">
-                  {ing.name}
-                </div>
-                <div className="text-[0.8rem] font-black text-gray-900">
-                  {ing.price} ₽
-                </div>
+                {ing.name}{' '}
+                {!removedDefaults[ing.id] && (
+                  <svg
+                    className="w-3 h-3 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                )}
               </button>
             ))}
           </div>
@@ -157,10 +360,14 @@ export const PizzaDetails = ({ item, mode }: { item: any; mode: string }) => {
 
 export const DrinkDetails = ({ item, mode }: { item: any; mode: string }) => {
   const size = useLens(item.facets.size.$size, '');
-  const sizes = useLens(item.input.sizes, []);
-  const { setSize } = useUnit({
-    setSize: item.facets.size.setSize,
+  const rawSizes = useLens(item.facets.size.$options, []);
+  const sizes = (
+    Array.isArray(rawSizes) ? rawSizes : Object.values(rawSizes || {})
+  ) as any[];
+  const units = useUnit({
+    setSize: item.facets.size.setSize as any,
   });
+  const setSize = units.setSize as (id: string) => void;
 
   if (mode === 'ingredients') return null;
 
@@ -187,16 +394,26 @@ export const DrinkDetails = ({ item, mode }: { item: any; mode: string }) => {
 
 export const CoffeeDetails = ({ item, mode }: { item: any; mode: string }) => {
   const size = useLens(item.facets.size.$size, '');
-  const sizes = useLens(item.input.sizes, []);
-  const additions = useLens(item.input.additions, []);
+  const rawSizes = useLens(item.facets.size.$options, []);
+  const sizes = (
+    Array.isArray(rawSizes) ? rawSizes : Object.values(rawSizes || {})
+  ) as any[];
+  const rawAdditions = useLens(item.input.additions, []);
+  const additions = (
+    Array.isArray(rawAdditions)
+      ? rawAdditions
+      : Object.values(rawAdditions || {})
+  ) as any[];
   const selectedExtras = useLens(
     item.facets.ingredients.$selectedExtras,
     {} as Record<string, boolean>,
   );
-  const { setSize, toggleExtra } = useUnit({
-    setSize: item.facets.size.setSize,
-    toggleExtra: item.facets.ingredients.toggleExtra,
+  const units = useUnit({
+    setSize: item.facets.size.setSize as any,
+    toggleExtra: item.facets.ingredients.toggleExtra as any,
   });
+  const setSize = units.setSize as (id: string) => void;
+  const toggleExtra = units.toggleExtra as (id: string) => void;
 
   const showSelectors = mode === 'full' || mode === 'selectors';
   const showIngredients = mode === 'full' || mode === 'ingredients';
@@ -219,30 +436,53 @@ export const CoffeeDetails = ({ item, mode }: { item: any; mode: string }) => {
         </div>
       )}
 
+      {/* Additions - Liquid Glass Design - Static Dimensions */}
       {showIngredients && additions.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="font-bold text-lg text-gray-800">Additions</h3>
+        <div className="space-y-4">
+          <h3 className="font-bold text-lg text-gray-800">Добавить по вкусу</h3>
           <div className="grid grid-cols-3 gap-3">
             {additions.map((ing: any) => (
               <button
                 key={ing.id}
-                className={`flex flex-col items-center p-3 rounded-2xl border transition-all text-center h-full ${
+                className={`flex flex-col items-center p-2 rounded-3xl transition-all duration-200 text-center h-full relative group overflow-hidden border-2 ${
                   selectedExtras[ing.id]
-                    ? 'border-[#ff6900] bg-orange-50 shadow-sm ring-1 ring-[#ff6900]'
-                    : 'border-transparent bg-white shadow-sm hover:shadow-md'
+                    ? 'bg-white shadow-lg border-[#ff6900]'
+                    : 'bg-white/80 backdrop-blur-md border-white shadow-sm hover:shadow-md hover:bg-white'
                 }`}
                 onClick={() => toggleExtra(ing.id)}
               >
-                <img
-                  src={`https://placehold.co/100x100/fff0e6/ff6900?text=${ing.name.substring(0, 2)}`}
-                  alt=""
-                  className="w-12 h-12 object-contain mb-2"
-                />
-                <div className="text-[0.7rem] font-bold leading-tight mb-1 flex-1 flex items-center">
-                  {ing.name}
-                </div>
-                <div className="text-[0.8rem] font-black text-gray-900">
-                  {ing.price} ₽
+                <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                {selectedExtras[ing.id] && (
+                  <div className="absolute top-1.5 right-1.5 bg-[#ff6900] text-white w-5 h-5 rounded-full flex items-center justify-center shadow-sm animate-in zoom-in duration-200 z-20">
+                    <svg
+                      className="w-3 h-3"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                )}
+
+                <div className="relative z-10 w-full flex flex-col items-center">
+                  <img
+                    src={`https://picsum.photos/seed/${ing.name}/100/100`}
+                    alt=""
+                    className="w-12 h-12 object-cover mb-1.5 rounded-2xl shadow-sm"
+                  />
+                  <div className="text-[0.65rem] font-bold leading-tight mb-1 min-h-[2.4em] flex items-center justify-center px-1">
+                    {ing.name}
+                  </div>
+                  <div className="text-[0.75rem] font-black text-[#ff6900]">
+                    {ing.price} ₽
+                  </div>
                 </div>
               </button>
             ))}
@@ -264,39 +504,68 @@ export const CocktailDetails = ({
     item.facets.ingredients.$selectedExtras,
     {} as Record<string, boolean>,
   );
-  const decorations = useLens(item.input.decorations, []);
-  const { toggleExtra } = useUnit({
-    toggleExtra: item.facets.ingredients.toggleExtra,
+  const rawDecorations = useLens(item.input.decorations, []);
+  const decorations = (
+    Array.isArray(rawDecorations)
+      ? rawDecorations
+      : Object.values(rawDecorations || {})
+  ) as any[];
+  const units = useUnit({
+    toggleExtra: item.facets.ingredients.toggleExtra as any,
   });
+  const toggleExtra = units.toggleExtra as (id: string) => void;
 
   if (mode === 'selectors') return null;
 
   return (
     <div className="space-y-4">
+      {/* Decorations - Liquid Glass Design - Static Dimensions */}
       {decorations.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="font-bold text-lg text-gray-800">Decorations</h3>
+        <div className="space-y-4">
+          <h3 className="font-bold text-lg text-gray-800">Добавить по вкусу</h3>
           <div className="grid grid-cols-3 gap-3">
             {decorations.map((ing: any) => (
               <button
                 key={ing.id}
-                className={`flex flex-col items-center p-3 rounded-2xl border transition-all text-center h-full ${
+                className={`flex flex-col items-center p-2 rounded-3xl transition-all duration-200 text-center h-full relative group overflow-hidden border-2 ${
                   selectedExtras[ing.id]
-                    ? 'border-[#ff6900] bg-orange-50 shadow-sm ring-1 ring-[#ff6900]'
-                    : 'border-transparent bg-white shadow-sm hover:shadow-md'
+                    ? 'bg-white shadow-lg border-[#ff6900]'
+                    : 'bg-white/80 backdrop-blur-md border-white shadow-sm hover:shadow-md hover:bg-white'
                 }`}
                 onClick={() => toggleExtra(ing.id)}
               >
-                <img
-                  src={`https://placehold.co/100x100/fff0e6/ff6900?text=${ing.name.substring(0, 2)}`}
-                  alt=""
-                  className="w-12 h-12 object-contain mb-2"
-                />
-                <div className="text-[0.7rem] font-bold leading-tight mb-1 flex-1 flex items-center">
-                  {ing.name}
-                </div>
-                <div className="text-[0.8rem] font-black text-gray-900">
-                  {ing.price} ₽
+                <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                {selectedExtras[ing.id] && (
+                  <div className="absolute top-1.5 right-1.5 bg-[#ff6900] text-white w-5 h-5 rounded-full flex items-center justify-center shadow-sm animate-in zoom-in duration-200 z-20">
+                    <svg
+                      className="w-3 h-3"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                )}
+
+                <div className="relative z-10 w-full flex flex-col items-center">
+                  <img
+                    src={`https://picsum.photos/seed/${ing.name}/100/100`}
+                    alt=""
+                    className="w-12 h-12 object-cover mb-1.5 rounded-2xl shadow-sm"
+                  />
+                  <div className="text-[0.65rem] font-bold leading-tight mb-1 min-h-[2.4em] flex items-center justify-center px-1">
+                    {ing.name}
+                  </div>
+                  <div className="text-[0.75rem] font-black text-[#ff6900]">
+                    {ing.price} ₽
+                  </div>
                 </div>
               </button>
             ))}
@@ -310,7 +579,7 @@ export const CocktailDetails = ({
 export const SauceDetails = ({ item }: { item: any }) => {
   return (
     <div className="text-gray-400 py-10 text-center italic text-sm">
-      No customization available for this item
+      Для этого товара нет настроек
     </div>
   );
 };

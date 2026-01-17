@@ -1,5 +1,5 @@
-import { createEvent } from 'effector';
-import { keyval, union } from '@effector-model/core-experimental';
+import { createEvent, sample, createEffect } from 'effector';
+import { keyval, union, serialize } from '@effector-model/core-experimental';
 import { pizzaModel } from './products/pizza';
 import { drinkModel } from './products/drink';
 import { coffeeModel } from './products/coffee';
@@ -18,6 +18,10 @@ export const cartModel = keyval({
   model: productUnion,
 });
 
+export const receiptModel = keyval({
+  model: productUnion,
+});
+
 export const cartApi = cartModel.getItem(createEvent<{ id: string }>());
 
 export const $totalPrice = cartModel.$state.map((state) => {
@@ -29,4 +33,65 @@ export const $totalPrice = cartModel.$state.map((state) => {
     if (isDeleted) return sum;
     return sum + price * quantity;
   }, 0);
+});
+
+export const $receiptTotalPrice = receiptModel.$state.map((state) => {
+  return Object.values(state).reduce((sum: number, item: any) => {
+    const price = item?.facets?.product?.$price || 0;
+    const quantity = item?.facets?.product?.$quantity || 0;
+    const isDeleted = item?.facets?.product?.$isDeleted || false;
+
+    if (isDeleted) return sum;
+    return sum + price * quantity;
+  }, 0);
+});
+
+export const copyCartToReceipt = createEvent();
+
+const copyToReceiptFx = createEffect((items: any[]) => {
+  items.forEach((item) => receiptModel.add(item));
+});
+
+sample({
+  clock: copyCartToReceipt,
+  target: receiptModel.reset,
+});
+
+sample({
+  clock: copyCartToReceipt,
+  source: {
+    instances: (cartModel as any).$instances,
+    variants: cartModel.$activeVariants,
+  },
+  fn: ({
+    instances,
+    variants,
+  }: {
+    instances: any;
+    variants: Record<string, string | null>;
+  }) => {
+    return Object.entries(instances)
+      .map(([id, instance]: [string, any]) => {
+        const snapshot = serialize(instance);
+        const variant =
+          variants[id] || instance._variant || snapshot.activeVariant;
+        const input = snapshot.extra || snapshot.input;
+
+        return {
+          id,
+          variant,
+          input,
+          state: snapshot.facets,
+          isDeleted: snapshot.facets?.product?.$isDeleted || false,
+        };
+      })
+      .filter((item) => !item.isDeleted)
+      .map(({ id, variant, input, state }) => ({
+        id,
+        variant,
+        input,
+        state,
+      }));
+  },
+  target: copyToReceiptFx,
 });

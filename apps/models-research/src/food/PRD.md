@@ -1,8 +1,9 @@
 # Product Requirements Document (PRD)
 
 **Project Name:** Pizza Demo App (Core Experimental Research)
-**Version:** 2.3 (Final Polish)
-**Status:** Approved for Implementation
+**Version:** 3.0 (Released)
+**Status:** Implemented
+**Last Updated:** 2026-01-17
 
 ---
 
@@ -113,82 +114,91 @@ classDiagram
 
 ### 4.0. Screen: Restaurant Selection (Entry)
 
-- **Header:** "Select Restaurant"
-- **List:** Cards with Image, Name, Tags (e.g., "Italian", "Burgers").
+- **Header:** "Выберите ресторан" (Select Restaurant)
+- **List:** Cards with Image, Name, Address, Rating, and Time.
+- **Visuals:** High-quality imagery (via `picsum.photos`). Parallax-style hover effects.
 - **Action:** Clicking a card navigates to the **Menu List**.
 - **Data Note:** Each restaurant has its own isolated set of Products and Categories.
 
 ### 4.1. Screen: Menu List (Home)
 
 - **Sticky Navigation:**
-  - Top anchor bar linking to categories (Pizza, Snacks, Drinks).
-  - **Scroll-spy:** Active tab updates automatically as user scrolls.
+  - Unified header container combining the "Menu" title, Restaurant Name dropdown, and Category Tabs.
+  - **Header Layout:**
+    - Left: "Меню" title.
+    - Center: Restaurant Name (Clickable Dropdown).
+    - Right: **Cart Action Button** (Icon + Total Price).
+  - **Scroll-spy:** Active tab updates automatically as user scrolls. Logic accounts for the combined sticky header height to prevent obscuring content.
 - **Product List:**
   - Grouped by Category.
   - **Card:**
-    - **Visual:** Emoji or Image.
+    - **Visual:** High-resolution square image.
     - **Info:** Name, static description (default ingredients).
-    - **Price:** "from [Min Price]" chip (bottom-center, non-clickable).
-- **Global Cart FAB:**
-  - **Position:** Bottom Right (Fixed).
-  - **Visual:** Cart Emoji + Total Price.
+    - **Price:** Left-aligned "от [Min Price] ₽" chip.
+- **Global Cart Action:**
+  - **Position:** Fixed at the top-right of the sticky header.
+  - **Visual:** White SVG Cart Icon + Total Price on Orange background.
   - **Action:** Opens **Cart Screen**.
 
 ### 4.2. Screen: Product Detail (Configurator)
 
-- **Navigation:** Close button (Top Left).
+- **Navigation:** Translucent Close button (Top Left).
 - **Visuals:**
-  - Large Product Image.
-  - **"Customize Ingredients" FAB:** Secondary floating button below image (Icon: Pencil, Text: "Настроить состав"). Opens **Ingredients Screen**.
+  - Edge-to-edge Product Image (Top).
+  - **"Состав" (Ingredients) FAB:** Secondary floating button over the image (Bottom Right).
 - **Controls:**
   - **Selectors:** Dynamic based on Product Type.
-    - _Pizza:_ Size ("20", "30" cm), Dough ("Thin", "Traditional").
+    - _Pizza:_ Size ("25", "30", "35" cm), Dough ("Traditional", "Thin").
     - _Coffee:_ Size ("S", "M", "L"), Sugar.
     - _Generic:_ Just Size or None.
 - **Primary Action (Sticky Footer):**
-  - **Button:** "Add to Cart [Price]" (or Plus sign).
+  - **Button:** "+ [Total Price] ₽".
   - **Logic:** Adds configured item to Cart -> Returns to Menu.
 
-### 4.3. Screen: Ingredients Customization
+### 4.3. Screen: Ingredients Customization ("Состав")
 
 - **Navigation:** Close button (Top Left).
-- **Header:** Product Name + Current Config (e.g., "30cm, Traditional").
-- **Section 1: "Add to Taste" (Extras)**
-  - **Layout:** Grid of tiles.
-  - **Item:** Icon/Emoji + Name + Price.
+- **Header:** Product Name + Current Config.
+- **Section 1: "Добавить по вкусу" (Extras)**
+  - **Layout:** Grid of **Liquid Glass Cards**.
+  - **Visuals:** `backdrop-blur-md`, static border layout (no layout shift/wiggle), SVG Checkmark.
   - **Interaction:** Toggle (Select/Deselect). Adds to price.
-- **Section 2: "Remove Ingredients" (Defaults)**
+- **Section 2: "Убрать ингредиенты" (Defaults)**
   - **Layout:** Wrapped list of chips.
-  - **Item:** Name + "X" icon.
+  - **Item:** Name + "X" SVG icon.
   - **Interaction:** Toggle.
     - _Default:_ Normal text.
     - _Removed:_ Strikethrough text (Crossed out).
-    - _Note:_ Removing ingredients does **not** lower the price.
 - **Section 3: Product Metadata**
   - **Content:** Nutritional info (Energy, Weight), Description.
-- **Footer:** "Save [Total Price]" button.
+- **Footer:** "Сохранить [Total Price]" button.
 
-### 4.4. Screen: Cart
+### 4.4. Screen: Cart ("Корзина")
 
-- **Header:** Back Button (Left), Clear Button (Right).
+- **Header:** Back Button (Left), Trash Icon (Right) for Clear All.
+- **Empty State:** Centered vertically (1/3 height) with icon and text ("Ваша корзина пуста").
 - **List:**
   - **Item Card:**
-    - **Info:** Name, Config ("35cm, Thin"), Modifications ("+ Cheese, - Onion").
+    - **Info:** Name, Config, Modifications.
     - **Price:** Total for this line item.
-    - **Edit Button:** Opens **Product Detail** in "Edit Mode".
+    - **Edit Button:** "Изменить" (Change) -> Opens **Product Detail**.
     - **Quantity Controls:** [ - ] [ Count ] [ + ]
-- **Footer:** "Checkout for [Total]" button.
+- **Footer:** "Оформить за [Total] ₽" (Checkout) button.
 
 ### 4.5. Screen: Checkout / Success
 
 - **Flow:**
   1.  User clicks "Checkout" in Cart.
-  2.  **Loading State:** Interface blocked, spinner shown.
+  2.  **Processing:** Cart items are snapshotted to a separate **Receipt Model**.
   3.  **Success State:**
-      - Cart is cleared.
       - **Visuals:** Large Congrats Emoji/Illustration.
-      - **Message:** "Order successfully placed!"
-      - **Action:** Main button "Return to Menu".
+      - **Message:** "Заказ оформлен!" (Order placed!).
+      - **Order Summary Card:**
+        - **Visuals:** Modern card with gray background (`bg-gray-50`) and rounded corners.
+        - **Content:** "Ваш заказ" (Your Order) header.
+        - **List:** Scrollable list of items (using `CartItem` in read-only mode).
+        - **Footer:** "Итого" (Total) row with distinct Orange price.
+      - **Action:** Main button "Вернуться в меню" (Return to Menu).
 
 ---
 
@@ -210,8 +220,8 @@ This is a critical UX pattern to prevent accidental data loss.
 2.  **State Transition:** Item enters `SoftDeleted` state.
 3.  **UI Updates:**
     - Item Opacity: Reduced (Dimmed).
-    - Secondary Button: Changes from "Edit" to **"Delete"** (Hard Delete).
-    - Quantity Controls: Replaced by single **"Restore"** button ("Вернуть").
+    - Secondary Button: Changes from "Edit" to **"Удалить"** (Hard Delete).
+    - Quantity Controls: Replaced by single **"Вернуть"** (Restore) button.
 4.  **Restoration:** Clicking "Restore" -> Item returns to `Active` state (Quantity 1, Normal Opacity).
 5.  **Hard Delete:** Clicking "Delete" -> Item is removed from the list permanently.
 
@@ -222,16 +232,29 @@ This is a critical UX pattern to prevent accidental data loss.
 
 ### 5.4. Navigation Logic
 
-- **Scroll Spy:** Must handle variable section heights. Active tab should switch when the section header is near the top (e.g., 20% viewport offset).
+- **Scroll Spy:** Handles variable section heights. Active tab switches when the section header reaches the bottom of the sticky navigation bar.
 - **Routing:**
   - Menu -> Product -> Cart -> Menu.
   - Cart -> Checkout -> Success -> Menu.
 
+### 5.5. Receipt Snapshot Logic
+
+To ensure the integrity of the order history, the checkout process involves a snapshot mechanism:
+
+1.  **Trigger:** User confirms checkout.
+2.  **Snapshot:** The current state of all active items in the `Cart` is serialized and copied to a separate `Receipt` model.
+3.  **Isolation:** This decoupling ensures that subsequent changes to the Cart (or clearing it) do not affect the displayed Receipt on the Success screen.
+4.  **Display:** The Receipt view consumes data solely from the `Receipt` model, not the active `Cart`.
+
 ---
 
-## 6. Visual Guidelines (Dodo-like)
+## 6. Visual Guidelines
 
+- **Frame:** Fixed `412px` x `915px` device simulation.
+  - **Border:** Customizable color (Default: Beige `#f5f5dc`) and thickness.
+  - **Shadow:** Realistic `shadow-xl`.
 - **Primary Color:** Orange (`#ff6900`).
-- **Typography:** Clean, sans-serif, bold headers.
-- **Layout:** Card-based, generous padding.
-- **Feedback:** Ripple effects on clicks, smooth transitions for "Soft Delete" dimming.
+- **Background:** Unified White (`#ffffff`) across all screens.
+- **Typography:** Clean, sans-serif (Inter/System), bold headers.
+- **Icons:** High-quality SVGs (Heroicons style).
+- **Images:** High-resolution, consistent seeding via `picsum.photos`.

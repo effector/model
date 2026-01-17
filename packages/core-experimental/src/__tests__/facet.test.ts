@@ -9,13 +9,15 @@ describe('facet', () => {
       evt: define.event<void>(),
     });
 
-    expect(f).toEqual({
-      type: 'facet',
-      shape: {
-        $val: { type: 'store', initial: 0 },
-        evt: { type: 'event' },
-      },
-    });
+    expect(f).toEqual(
+      expect.objectContaining({
+        type: 'facet',
+        shape: {
+          $val: { type: 'store', initial: 0 },
+          evt: { type: 'event' },
+        },
+      }),
+    );
   });
 
   it('should handle empty facet', () => {

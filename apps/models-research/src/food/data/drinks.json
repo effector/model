@@ -4,6 +4,7 @@
     "name": "Добрый Кола",
     "description": "Классический вкус колы",
     "basePrice": 99,
+    "nutritionalInfo": { "calories": 42, "weight": 500 },
     "sizes": [
       { "id": "0.5", "label": "0.5 л", "price": 0 },
       { "id": "1.0", "label": "1 л", "price": 60 }
@@ -12,20 +13,79 @@
   },
   {
     "type": "drink",
-    "name": "Апельсиновый сок",
-    "description": "Rich Апельсин",
-    "basePrice": 119,
-    "sizes": [
-      { "id": "0.3", "label": "0.3 л", "price": 0 },
-      { "id": "0.5", "label": "0.5 л", "price": 50 }
-    ],
-    "defaultSize": "0.3"
+    "name": "Добрый Кола Зеро",
+    "description": "Любимый вкус без сахара",
+    "basePrice": 99,
+    "nutritionalInfo": { "calories": 0.3, "weight": 500 },
+    "sizes": [{ "id": "0.5", "label": "0.5 л", "price": 0 }],
+    "defaultSize": "0.5"
   },
   {
     "type": "drink",
-    "name": "Вода без газа",
-    "description": "Святой источник",
+    "name": "Добрый Апельсин",
+    "description": "Газированный напиток со вкусом апельсина",
+    "basePrice": 99,
+    "nutritionalInfo": { "calories": 30, "weight": 500 },
+    "sizes": [
+      { "id": "0.5", "label": "0.5 л", "price": 0 },
+      { "id": "1.0", "label": "1 л", "price": 60 }
+    ],
+    "defaultSize": "0.5"
+  },
+  {
+    "type": "drink",
+    "name": "Добрый Лимон-Лайм",
+    "description": "Освежающий вкус лимона и лайма",
+    "basePrice": 99,
+    "nutritionalInfo": { "calories": 36, "weight": 500 },
+    "sizes": [
+      { "id": "0.5", "label": "0.5 л", "price": 0 },
+      { "id": "1.0", "label": "1 л", "price": 60 }
+    ],
+    "defaultSize": "0.5"
+  },
+  {
+    "type": "drink",
+    "name": "Сок Рич Яблочный",
+    "description": "Восстановленный яблочный сок",
+    "basePrice": 119,
+    "nutritionalInfo": { "calories": 44, "weight": 1000 },
+    "sizes": [{ "id": "1.0", "label": "1 л", "price": 0 }],
+    "defaultSize": "1.0"
+  },
+  {
+    "type": "drink",
+    "name": "Сок Рич Апельсиновый",
+    "description": "100% апельсиновый сок",
+    "basePrice": 129,
+    "nutritionalInfo": { "calories": 48, "weight": 1000 },
+    "sizes": [{ "id": "1.0", "label": "1 л", "price": 0 }],
+    "defaultSize": "1.0"
+  },
+  {
+    "type": "drink",
+    "name": "Морс Клюквенный",
+    "description": "Натуральный морс из клюквы",
+    "basePrice": 109,
+    "nutritionalInfo": { "calories": 44, "weight": 450 },
+    "sizes": [{ "id": "0.45", "label": "0.45 л", "price": 0 }],
+    "defaultSize": "0.45"
+  },
+  {
+    "type": "drink",
+    "name": "Морс Смородиновый",
+    "description": "Натуральный морс из черной смородины",
+    "basePrice": 109,
+    "nutritionalInfo": { "calories": 45, "weight": 450 },
+    "sizes": [{ "id": "0.45", "label": "0.45 л", "price": 0 }],
+    "defaultSize": "0.45"
+  },
+  {
+    "type": "drink",
+    "name": "Вода негазированная",
+    "description": "Чистая питьевая вода",
     "basePrice": 69,
+    "nutritionalInfo": { "calories": 0, "weight": 500 },
     "sizes": [{ "id": "0.5", "label": "0.5 л", "price": 0 }],
     "defaultSize": "0.5"
   }

@@ -14,6 +14,9 @@ export const productTrait = facet({
   $name: define.store(''),
   $description: define.store(''),
   $image: define.store(''),
+  $nutritionalInfo: define.store<{ calories: number; weight: number } | null>(
+    null,
+  ),
 
   // The final price of a SINGLE item (including modifiers)
   $price: define.store(0),
@@ -107,9 +110,23 @@ export const ingredientsFacet = facet({
 export const sizeFacet = facet({
   $size: define.store<string>(''),
   setSize: define.event<string>(),
+  $options: define.store<any[]>([]),
+}).use((t) => {
+  sample({
+    clock: t.setSize,
+    fn: getValue,
+    target: t.$size,
+  });
 });
 
 export const doughFacet = facet({
   $dough: define.store<string>(''),
   setDough: define.event<string>(),
+  $options: define.store<any[]>([]),
+}).use((t) => {
+  sample({
+    clock: t.setDough,
+    fn: getValue,
+    target: t.$dough,
+  });
 });

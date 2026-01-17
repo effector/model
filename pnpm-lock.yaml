@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@heroicons/react':
+        specifier: ^2.2.0
+        version: 2.2.0(react@18.3.1)
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.0.1
         version: 8.0.1(@typescript-eslint/parser@8.0.1(eslint@9.9.0(jiti@2.6.1))(typescript@5.5.4))(eslint@9.9.0(jiti@2.6.1))(typescript@5.5.4)
@@ -1725,6 +1728,11 @@ packages:
 
   '@floating-ui/utils@0.2.9':
     resolution: {integrity: sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==}
+
+  '@heroicons/react@2.2.0':
+    resolution: {integrity: sha512-LMcepvRaS9LYHJGsF0zzmgKCUim/X3N/DQKc4jepAXJ7l8QxJ1PmxJzqplF2Z3FE4PqBAIGyJAQ/w4B5dsqbtQ==}
+    peerDependencies:
+      react: '>= 16 || ^19.0.0-rc'
 
   '@humanwhocodes/module-importer@1.0.1':
     resolution: {integrity: sha512-bxveV4V8v5Yb4ncFTT3rPSgZBOpCkjfK0y4oVVVJwIuDVBRMDXrPyXRL988i5ap9m9bnyEEjWfm5WkBmtffLfA==}
@@ -9269,6 +9277,10 @@ snapshots:
 
   '@floating-ui/utils@0.2.9': {}
 
+  '@heroicons/react@2.2.0(react@18.3.1)':
+    dependencies:
+      react: 18.3.1
+
   '@humanwhocodes/module-importer@1.0.1': {}
 
   '@humanwhocodes/retry@0.3.0': {}
@@ -9454,6 +9466,21 @@ snapshots:
       - debug
       - eslint
       - eslint-config-prettier
+      - nx
+      - supports-color
+      - typescript
+      - verdaccio
+
+  '@nrwl/js@19.5.7(@babel/traverse@7.28.6)(@swc/core@1.15.8)(@types/node@20.14.15)(nx@19.5.7(@swc/core@1.15.8))(typescript@5.4.5)':
+    dependencies:
+      '@nx/js': 19.5.7(@babel/traverse@7.28.6)(@swc/core@1.15.8)(@types/node@20.14.15)(nx@19.5.7(@swc/core@1.15.8))(typescript@5.4.5)
+    transitivePeerDependencies:
+      - '@babel/traverse'
+      - '@swc-node/register'
+      - '@swc/core'
+      - '@swc/wasm'
+      - '@types/node'
+      - debug
       - nx
       - supports-color
       - typescript
@@ -9664,7 +9691,7 @@ snapshots:
       '@babel/preset-env': 7.25.3(@babel/core@7.25.2)
       '@babel/preset-typescript': 7.24.7(@babel/core@7.25.2)
       '@babel/runtime': 7.25.0
-      '@nrwl/js': 19.5.7(@babel/traverse@7.28.6)(@swc/core@1.15.8)(@types/node@20.14.15)(nx@19.5.7(@swc/core@1.15.8))(typescript@5.5.4)
+      '@nrwl/js': 19.5.7(@babel/traverse@7.28.6)(@swc/core@1.15.8)(@types/node@20.14.15)(nx@19.5.7(@swc/core@1.15.8))(typescript@5.4.5)
       '@nx/devkit': 19.5.7(nx@19.5.7(@swc/core@1.15.8))
       '@nx/workspace': 19.5.7(@swc/core@1.15.8)
       babel-plugin-const-enum: 1.2.0(@babel/core@7.25.2)

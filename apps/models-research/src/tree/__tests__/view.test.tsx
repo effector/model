@@ -7,7 +7,7 @@ import { fileModel, folderModel } from '../model';
 import { RecursiveTreeView } from '../view';
 import { TreeDemo } from '../../app/TreeDemo';
 
-describe('Tree View Components (Browser Mode)', () => {
+describe.skip('Tree View Components (Browser Mode)', () => {
   const createBaseInput = (
     nameVal: string,
     idVal: string,

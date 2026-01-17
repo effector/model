@@ -35,7 +35,7 @@ export function create<
   const extraStores: Record<string, any> = {};
 
   // Support 'extra' or 'input' definition for metadata
-  const modelExtraDef = modelConfig.extra || modelConfig.input || {};
+  const modelExtraDef = (modelConfig.extra || modelConfig.input || {}) as any;
 
   for (const key in modelExtraDef) {
     const val = input[key];
@@ -158,19 +158,23 @@ export function create<
   }
 
   // 4. Run Implementations
-  if (modelConfig.impl) {
-    for (const [variantName, implFn] of Object.entries(modelConfig.impl)) {
-      variantImpls[variantName] = (implFn as any)(
-        reactiveExtra,
-        preAllocatedFacets,
-      );
-    }
-  }
-
-  // 5. Run `fn` (Main Impl)
   let fnResult: any = {};
   if (modelConfig.fn) {
     fnResult = modelConfig.fn(reactiveExtra, preAllocatedFacets) || {};
+  }
+
+  if (modelConfig.impl) {
+    if (typeof modelConfig.impl === 'function') {
+      const implResult = modelConfig.impl(reactiveExtra, preAllocatedFacets);
+      fnResult = { ...fnResult, ...implResult };
+    } else {
+      for (const [variantName, implFn] of Object.entries(modelConfig.impl)) {
+        variantImpls[variantName] = (implFn as any)(
+          reactiveExtra,
+          preAllocatedFacets,
+        );
+      }
+    }
   }
 
   // 6. Post-Process Facets
@@ -209,6 +213,9 @@ export function create<
               (implResult as any)[facetName];
             if (variantFacetImpl && variantFacetImpl[fieldName]) {
               let val = variantFacetImpl[fieldName];
+              if (val && val.type === 'store') {
+                val = createWritableStore(val.initial, { skipVoid: false });
+              }
               if (is.store(val)) variantsForField[variantName] = val;
             }
           }
@@ -230,14 +237,13 @@ export function create<
 
           if (stores.length > 0) {
             facetInstance[fieldName] = combine(
-              $activeVariant,
-              baseStore,
-              ...stores,
-              (active: any, base: any, ...vals: any[]) => {
+              [$activeVariant, baseStore, ...stores],
+              ([active, base, ...vals]: any[]) => {
                 const idx = names.indexOf(active);
                 if (idx !== -1) return vals[idx];
                 return base;
               },
+              { skipVoid: false },
             );
           } else {
             facetInstance[fieldName] = baseStore;
@@ -252,7 +258,13 @@ export function create<
             });
           }
         } else if (def.type === 'event') {
-          const mainEvent = preAllocated[fieldName];
+          let mainEvent = (fnResult[facetName]?.impl || fnResult[facetName])?.[
+            fieldName
+          ];
+
+          if (!mainEvent) {
+            mainEvent = preAllocated[fieldName];
+          }
 
           for (const [variantName, implResult] of Object.entries(
             variantImpls,

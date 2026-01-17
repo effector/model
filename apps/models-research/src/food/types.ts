@@ -6,6 +6,10 @@ export interface BaseProductData {
   description: string;
   image?: string;
   basePrice: number;
+  nutritionalInfo?: {
+    calories: number;
+    weight: number;
+  };
 }
 
 export interface SizeOption {
