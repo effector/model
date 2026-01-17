@@ -115,3 +115,54 @@ sample({
   },
   target: copyToReceiptFx,
 });
+
+export const $cartByRestaurant = (cartModel as any).$instances.map(
+  (instances: any) => {
+    const grouped: Record<
+      string,
+      { items: any[]; total: number; count: number }
+    > = {};
+
+    Object.values(instances).forEach((instance: any) => {
+      const snapshot = serialize(instance);
+      const state = snapshot.facets;
+
+      // Skip deleted items
+      if (state.product?.$isDeleted) return;
+
+      // Get Restaurant ID
+      const rId = state.product?.$restaurantId;
+      if (!rId) return;
+
+      if (!grouped[rId]) grouped[rId] = { items: [], total: 0, count: 0 };
+
+      const price = state.product?.$price || 0;
+      const quantity = state.product?.$quantity || 0;
+      const itemTotal = price * quantity;
+
+      grouped[rId].items.push({
+        ...snapshot,
+        name: state.product?.$name || 'Unknown',
+      });
+      grouped[rId].total += itemTotal;
+      grouped[rId].count += quantity;
+    });
+
+    return grouped;
+  },
+);
+
+export const $globalCartStats = $cartByRestaurant.map(
+  (grouped: Record<string, any>) => {
+    const total = Object.values(grouped).reduce(
+      (acc: number, g: any) => acc + g.total,
+      0,
+    );
+    const count = Object.values(grouped).reduce(
+      (acc: number, g: any) => acc + g.count,
+      0,
+    );
+    const cartsCount = Object.keys(grouped).length;
+    return { total, count, cartsCount };
+  },
+);

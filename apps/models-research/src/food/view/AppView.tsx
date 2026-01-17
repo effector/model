@@ -5,6 +5,7 @@ import { CartScreen } from './CartScreen';
 import { ProductScreen } from './ProductScreen';
 import { RestaurantScreen } from './RestaurantScreen';
 import { CheckoutScreen } from './CheckoutScreen';
+import { GlobalCartScreen } from './GlobalCartScreen';
 
 // --- Configuration ---
 const FRAME_COLOR = '#9f9d9c';
@@ -41,6 +42,7 @@ export const AppView = () => {
               {variant === 'product' && <ProductScreen />}
               {variant === 'cart' && <CartScreen />}
               {variant === 'congrats' && <CheckoutScreen />}
+              {variant === 'globalCart' && <GlobalCartScreen />}
             </div>
           </div>
         </div>

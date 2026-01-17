@@ -77,7 +77,7 @@ export const CartItem = ({
         <div
           className={`transition-all ${isDeleted ? 'opacity-50 grayscale' : 'opacity-100'}`}
         >
-          <div className="text-[#ff6900] px-3 py-1 rounded-lg font-bold text-base border border-[#ff6900]">
+          <div className="text-[var(--theme-color,#ff6900)] px-3 py-1 rounded-lg font-bold text-base border border-[var(--theme-color,#ff6900)]">
             {price * quantity} ₽
           </div>
         </div>
@@ -102,7 +102,7 @@ export const CartItem = ({
             <>
               {!isCheckout && (
                 <button
-                  className="text-[#ff6900] font-semibold text-sm hover:underline"
+                  className="text-[var(--theme-color,#ff6900)] font-semibold text-sm hover:underline"
                   onClick={() => openEdit(id)}
                 >
                   Изменить

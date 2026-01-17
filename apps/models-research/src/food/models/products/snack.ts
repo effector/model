@@ -9,6 +9,7 @@ export const snackModel = model({
     basePrice: define.store(0),
     name: define.store(''),
     description: define.store(''),
+    composition: define.store(''),
     image: define.store(''),
     nutritionalInfo: define.store<{ calories: number; weight: number } | null>(
       null,
@@ -52,6 +53,7 @@ export const snackModel = model({
       product: {
         $name: input.name,
         $description: input.description,
+        $composition: input.composition,
         $image: input.image,
         $nutritionalInfo: input.nutritionalInfo,
         $price: $calculatedPrice,

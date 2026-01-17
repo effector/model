@@ -14,7 +14,8 @@ export type ScreenName =
   | 'menu'
   | 'product'
   | 'cart'
-  | 'congrats';
+  | 'congrats'
+  | 'globalCart';
 
 export interface ProductScreenParams {
   mode: 'preview' | 'ingredients';
@@ -57,7 +58,9 @@ const clearRestaurantCartFx = createEffect(
 // --- Public Events (Controller) ---
 export const selectRestaurant = createEvent<string>();
 export const openProduct = createEvent<any>();
-export const openCart = createEvent();
+export const openCart = createEvent<{ restaurantId?: string } | void>();
+export const openGlobalCart = createEvent();
+export const globalCartBack = createEvent();
 export const menuBack = createEvent();
 export const toggleProductMode = createEvent();
 export const addToCart = createEvent();
@@ -97,6 +100,7 @@ export const appModel = model({
       product: (s: any) => s === 'product',
       cart: (s: any) => s === 'cart',
       congrats: (s: any) => s === 'congrats',
+      globalCart: (s: any) => s === 'globalCart',
     },
   },
   impl: {
@@ -106,6 +110,28 @@ export const appModel = model({
         fn: (id) => ({
           screen: 'menu' as const,
           params: { restaurantId: id },
+        }),
+        target: updateState,
+      });
+
+      sample({
+        clock: openGlobalCart,
+        fn: () => ({ screen: 'globalCart' as const, params: {} }),
+        target: updateState,
+      });
+    },
+    globalCart: (input: any) => {
+      sample({
+        clock: globalCartBack,
+        fn: () => ({ screen: 'restaurants' as const, params: {} }),
+        target: updateState,
+      });
+
+      sample({
+        clock: openCart,
+        fn: (payload: any) => ({
+          screen: 'cart' as const,
+          params: { returnToRestaurantId: payload?.restaurantId },
         }),
         target: updateState,
       });
@@ -140,9 +166,11 @@ export const appModel = model({
       sample({
         clock: openCart,
         source: input.$params,
-        fn: (params: any) => ({
+        fn: (params: any, payload: any) => ({
           screen: 'cart' as const,
-          params: { returnToRestaurantId: params.restaurantId },
+          params: {
+            returnToRestaurantId: payload?.restaurantId || params.restaurantId,
+          },
         }),
         target: updateState,
       });

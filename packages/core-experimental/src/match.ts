@@ -41,10 +41,10 @@ export function match(config: MatchConfig) {
           if (!instance) return false;
 
           const activeVariant = activeVariants[id];
+          const currentVariant =
+            activeVariant !== undefined ? activeVariant : instance._variant;
 
-          return (
-            activeVariant === variantName || instance._variant === variantName
-          );
+          return currentVariant === variantName;
         },
         fn: ({ instances }: any, payload: any) => {
           let id = payload;

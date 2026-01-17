@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { finishOrder } from '../models/app';
 import { receiptModel, $receiptTotalPrice } from '../models/cart';
 import { useLens } from './hooks';
+import { MainButton } from './components/Common';
 
 const ReceiptItem = ({ id, model }: { id: string; model: any }) => {
   const item = useMemo(() => model.getItem(id), [id, model]);
@@ -93,13 +94,13 @@ export const CheckoutScreen = () => {
         </div>
       </div>
 
-      <div className="p-4 bg-white border-t border-gray-100">
-        <button
-          className="w-full bg-[#ff6900] text-white py-4 rounded-2xl text-lg font-bold shadow-lg shadow-orange-100 active:scale-[0.98] transition-all"
+      <div className="absolute bottom-6 left-0 w-full flex justify-center z-30 pointer-events-none px-4">
+        <MainButton
           onClick={() => finish()}
-        >
-          Вернуться в меню
-        </button>
+          label="В меню"
+          icon={null}
+          className="pointer-events-auto"
+        />
       </div>
     </div>
   );

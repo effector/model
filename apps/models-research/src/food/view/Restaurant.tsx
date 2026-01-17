@@ -1,14 +1,15 @@
 import { useUnit } from 'effector-react';
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { createListApi } from '@effector-model/core-experimental';
+import { createCursor } from '@effector-model/core-experimental';
 import {
   openProduct,
   openCart,
   menuBack,
   selectRestaurant,
 } from '../models/app';
-import { cartModel, $totalPrice } from '../models/cart';
-import { RESTAURANTS } from '../data/restaurants';
+import { cartModel } from '../models/cart';
+import { RESTAURANTS, getRestaurantTheme } from '../data/restaurants';
+import { MainButton } from './components/Common';
 
 import dodoPizzas from '../data/dodo/pizzas.json';
 import dodoDrinks from '../data/dodo/drinks.json';
@@ -69,6 +70,7 @@ const RestaurantCard = ({ restaurant }: { restaurant: any }) => {
     <div
       className="group bg-white rounded-[32px] overflow-hidden shadow-sm hover:shadow-xl active:scale-[0.98] transition-all duration-300 cursor-pointer border border-white"
       onClick={() => select(restaurant.id)}
+      style={getRestaurantTheme(restaurant.id)}
     >
       <div className="relative h-48 overflow-hidden">
         <img
@@ -87,7 +89,7 @@ const RestaurantCard = ({ restaurant }: { restaurant: any }) => {
           ))}
         </div>
         <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-2xl shadow-lg flex items-center gap-1.5">
-          <span className="text-[#ff6900] text-sm font-black">
+          <span className="text-[var(--theme-color,#ff6900)] text-sm font-black">
             ★ {restaurant.rating}
           </span>
           <span className="text-gray-400 text-[10px] font-bold">
@@ -98,7 +100,7 @@ const RestaurantCard = ({ restaurant }: { restaurant: any }) => {
 
       <div className="p-6">
         <div className="flex justify-between items-start mb-1">
-          <h2 className="text-xl font-black text-[#333] leading-tight group-hover:text-[#ff6900] transition-colors">
+          <h2 className="text-xl font-black text-[#333] leading-tight group-hover:text-[var(--theme-color,#ff6900)] transition-colors">
             {restaurant.name}
           </h2>
           <div className="bg-gray-50 px-3 py-1 rounded-xl text-[10px] font-black text-gray-500 uppercase tracking-tighter">
@@ -117,31 +119,28 @@ const RestaurantMenu = ({ restaurant }: { restaurant: any }) => {
   const open = useUnit(openProduct);
   const toCart = useUnit(openCart);
   const back = useUnit(menuBack);
-  const cartState = useUnit(cartModel.$state);
 
   const cartView = useMemo(() => {
-    return createListApi(cartModel).filter((item: any) =>
+    return createCursor(cartModel).filter((item: any) =>
       item.facets.product.$restaurantId.map(
         (id: string) => id === restaurant.id,
       ),
     );
   }, [restaurant.id]);
 
-  const filteredIds = useUnit(cartView.$items);
+  const $itemTotals = useMemo(() => {
+    return cartView.map((item: any) => {
+      const product = item.facets.product;
+      const price = product?.$price || 0;
+      const quantity = product?.$quantity || 0;
+      const isDeleted = product?.$isDeleted || false;
 
-  const total = useMemo(() => {
-    return filteredIds.reduce((sum: number, id: string) => {
-      const itemState = cartState[id];
-      if (!itemState) return sum;
+      return isDeleted ? 0 : price * quantity;
+    });
+  }, [cartView]);
 
-      const price = itemState.facets?.product?.$price || 0;
-      const quantity = itemState.facets?.product?.$quantity || 0;
-      const isDeleted = itemState.facets?.product?.$isDeleted || false;
-
-      if (isDeleted) return sum;
-      return sum + price * quantity;
-    }, 0);
-  }, [filteredIds, cartState]);
+  const itemTotals = useUnit($itemTotals);
+  const total = itemTotals.reduce((a, b) => a + b, 0);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
@@ -225,92 +224,88 @@ const RestaurantMenu = ({ restaurant }: { restaurant: any }) => {
 
   return (
     <div
-      ref={scrollContainerRef}
-      className="h-full overflow-y-auto no-scrollbar bg-white relative flex flex-col"
+      className="h-full relative bg-white overflow-hidden"
+      style={getRestaurantTheme(restaurant.id)}
     >
-      <div className="sticky top-0 z-20 bg-white">
-        <div
-          ref={headerRef}
-          className="px-4 py-4 border-b border-[#e2e2e9] flex justify-between items-center"
-        >
-          <div className="flex items-center gap-2">
-            <button
+      <div
+        ref={scrollContainerRef}
+        className="h-full overflow-y-auto no-scrollbar flex flex-col"
+      >
+        <div className="sticky top-0 z-20 bg-white">
+          <div
+            ref={headerRef}
+            className="px-4 py-4 border-b border-[#e2e2e9] flex justify-between items-center"
+          >
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => back()}
+                className="text-2xl p-1 active:scale-90 transition-transform"
+              >
+                ←
+              </button>
+              <h1 className="text-xl font-bold text-[#333]">Меню</h1>
+            </div>
+
+            <div
+              className="flex-1 text-center cursor-pointer px-2"
               onClick={() => back()}
-              className="text-2xl p-1 active:scale-90 transition-transform"
             >
-              ←
-            </button>
-            <h1 className="text-xl font-bold text-[#333]">Меню</h1>
+              <span className="text-[var(--theme-color,#ff6900)] text-xl font-bold whitespace-nowrap">
+                {restaurant.name} ▾
+              </span>
+            </div>
+            <div className="w-10"></div>
           </div>
 
           <div
-            className="flex-1 text-center cursor-pointer px-2"
-            onClick={() => back()}
+            ref={tabsRef}
+            className="flex overflow-x-auto px-4 py-3 gap-2 border-b border-[#e2e2e9] no-scrollbar"
           >
-            <span className="text-[#ff6900] text-sm font-bold whitespace-nowrap">
-              {restaurant.name} ▾
-            </span>
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                  activeTab === cat.id
+                    ? 'bg-[#333] text-white'
+                    : 'bg-gray-100 text-[#333]'
+                }`}
+                onClick={() => scrollTo(cat.id)}
+              >
+                {cat.title}
+              </button>
+            ))}
           </div>
-
-          <button
-            onClick={() => toCart()}
-            className="bg-[#ff6900] text-white p-2 rounded-full shadow-lg shadow-orange-200 active:scale-90 transition-all flex items-center gap-2 pr-5 pl-4"
-          >
-            <svg
-              className="w-7 h-7"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-              />
-            </svg>
-            <span className="font-bold text-base leading-none">{total} ₽</span>
-          </button>
         </div>
 
-        <div
-          ref={tabsRef}
-          className="flex overflow-x-auto px-4 py-3 gap-2 border-b border-[#e2e2e9] no-scrollbar"
-        >
+        <div className="px-4 pb-24 flex-1">
           {categories.map((cat) => (
-            <button
-              key={cat.id}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                activeTab === cat.id
-                  ? 'bg-[#333] text-white'
-                  : 'bg-gray-100 text-[#333]'
-              }`}
-              onClick={() => scrollTo(cat.id)}
-            >
-              {cat.title}
-            </button>
+            <div key={cat.id} id={cat.id} className="scroll-mt-[120px]">
+              <h2 className="text-2xl font-bold pt-4 pb-4">{cat.title}</h2>
+              <div className="grid grid-cols-2 gap-3">
+                {cat.items.map((item: any, idx: number) => (
+                  <ProductCard
+                    key={item.name}
+                    item={item}
+                    index={idx}
+                    category={cat.id}
+                    onAdd={() => open({ mode: 'new', data: item })}
+                  />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       </div>
 
-      <div className="px-4 pb-24 flex-1">
-        {categories.map((cat) => (
-          <div key={cat.id} id={cat.id} className="scroll-mt-[120px]">
-            <h2 className="text-2xl font-bold pt-4 pb-4">{cat.title}</h2>
-            <div className="grid grid-cols-2 gap-3">
-              {cat.items.map((item: any, idx: number) => (
-                <ProductCard
-                  key={item.name}
-                  item={item}
-                  index={idx}
-                  category={cat.id}
-                  onAdd={() => open({ mode: 'new', data: item })}
-                />
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
+      {total > 0 && (
+        <div className="absolute bottom-6 left-0 w-full flex justify-center z-30 pointer-events-none px-4">
+          <MainButton
+            onClick={() => toCart()}
+            price={total}
+            className="pointer-events-auto"
+          />
+        </div>
+      )}
     </div>
   );
 };
@@ -321,7 +316,7 @@ const ProductCard = ({ item, onAdd, index, category }: any) => {
 
   return (
     <div
-      className="flex flex-col bg-white rounded-[24px] overflow-hidden border border-[#e2e2e9] p-3 h-full cursor-pointer active:scale-[0.98] transition-transform shadow-sm hover:shadow-md"
+      className="group flex flex-col bg-white rounded-[24px] overflow-hidden border border-[#e2e2e9] p-3 h-full cursor-pointer active:scale-[0.98] transition-all shadow-sm hover:shadow-md"
       onClick={onAdd}
     >
       <img
@@ -330,14 +325,14 @@ const ProductCard = ({ item, onAdd, index, category }: any) => {
         className="w-full aspect-square object-cover mb-3 rounded-xl"
       />
       <div className="flex-1 flex flex-col px-1">
-        <div className="font-bold text-[1rem] mb-1 line-clamp-2 leading-tight text-[#333]">
+        <div className="font-bold text-[1rem] mb-1 line-clamp-2 leading-tight text-[#333] group-hover:text-[var(--theme-color,#ff6900)] transition-colors">
           {item.name}
         </div>
         <div className="text-xs text-gray-400 line-clamp-3 mb-3 flex-1 leading-normal">
           {item.description}
         </div>
         <div className="flex justify-start items-center mt-auto pb-1">
-          <div className="bg-[#fff0e6] text-[#e05c00] px-4 py-1.5 rounded-full font-black text-[0.8rem]">
+          <div className="bg-[var(--theme-color-bg,#fff0e6)] text-[var(--theme-color,#ff6900)] px-4 py-1.5 rounded-full font-black text-[0.8rem]">
             от {item.basePrice} ₽
           </div>
         </div>

@@ -315,7 +315,7 @@ export const PizzaDetails = ({ item, mode }: { item: any; mode: string }) => {
                 key={ing.id}
                 className={`flex flex-col items-center p-2 rounded-3xl transition-all duration-200 text-center h-full relative group overflow-hidden border-2 ${
                   selectedExtras[ing.id]
-                    ? 'bg-white shadow-lg border-[#ff6900]'
+                    ? 'bg-white shadow-lg border-[var(--theme-color,#ff6900)]'
                     : 'bg-white/80 backdrop-blur-md border-white shadow-sm hover:shadow-md hover:bg-white'
                 }`}
                 onClick={() => toggleExtra(ing.id)}
@@ -323,7 +323,7 @@ export const PizzaDetails = ({ item, mode }: { item: any; mode: string }) => {
                 <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
                 {selectedExtras[ing.id] && (
-                  <div className="absolute top-1.5 right-1.5 bg-[#ff6900] text-white w-5 h-5 rounded-full flex items-center justify-center shadow-sm animate-in zoom-in duration-200 z-20">
+                  <div className="absolute top-1.5 right-1.5 bg-[var(--theme-color,#ff6900)] text-white w-5 h-5 rounded-full flex items-center justify-center shadow-sm animate-in zoom-in duration-200 z-20">
                     <svg
                       className="w-3 h-3"
                       fill="none"
@@ -349,7 +349,7 @@ export const PizzaDetails = ({ item, mode }: { item: any; mode: string }) => {
                   <div className="text-[0.65rem] font-bold leading-tight mb-1 min-h-[2.4em] flex items-center justify-center px-1">
                     {ing.name}
                   </div>
-                  <div className="text-[0.75rem] font-black text-[#ff6900]">
+                  <div className="text-[0.75rem] font-black text-[var(--theme-color,#ff6900)]">
                     {ing.price} ₽
                   </div>
                 </div>
@@ -489,7 +489,7 @@ export const CoffeeDetails = ({ item, mode }: { item: any; mode: string }) => {
                 key={ing.id}
                 className={`flex flex-col items-center p-2 rounded-3xl transition-all duration-200 text-center h-full relative group overflow-hidden border-2 ${
                   selectedExtras[ing.id]
-                    ? 'bg-white shadow-lg border-[#ff6900]'
+                    ? 'bg-white shadow-lg border-[var(--theme-color,#ff6900)]'
                     : 'bg-white/80 backdrop-blur-md border-white shadow-sm hover:shadow-md hover:bg-white'
                 }`}
                 onClick={() => toggleExtra(ing.id)}
@@ -497,7 +497,7 @@ export const CoffeeDetails = ({ item, mode }: { item: any; mode: string }) => {
                 <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
                 {selectedExtras[ing.id] && (
-                  <div className="absolute top-1.5 right-1.5 bg-[#ff6900] text-white w-5 h-5 rounded-full flex items-center justify-center shadow-sm animate-in zoom-in duration-200 z-20">
+                  <div className="absolute top-1.5 right-1.5 bg-[var(--theme-color,#ff6900)] text-white w-5 h-5 rounded-full flex items-center justify-center shadow-sm animate-in zoom-in duration-200 z-20">
                     <svg
                       className="w-3 h-3"
                       fill="none"
@@ -523,7 +523,7 @@ export const CoffeeDetails = ({ item, mode }: { item: any; mode: string }) => {
                   <div className="text-[0.65rem] font-bold leading-tight mb-1 min-h-[2.4em] flex items-center justify-center px-1">
                     {ing.name}
                   </div>
-                  <div className="text-[0.75rem] font-black text-[#ff6900]">
+                  <div className="text-[0.75rem] font-black text-[var(--theme-color,#ff6900)]">
                     {ing.price} ₽
                   </div>
                 </div>
@@ -572,7 +572,7 @@ export const CocktailDetails = ({
                 key={ing.id}
                 className={`flex flex-col items-center p-2 rounded-3xl transition-all duration-200 text-center h-full relative group overflow-hidden border-2 ${
                   selectedExtras[ing.id]
-                    ? 'bg-white shadow-lg border-[#ff6900]'
+                    ? 'bg-white shadow-lg border-[var(--theme-color,#ff6900)]'
                     : 'bg-white/80 backdrop-blur-md border-white shadow-sm hover:shadow-md hover:bg-white'
                 }`}
                 onClick={() => toggleExtra(ing.id)}
@@ -580,7 +580,7 @@ export const CocktailDetails = ({
                 <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
                 {selectedExtras[ing.id] && (
-                  <div className="absolute top-1.5 right-1.5 bg-[#ff6900] text-white w-5 h-5 rounded-full flex items-center justify-center shadow-sm animate-in zoom-in duration-200 z-20">
+                  <div className="absolute top-1.5 right-1.5 bg-[var(--theme-color,#ff6900)] text-white w-5 h-5 rounded-full flex items-center justify-center shadow-sm animate-in zoom-in duration-200 z-20">
                     <svg
                       className="w-3 h-3"
                       fill="none"
@@ -606,7 +606,7 @@ export const CocktailDetails = ({
                   <div className="text-[0.65rem] font-bold leading-tight mb-1 min-h-[2.4em] flex items-center justify-center px-1">
                     {ing.name}
                   </div>
-                  <div className="text-[0.75rem] font-black text-[#ff6900]">
+                  <div className="text-[0.75rem] font-black text-[var(--theme-color,#ff6900)]">
                     {ing.price} ₽
                   </div>
                 </div>
@@ -671,7 +671,7 @@ export const BurgerDetails = ({ item, mode }: { item: any; mode: string }) => {
                 key={ing.id}
                 className={`flex flex-col items-center p-2 rounded-3xl transition-all duration-200 text-center h-full relative group overflow-hidden border-2 ${
                   selectedExtras[ing.id]
-                    ? 'bg-white shadow-lg border-[#ff6900]'
+                    ? 'bg-white shadow-lg border-[var(--theme-color,#ff6900)]'
                     : 'bg-white/80 backdrop-blur-md border-white shadow-sm hover:shadow-md hover:bg-white'
                 }`}
                 onClick={() => toggleExtra(ing.id)}
@@ -679,7 +679,7 @@ export const BurgerDetails = ({ item, mode }: { item: any; mode: string }) => {
                 <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
                 {selectedExtras[ing.id] && (
-                  <div className="absolute top-1.5 right-1.5 bg-[#ff6900] text-white w-5 h-5 rounded-full flex items-center justify-center shadow-sm animate-in zoom-in duration-200 z-20">
+                  <div className="absolute top-1.5 right-1.5 bg-[var(--theme-color,#ff6900)] text-white w-5 h-5 rounded-full flex items-center justify-center shadow-sm animate-in zoom-in duration-200 z-20">
                     <svg
                       className="w-3 h-3"
                       fill="none"
@@ -705,7 +705,7 @@ export const BurgerDetails = ({ item, mode }: { item: any; mode: string }) => {
                   <div className="text-[0.65rem] font-bold leading-tight mb-1 min-h-[2.4em] flex items-center justify-center px-1">
                     {ing.name}
                   </div>
-                  <div className="text-[0.75rem] font-black text-[#ff6900]">
+                  <div className="text-[0.75rem] font-black text-[var(--theme-color,#ff6900)]">
                     {ing.price} ₽
                   </div>
                 </div>

@@ -9,6 +9,8 @@ import {
 } from '../models/app';
 import { ProductView } from './components/ProductView';
 import { useLens } from './hooks';
+import { MainButton, PlusIcon, PencilIcon } from './components/Common';
+import { getRestaurantTheme } from '../data/restaurants';
 
 export const ProductScreen = () => {
   const close = useUnit(closeProduct);
@@ -23,6 +25,10 @@ export const ProductScreen = () => {
   const name = useLens((draftItem as any).facets.product.$name, '');
   const description = useLens(
     (draftItem as any).facets.product.$description,
+    '',
+  );
+  const composition = useLens(
+    (draftItem as any).facets.product.$composition,
     '',
   );
   const price = useLens((draftItem as any).facets.product.$price, 0);
@@ -77,28 +83,53 @@ export const ProductScreen = () => {
     decrement: (draftItem as any).facets.product.decrement as any,
   }) as { increment: () => void; decrement: () => void };
 
+  const extraIngredients = useLens(
+    (draftItem as any).input?.extraIngredients,
+    [],
+  );
+  const defaultIngredients = useLens(
+    (draftItem as any).input?.defaultIngredients,
+    [],
+  );
+  const additions = useLens((draftItem as any).input?.additions, []);
+  const decorations = useLens((draftItem as any).input?.decorations, []);
+
+  const hasCustomizableIngredients = [
+    extraIngredients,
+    defaultIngredients,
+    additions,
+    decorations,
+  ].some((list) => {
+    console.debug({
+      extraIngredients,
+      defaultIngredients,
+      additions,
+      decorations,
+    });
+    if (Array.isArray(list)) return list.length > 0;
+    if (list && typeof list === 'object') return Object.keys(list).length > 0;
+    return false;
+  });
+
   // Use consistent seeded image for product details at higher resolution
   const bg = `https://picsum.photos/seed/${encodeURIComponent(name)}/800/800`;
 
   const mainAction = (
-    <button
-      className="w-full bg-[#ff6900] text-white py-5 rounded-[24px] text-xl font-black shadow-2xl shadow-orange-300 active:scale-[0.97] transition-all flex items-center justify-center gap-3"
+    <MainButton
       onClick={() => submit()}
-    >
-      {params.editId ? (
-        <span>Готово</span>
-      ) : (
-        <>
-          <span className="text-2xl font-light">+</span>
-          <span>{total} ₽</span>
-        </>
-      )}
-    </button>
+      label={params.editId ? 'Готово' : ''}
+      price={params.editId ? undefined : total}
+      icon={params.editId ? null : <PlusIcon />}
+      className="pointer-events-auto"
+    />
   );
 
   if (mode === 'ingredients') {
     return (
-      <div className="absolute inset-0 bg-[#f3f3f7] z-[100] flex flex-col animate-in slide-in-from-bottom duration-300">
+      <div
+        className="absolute inset-0 bg-[#f3f3f7] z-[100] flex flex-col animate-in slide-in-from-bottom duration-300"
+        style={getRestaurantTheme(params.restaurantId as string)}
+      >
         <div className="w-full h-full flex flex-col">
           <div className="sticky top-0 bg-white/80 backdrop-blur-md z-10 px-4 py-4 border-b border-gray-100 flex justify-between items-center">
             <button
@@ -118,10 +149,10 @@ export const ProductScreen = () => {
             <div className="w-10"></div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-6 py-6 no-scrollbar">
+          <div className="flex-1 overflow-y-auto px-6 pt-6 pb-32 no-scrollbar">
             <ProductView item={draftItem} mode="ingredients" />
 
-            <div className="mt-12 pt-8 border-t border-gray-200 space-y-4 pb-10">
+            <div className="mt-12 pt-8 border-t border-gray-200 space-y-4">
               <h3 className="font-bold text-lg text-[#333]">Детали продукта</h3>
               {nutritionalInfo && (
                 <div className="grid grid-cols-2 gap-4">
@@ -141,14 +172,20 @@ export const ProductScreen = () => {
                   </div>
                 </div>
               )}
-              <p className="text-gray-400 text-xs leading-relaxed">
-                Цены и ингредиенты могут отличаться в зависимости от ресторана.
-                Изображения приведены для демонстрации.
-              </p>
+              {composition && (
+                <div className="pt-2">
+                  <div className="text-[10px] text-gray-400 font-bold uppercase mb-2">
+                    Состав
+                  </div>
+                  <p className="text-gray-800 text-sm leading-relaxed">
+                    {composition}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="p-4 bg-white/80 backdrop-blur-md border-t border-gray-100">
+          <div className="absolute bottom-6 left-0 w-full flex justify-center z-30 pointer-events-none px-4">
             {mainAction}
           </div>
         </div>
@@ -157,7 +194,10 @@ export const ProductScreen = () => {
   }
 
   return (
-    <div className="h-full bg-white relative animate-in fade-in duration-200">
+    <div
+      className="h-full bg-white relative animate-in fade-in duration-200"
+      style={getRestaurantTheme(params.restaurantId as string)}
+    >
       <div className="w-full h-full flex flex-col relative bg-white">
         <button
           onClick={close}
@@ -167,20 +207,28 @@ export const ProductScreen = () => {
         </button>
 
         <div className="flex-1 overflow-y-auto no-scrollbar">
-          <div className="flex items-center justify-center relative bg-[#fff0e6]">
+          <div className="flex items-center justify-center relative bg-[var(--theme-color-bg,#fff0e6)]">
             <img
               src={bg}
               alt={name}
               className="w-full aspect-square object-cover animate-in zoom-in duration-500"
             />
             {/* Secondary FAB (4.2) */}
-            <button
-              onClick={() => toggleMode()}
-              className="absolute bottom-4 right-8 bg-white text-[#333] px-5 py-2.5 rounded-full shadow-xl border border-gray-100 flex items-center gap-2 font-bold text-sm hover:bg-gray-50 active:scale-95 transition-all z-20"
-            >
-              <span className="text-base">✏️</span>
-              <span>Состав</span>
-            </button>
+            <div className="absolute bottom-4 right-5 z-20 flex flex-col items-end animate-in fade-in zoom-in slide-in-from-bottom-2 duration-500">
+              <button
+                onClick={() => toggleMode()}
+                className="bg-white text-[#333] px-6 py-3 rounded-full shadow-xl border border-gray-100 flex items-center gap-2 font-bold text-sm hover:bg-gray-50 active:scale-95 transition-all"
+              >
+                <PencilIcon className="w-4 h-4 text-gray-600" />
+                <span>
+                  {hasCustomizableIngredients ? 'Настроить состав' : 'Состав'}
+                </span>
+              </button>
+              <div className="mr-8 mt-1 flex flex-col items-center gap-1">
+                <div className="w-2 h-2 bg-white rounded-full shadow-lg" />
+                <div className="w-1 h-1 bg-white rounded-full shadow-lg" />
+              </div>
+            </div>
           </div>
 
           <div className="px-8 pb-32 pt-6">
@@ -196,7 +244,7 @@ export const ProductScreen = () => {
         </div>
 
         {/* Main Floating Action Button (Bottom Center) */}
-        <div className="sticky bottom-0 left-0 right-0 px-8 pb-10 pt-4 bg-gradient-to-t from-white via-white to-transparent flex flex-col items-center gap-4">
+        <div className="absolute bottom-6 left-0 w-full flex justify-center z-30 pointer-events-none px-4">
           {mainAction}
         </div>
       </div>

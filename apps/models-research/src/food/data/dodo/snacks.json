@@ -4,29 +4,61 @@
     "name": "Додстер",
     "description": "Легендарная горячая закуска с цыпленком, томатами, моцареллой, соусом ранч в тонкой пшеничной лепешке.",
     "basePrice": 169,
-    "nutritionalInfo": { "calories": 210, "weight": 200 },
-    "sizes": [{ "id": "std", "label": "Станд", "price": 0 }],
-    "defaultSize": "std"
+    "nutritionalInfo": {
+      "calories": 210,
+      "weight": 200
+    },
+    "sizes": [
+      {
+        "id": "std",
+        "label": "Станд",
+        "price": 0
+      }
+    ],
+    "defaultSize": "std",
+    "composition": "Лепешка пшеничная, цыпленок, томаты, сыр моцарелла, соус ранч."
   },
   {
     "type": "snack",
     "name": "Додстер Острый",
     "description": "Горячая закуска с цыпленком, перцем халапеньо, маринованными огурчиками, томатами, моцареллой и соусом барбекю.",
     "basePrice": 169,
-    "nutritionalInfo": { "calories": 215, "weight": 200 },
-    "sizes": [{ "id": "std", "label": "Станд", "price": 0 }],
-    "defaultSize": "std"
+    "nutritionalInfo": {
+      "calories": 215,
+      "weight": 200
+    },
+    "sizes": [
+      {
+        "id": "std",
+        "label": "Станд",
+        "price": 0
+      }
+    ],
+    "defaultSize": "std",
+    "composition": "Лепешка пшеничная, цыпленок, перец халапеньо, огурцы маринованные, томаты, сыр моцарелла, соус барбекю."
   },
   {
     "type": "snack",
     "name": "Картофель из печи",
     "description": "Запеченный в печи картофель с пряностями.",
     "basePrice": 99,
-    "nutritionalInfo": { "calories": 180, "weight": 140 },
+    "nutritionalInfo": {
+      "calories": 180,
+      "weight": 140
+    },
     "sizes": [
-      { "id": "s", "label": "Мал", "price": 0 },
-      { "id": "l", "label": "Бол", "price": 60 }
+      {
+        "id": "s",
+        "label": "Мал",
+        "price": 0
+      },
+      {
+        "id": "l",
+        "label": "Бол",
+        "price": 60
+      }
     ],
-    "defaultSize": "s"
+    "defaultSize": "s",
+    "composition": "Картофель, масло растительное, пряности итальянские травы."
   }
 ]

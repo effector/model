@@ -1,3 +1,5 @@
+import React from 'react';
+
 export interface RestaurantData {
   id: string;
   name: string;
@@ -7,6 +9,8 @@ export interface RestaurantData {
   time: string;
   image: string;
   tags: string[];
+  themeColor: string;
+  themeColorBg: string;
 }
 
 export const RESTAURANTS: RestaurantData[] = [
@@ -19,6 +23,8 @@ export const RESTAURANTS: RestaurantData[] = [
     time: '35 мин',
     image: 'https://picsum.photos/seed/dodo1/600/400',
     tags: ['Пицца', 'Паста'],
+    themeColor: '#ff6900',
+    themeColorBg: '#fff0e6',
   },
   {
     id: 'kfc',
@@ -29,5 +35,15 @@ export const RESTAURANTS: RestaurantData[] = [
     time: '25 мин',
     image: 'https://picsum.photos/seed/kfc1/600/400',
     tags: ['Бургеры', 'Курица'],
+    themeColor: '#e4002b',
+    themeColorBg: '#fce5e8',
   },
 ];
+
+export const getRestaurantTheme = (id?: string) => {
+  const r = RESTAURANTS.find((x) => x.id === id) || RESTAURANTS[0];
+  return {
+    '--theme-color': r.themeColor,
+    '--theme-color-bg': r.themeColorBg,
+  } as React.CSSProperties;
+};
