@@ -18,6 +18,10 @@ export const ProductView = ({
           coffee: CoffeeDetails,
           cocktail: CocktailDetails,
           sauce: SauceDetails,
+          burger: BurgerDetails,
+          twister: BurgerDetails,
+          bucket: DrinkDetails,
+          snack: DrinkDetails,
         }}
         mode={mode}
       />
@@ -59,15 +63,17 @@ const CartSummary = ({ item, variant }: { item: any; variant: string }) => {
     const rawSizes = useLens(item.facets.size.$options, []);
     const rawDoughs = useLens(item.facets.dough.$options, []);
 
-    const sizeLabel =
-      (Array.isArray(rawSizes) ? rawSizes : Object.values(rawSizes || {})).find(
-        (s: any) => s.id === sizeId,
-      )?.label || '';
-    const doughLabel =
-      (Array.isArray(rawDoughs)
-        ? rawDoughs
-        : Object.values(rawDoughs || {})
-      ).find((d: any) => d.id === doughId)?.label || '';
+    const sizesList = Array.isArray(rawSizes)
+      ? rawSizes
+      : Object.values(rawSizes || {});
+    const sizeObj = (sizesList as any[]).find((s: any) => s.id === sizeId);
+    const sizeLabel = sizeObj?.label || '';
+
+    const doughsList = Array.isArray(rawDoughs)
+      ? rawDoughs
+      : Object.values(rawDoughs || {});
+    const doughObj = (doughsList as any[]).find((d: any) => d.id === doughId);
+    const doughLabel = doughObj?.label || '';
 
     const selectedExtras = useLens(
       item.facets.ingredients.$selectedExtras,
@@ -103,15 +109,19 @@ const CartSummary = ({ item, variant }: { item: any; variant: string }) => {
     );
   }
 
-  if (variant === 'coffee' || variant === 'drink') {
+  if (
+    variant === 'coffee' ||
+    variant === 'drink' ||
+    variant === 'bucket' ||
+    variant === 'snack'
+  ) {
     const sizeId = useLens(item.facets.size.$size, '');
     const rawSizes = useLens(item.facets.size.$options, []);
-    const sizeLabel =
-      (
-        (Array.isArray(rawSizes)
-          ? rawSizes
-          : Object.values(rawSizes || {})) as any[]
-      ).find((s: any) => s.id === sizeId)?.label || '';
+    const sizesList = Array.isArray(rawSizes)
+      ? rawSizes
+      : Object.values(rawSizes || {});
+    const sizeObj = (sizesList as any[]).find((s: any) => s.id === sizeId);
+    const sizeLabel = sizeObj?.label || '';
 
     let mods = '';
     if (variant === 'coffee') {
@@ -138,6 +148,39 @@ const CartSummary = ({ item, variant }: { item: any; variant: string }) => {
         {mods && (
           <div className="text-gray-400 italic text-[0.7rem]">{mods}</div>
         )}
+      </div>
+    );
+  }
+
+  if (variant === 'burger' || variant === 'twister') {
+    const selectedExtras = useLens(
+      item.facets.ingredients.$selectedExtras,
+      {},
+    ) as Record<string, boolean>;
+    const removedDefaults = useLens(
+      item.facets.ingredients.$removedDefaults,
+      {},
+    ) as Record<string, boolean>;
+    const rawExtra = useLens(item.input.extraIngredients, []);
+    const rawDefault = useLens(item.input.defaultIngredients, []);
+
+    const extras = (
+      Array.isArray(rawExtra) ? rawExtra : Object.values(rawExtra || {})
+    )
+      .filter((ing: any) => selectedExtras[ing.id])
+      .map((ing: any) => `+ ${ing.name}`);
+
+    const removed = (
+      Array.isArray(rawDefault) ? rawDefault : Object.values(rawDefault || {})
+    )
+      .filter((ing: any) => removedDefaults[ing.id])
+      .map((ing: any) => `- ${ing.name}`);
+
+    const mods = [...extras, ...removed].join(', ');
+
+    return (
+      <div className="space-y-0.5 mt-0.5">
+        {mods && <div className="text-gray-400 italic text-sm">{mods}</div>}
       </div>
     );
   }
@@ -580,6 +623,136 @@ export const SauceDetails = ({ item }: { item: any }) => {
   return (
     <div className="text-gray-400 py-10 text-center italic text-sm">
       Для этого товара нет настроек
+    </div>
+  );
+};
+
+export const BurgerDetails = ({ item, mode }: { item: any; mode: string }) => {
+  const selectedExtras = useLens(
+    item.facets.ingredients.$selectedExtras,
+    {} as Record<string, boolean>,
+  );
+  const removedDefaults = useLens(
+    item.facets.ingredients.$removedDefaults,
+    {} as Record<string, boolean>,
+  );
+
+  const rawExtra = useLens(item.input.extraIngredients, []);
+  const extraIngredients = (
+    Array.isArray(rawExtra) ? rawExtra : Object.values(rawExtra || {})
+  ) as any[];
+
+  const rawDefault = useLens(item.input.defaultIngredients, []);
+  const defaultIngredients = (
+    Array.isArray(rawDefault) ? rawDefault : Object.values(rawDefault || {})
+  ) as any[];
+
+  const units = useUnit({
+    toggleExtra: item.facets.ingredients.toggleExtra as any,
+    toggleDefault: item.facets.ingredients.toggleDefault as any,
+  });
+
+  const toggleExtra = units.toggleExtra as (id: string) => void;
+  const toggleDefault = units.toggleDefault as (id: string) => void;
+
+  const showIngredients = mode === 'full' || mode === 'ingredients';
+
+  if (!showIngredients) return null;
+
+  return (
+    <div className="space-y-6">
+      {/* Extras */}
+      {extraIngredients.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="font-bold text-lg text-gray-800">Добавить по вкусу</h3>
+          <div className="grid grid-cols-3 gap-3">
+            {extraIngredients.map((ing: any) => (
+              <button
+                key={ing.id}
+                className={`flex flex-col items-center p-2 rounded-3xl transition-all duration-200 text-center h-full relative group overflow-hidden border-2 ${
+                  selectedExtras[ing.id]
+                    ? 'bg-white shadow-lg border-[#ff6900]'
+                    : 'bg-white/80 backdrop-blur-md border-white shadow-sm hover:shadow-md hover:bg-white'
+                }`}
+                onClick={() => toggleExtra(ing.id)}
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                {selectedExtras[ing.id] && (
+                  <div className="absolute top-1.5 right-1.5 bg-[#ff6900] text-white w-5 h-5 rounded-full flex items-center justify-center shadow-sm animate-in zoom-in duration-200 z-20">
+                    <svg
+                      className="w-3 h-3"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                )}
+
+                <div className="relative z-10 w-full flex flex-col items-center">
+                  <img
+                    src={`https://picsum.photos/seed/${ing.name}/100/100`}
+                    alt=""
+                    className="w-12 h-12 object-cover mb-1.5 rounded-2xl shadow-sm"
+                  />
+                  <div className="text-[0.65rem] font-bold leading-tight mb-1 min-h-[2.4em] flex items-center justify-center px-1">
+                    {ing.name}
+                  </div>
+                  <div className="text-[0.75rem] font-black text-[#ff6900]">
+                    {ing.price} ₽
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Defaults */}
+      {defaultIngredients.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="font-bold text-lg text-gray-800">
+            Убрать ингредиенты
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {defaultIngredients.map((ing: any) => (
+              <button
+                key={ing.id}
+                className={`px-4 py-2 rounded-full border text-sm font-medium transition-all flex items-center gap-2 ${
+                  removedDefaults[ing.id]
+                    ? 'bg-gray-100 border-transparent text-gray-400 line-through'
+                    : 'bg-white border-gray-200 text-gray-700 shadow-sm'
+                }`}
+                onClick={() => toggleDefault(ing.id)}
+              >
+                {ing.name}{' '}
+                {!removedDefaults[ing.id] && (
+                  <svg
+                    className="w-3 h-3 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

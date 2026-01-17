@@ -5,6 +5,10 @@ import { drinkModel } from './products/drink';
 import { coffeeModel } from './products/coffee';
 import { cocktailModel } from './products/cocktail';
 import { sauceModel } from './products/sauce';
+import { burgerModel } from './products/burger';
+import { twisterModel } from './products/twister';
+import { bucketModel } from './products/bucket';
+import { snackModel } from './products/snack';
 
 export const productUnion = union({
   pizza: pizzaModel,
@@ -12,6 +16,10 @@ export const productUnion = union({
   coffee: coffeeModel,
   cocktail: cocktailModel,
   sauce: sauceModel,
+  burger: burgerModel,
+  twister: twisterModel,
+  bucket: bucketModel,
+  snack: snackModel,
 });
 
 export const cartModel = keyval({
@@ -46,7 +54,9 @@ export const $receiptTotalPrice = receiptModel.$state.map((state) => {
   }, 0);
 });
 
-export const copyCartToReceipt = createEvent();
+export const copyCartToReceipt = createEvent<{
+  restaurantId?: string;
+} | void>();
 
 const copyToReceiptFx = createEffect((items: any[]) => {
   items.forEach((item) => receiptModel.add(item));
@@ -63,14 +73,24 @@ sample({
     instances: (cartModel as any).$instances,
     variants: cartModel.$activeVariants,
   },
-  fn: ({
-    instances,
-    variants,
-  }: {
-    instances: any;
-    variants: Record<string, string | null>;
-  }) => {
+  fn: (
+    {
+      instances,
+      variants,
+    }: {
+      instances: any;
+      variants: Record<string, string | null>;
+    },
+    payload,
+  ) => {
+    const restaurantId =
+      typeof payload === 'object' ? payload?.restaurantId : undefined;
+
     return Object.entries(instances)
+      .filter(([_, instance]: [any, any]) => {
+        if (!restaurantId) return true;
+        return instance.input?.restaurantId === restaurantId;
+      })
       .map(([id, instance]: [string, any]) => {
         const snapshot = serialize(instance);
         const variant =

@@ -14,6 +14,7 @@ export const productTrait = facet({
   $name: define.store(''),
   $description: define.store(''),
   $image: define.store(''),
+  $restaurantId: define.store(''),
   $nutritionalInfo: define.store<{ calories: number; weight: number } | null>(
     null,
   ),

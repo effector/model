@@ -1,52 +1,163 @@
 import { useUnit } from 'effector-react';
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { openProduct, openCart, menuBack, appInstance } from '../models/app';
+import { createListApi } from '@effector-model/core-experimental';
+import {
+  openProduct,
+  openCart,
+  menuBack,
+  selectRestaurant,
+} from '../models/app';
 import { cartModel, $totalPrice } from '../models/cart';
-import { RESTAURANTS } from './RestaurantScreen';
+import { RESTAURANTS } from '../data/restaurants';
 
-import pizzas from '../data/pizzas.json';
-import drinks from '../data/drinks.json';
-import coffee from '../data/coffee.json';
-import cocktails from '../data/cocktails.json';
-import sauces from '../data/sauces.json';
+import dodoPizzas from '../data/dodo/pizzas.json';
+import dodoDrinks from '../data/dodo/drinks.json';
+import dodoCoffee from '../data/dodo/coffee.json';
+import dodoCocktails from '../data/dodo/cocktails.json';
+import dodoSauces from '../data/dodo/sauces.json';
+import dodoSnacks from '../data/dodo/snacks.json';
 
-const CATEGORIES = [
-  { id: 'pizza', title: 'Пицца', items: pizzas },
-  { id: 'coffee', title: 'Кофе', items: coffee },
-  { id: 'drinks', title: 'Напитки', items: drinks },
-  { id: 'cocktails', title: 'Коктейли', items: cocktails },
-  { id: 'sauces', title: 'Соусы', items: sauces },
+import kfcBurgers from '../data/kfc/burgers.json';
+import kfcTwisters from '../data/kfc/twisters.json';
+import kfcBuckets from '../data/kfc/buckets.json';
+import kfcSnacks from '../data/kfc/snacks.json';
+import kfcDrinks from '../data/kfc/drinks.json';
+import kfcSauces from '../data/kfc/sauces.json';
+
+const DODO_CATEGORIES = [
+  { id: 'pizza', title: 'Пицца', items: dodoPizzas },
+  { id: 'snack', title: 'Закуски', items: dodoSnacks },
+  { id: 'coffee', title: 'Кофе', items: dodoCoffee },
+  { id: 'drinks', title: 'Напитки', items: dodoDrinks },
+  { id: 'cocktails', title: 'Коктейли', items: dodoCocktails },
+  { id: 'sauces', title: 'Соусы', items: dodoSauces },
 ];
 
-export const MenuScreen = () => {
+const KFC_CATEGORIES = [
+  { id: 'burger', title: 'Бургеры', items: kfcBurgers },
+  { id: 'twister', title: 'Твистеры', items: kfcTwisters },
+  { id: 'bucket', title: 'Баскеты', items: kfcBuckets },
+  { id: 'snack', title: 'Снэки', items: kfcSnacks },
+  { id: 'drinks', title: 'Напитки', items: kfcDrinks },
+  { id: 'sauces', title: 'Соусы', items: kfcSauces },
+];
+
+interface RestaurantProps {
+  id: string;
+  variant: 'list' | 'full';
+}
+
+export const Restaurant = ({ id, variant }: RestaurantProps) => {
+  const restaurant = useMemo(
+    () => RESTAURANTS.find((r) => r.id === id) || RESTAURANTS[0],
+    [id],
+  );
+
+  if (!restaurant) return null;
+
+  if (variant === 'list') {
+    return <RestaurantCard restaurant={restaurant} />;
+  }
+
+  return <RestaurantMenu restaurant={restaurant} />;
+};
+
+const RestaurantCard = ({ restaurant }: { restaurant: any }) => {
+  const select = useUnit(selectRestaurant);
+
+  return (
+    <div
+      className="group bg-white rounded-[32px] overflow-hidden shadow-sm hover:shadow-xl active:scale-[0.98] transition-all duration-300 cursor-pointer border border-white"
+      onClick={() => select(restaurant.id)}
+    >
+      <div className="relative h-48 overflow-hidden">
+        <img
+          src={restaurant.image}
+          alt={restaurant.name}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+        />
+        <div className="absolute top-4 left-4 flex gap-2">
+          {restaurant.tags.map((tag: string) => (
+            <span
+              key={tag}
+              className="px-3 py-1 bg-white/90 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-wider text-[#333]"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+        <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-2xl shadow-lg flex items-center gap-1.5">
+          <span className="text-[#ff6900] text-sm font-black">
+            ★ {restaurant.rating}
+          </span>
+          <span className="text-gray-400 text-[10px] font-bold">
+            ({restaurant.reviews})
+          </span>
+        </div>
+      </div>
+
+      <div className="p-6">
+        <div className="flex justify-between items-start mb-1">
+          <h2 className="text-xl font-black text-[#333] leading-tight group-hover:text-[#ff6900] transition-colors">
+            {restaurant.name}
+          </h2>
+          <div className="bg-gray-50 px-3 py-1 rounded-xl text-[10px] font-black text-gray-500 uppercase tracking-tighter">
+            {restaurant.time}
+          </div>
+        </div>
+        <p className="text-gray-400 text-sm font-medium">
+          {restaurant.address}
+        </p>
+      </div>
+    </div>
+  );
+};
+
+const RestaurantMenu = ({ restaurant }: { restaurant: any }) => {
   const open = useUnit(openProduct);
   const toCart = useUnit(openCart);
   const back = useUnit(menuBack);
-  const cartItems = useUnit(cartModel.$items);
-  const total = useUnit($totalPrice);
-  const params = useUnit(appInstance.input.$params);
-  const restaurantId = params.restaurantId;
-  const [activeTab, setActiveTab] = useState('pizza');
+  const cartState = useUnit(cartModel.$state);
+
+  const cartView = useMemo(() => {
+    return createListApi(cartModel).filter((item: any) =>
+      item.facets.product.$restaurantId.map(
+        (id: string) => id === restaurant.id,
+      ),
+    );
+  }, [restaurant.id]);
+
+  const filteredIds = useUnit(cartView.$items);
+
+  const total = useMemo(() => {
+    return filteredIds.reduce((sum: number, id: string) => {
+      const itemState = cartState[id];
+      if (!itemState) return sum;
+
+      const price = itemState.facets?.product?.$price || 0;
+      const quantity = itemState.facets?.product?.$quantity || 0;
+      const isDeleted = itemState.facets?.product?.$isDeleted || false;
+
+      if (isDeleted) return sum;
+      return sum + price * quantity;
+    }, 0);
+  }, [filteredIds, cartState]);
+
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   const tabsRef = useRef<HTMLDivElement>(null);
   const isScrollingRef = useRef(false);
 
-  const restaurant = useMemo(
-    () => RESTAURANTS.find((r) => r.id === restaurantId) || RESTAURANTS[0],
-    [restaurantId],
-  );
-
   const categories = useMemo(() => {
-    // If restaurant 2, shuffle/filter items to simulate isolation
-    if (restaurantId === '2') {
-      return CATEGORIES.map((cat) => ({
-        ...cat,
-        items: cat.items.filter((_, i) => i % 2 === 0), // Simple filter for demo
-      }));
-    }
-    return CATEGORIES;
-  }, [restaurantId]);
+    if (restaurant.id === 'kfc') return KFC_CATEGORIES;
+    return DODO_CATEGORIES;
+  }, [restaurant.id]);
+
+  const [activeTab, setActiveTab] = useState(categories[0].id);
+
+  useEffect(() => {
+    setActiveTab(categories[0].id);
+  }, [categories]);
 
   useEffect(() => {
     const container = scrollContainerRef.current;

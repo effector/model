@@ -1,4 +1,13 @@
-export type ProductType = 'pizza' | 'drink' | 'coffee' | 'cocktail' | 'sauce';
+export type ProductType =
+  | 'pizza'
+  | 'drink'
+  | 'coffee'
+  | 'cocktail'
+  | 'sauce'
+  | 'burger'
+  | 'bucket'
+  | 'snack'
+  | 'twister';
 
 export interface BaseProductData {
   type: ProductType;
@@ -6,6 +15,7 @@ export interface BaseProductData {
   description: string;
   image?: string;
   basePrice: number;
+  restaurantId?: string;
   nutritionalInfo?: {
     calories: number;
     weight: number;
@@ -57,11 +67,39 @@ export interface SauceData extends BaseProductData {
   type: 'sauce';
 }
 
+export interface BurgerData extends BaseProductData {
+  type: 'burger';
+  defaultIngredients: { id: string; name: string }[];
+  extraIngredients: IngredientOption[];
+}
+
+export interface BucketData extends BaseProductData {
+  type: 'bucket';
+  sizes: SizeOption[];
+  defaultSize: string;
+}
+
+export interface SnackData extends BaseProductData {
+  type: 'snack';
+  sizes: SizeOption[];
+  defaultSize: string;
+}
+
+export interface TwisterData extends BaseProductData {
+  type: 'twister';
+  defaultIngredients: { id: string; name: string }[];
+  extraIngredients: IngredientOption[];
+}
+
 export type ProductData =
   | PizzaData
   | DrinkData
   | CoffeeData
   | CocktailData
-  | SauceData;
+  | SauceData
+  | BurgerData
+  | BucketData
+  | SnackData
+  | TwisterData;
 
 export type MenuData = ProductData[];

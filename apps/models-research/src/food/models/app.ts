@@ -5,7 +5,7 @@ import {
   serialize,
   create,
 } from '@effector-model/core-experimental';
-import { createStore, createEvent, sample } from 'effector';
+import { createStore, createEvent, sample, createEffect } from 'effector';
 import { cartModel, productUnion, copyCartToReceipt } from './cart';
 
 // --- Types ---
@@ -32,6 +32,28 @@ export const draftModel = keyval({
   model: productUnion,
 });
 
+// --- Effects ---
+const clearRestaurantCartFx = createEffect(
+  ({
+    items,
+    instances,
+    restaurantId,
+  }: {
+    items: string[];
+    instances: any;
+    restaurantId: string;
+  }) => {
+    items.forEach((id) => {
+      if (
+        !restaurantId ||
+        instances[id]?.input?.restaurantId === restaurantId
+      ) {
+        cartModel.remove(id);
+      }
+    });
+  },
+);
+
 // --- Public Events (Controller) ---
 export const selectRestaurant = createEvent<string>();
 export const openProduct = createEvent<any>();
@@ -56,6 +78,7 @@ const commitDraft = createEvent<{
   item: any;
   editId?: string;
   returnTo: ScreenName;
+  restaurantId?: string;
 }>();
 
 // --- App Model Definition ---
@@ -90,13 +113,19 @@ export const appModel = model({
     menu: (input: any) => {
       sample({
         clock: openProduct,
-        fn: (payload) => {
+        source: input.$params,
+        fn: (params: any, payload: any) => {
           const data = payload.data || payload;
           const model = (productUnion.models as any)[data.type];
           const state = model && model.init ? model.init(data) : {};
           return {
             screen: 'product' as const,
-            params: { mode: 'preview', draftId: 'draft', returnTo: 'menu' },
+            params: {
+              mode: 'preview',
+              draftId: 'draft',
+              returnTo: 'menu',
+              restaurantId: params.restaurantId,
+            },
             draft: {
               id: 'draft',
               variant: data.type,
@@ -110,7 +139,11 @@ export const appModel = model({
 
       sample({
         clock: openCart,
-        fn: () => ({ screen: 'cart' as const, params: {} }),
+        source: input.$params,
+        fn: (params: any) => ({
+          screen: 'cart' as const,
+          params: { returnToRestaurantId: params.restaurantId },
+        }),
         target: updateState,
       });
 
@@ -153,6 +186,7 @@ export const appModel = model({
             },
             editId: params.editId,
             returnTo: params.returnTo,
+            restaurantId: params.restaurantId,
           };
         },
         filter: (payload: any): payload is any => !!payload,
@@ -162,7 +196,10 @@ export const appModel = model({
       sample({
         clock: closeProduct,
         source: input.$params,
-        fn: (params: any) => ({ screen: params.returnTo, params: {} }),
+        fn: (params: any) => ({
+          screen: params.returnTo,
+          params: { restaurantId: params.restaurantId },
+        }),
         target: updateState,
       });
 
@@ -173,14 +210,21 @@ export const appModel = model({
     cart: (input: any) => {
       sample({
         clock: cartBack,
-        fn: () => ({ screen: 'menu' as const, params: {} }),
+        source: input.$params,
+        fn: (params: any) => ({
+          screen: 'menu' as const,
+          params: { restaurantId: params.returnToRestaurantId },
+        }),
         target: updateState,
       });
 
       sample({
         clock: editItem,
-        source: (cartModel as any).$instances,
-        fn: (cart: any, id: string) => {
+        source: {
+          cart: (cartModel as any).$instances,
+          params: input.$params,
+        },
+        fn: ({ cart, params }: any, id: string) => {
           console.log('[app] editItem triggered for', id);
           const item = cart[id];
           if (!item) throw new Error('Item not found');
@@ -193,6 +237,7 @@ export const appModel = model({
               draftId: 'draft',
               returnTo: 'cart',
               editId: id,
+              restaurantId: params.returnToRestaurantId,
             },
             draft: {
               id: 'draft',
@@ -207,19 +252,36 @@ export const appModel = model({
 
       sample({
         clock: checkout,
+        source: input.$params,
+        fn: (params: any) => ({ restaurantId: params.returnToRestaurantId }),
         target: copyCartToReceipt,
       });
 
       sample({
         clock: checkout,
+        source: {
+          items: cartModel.$items,
+          instances: (cartModel as any).$instances,
+          params: input.$params,
+        },
+        fn: ({ items, instances, params }: any) => ({
+          items,
+          instances,
+          restaurantId: params.returnToRestaurantId,
+        }),
+        target: clearRestaurantCartFx,
+      });
+
+      sample({
+        clock: clearRestaurantCartFx.done,
         fn: () => ({ screen: 'congrats' as const, params: {} }),
-        target: [updateState, cartModel.reset],
+        target: updateState,
       });
     },
     congrats: (input: any) => {
       sample({
         clock: finishOrder,
-        fn: () => ({ screen: 'menu' as const, params: {} }),
+        fn: () => ({ screen: 'restaurants' as const, params: {} }),
         target: updateState,
       });
     },
@@ -251,15 +313,27 @@ sample({
 
 sample({
   clock: commitDraft,
-  fn: ({ item, editId }) => {
-    if (editId) return { ...item, id: editId };
-    return item;
+  fn: ({ item, editId, restaurantId }: any) => {
+    const nextState = { ...item.state };
+    if (!nextState.product) nextState.product = {};
+    nextState.product.$restaurantId = restaurantId;
+
+    const itemWithMeta = {
+      ...item,
+      state: nextState,
+      input: { ...item.input, restaurantId },
+    };
+    if (editId) return { ...itemWithMeta, id: editId };
+    return itemWithMeta;
   },
   target: cartModel.add,
 });
 
 sample({
   clock: commitDraft,
-  fn: ({ returnTo }) => ({ screen: returnTo, params: {} }),
+  fn: ({ returnTo, restaurantId }: any) => ({
+    screen: returnTo,
+    params: { restaurantId },
+  }),
   target: updateState,
 });

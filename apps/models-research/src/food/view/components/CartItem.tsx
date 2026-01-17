@@ -41,6 +41,10 @@ export const CartItem = ({
     coffee: () => null,
     cocktail: () => null,
     sauce: () => null,
+    burger: () => null,
+    twister: () => null,
+    bucket: () => null,
+    snack: () => null,
   };
 
   return (

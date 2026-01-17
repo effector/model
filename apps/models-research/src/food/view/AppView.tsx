@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 import { appInstance } from '../models/app';
-import { MenuScreen } from './MenuScreen';
+import { Restaurant } from './Restaurant';
 import { CartScreen } from './CartScreen';
 import { ProductScreen } from './ProductScreen';
 import { RestaurantScreen } from './RestaurantScreen';
@@ -15,6 +15,7 @@ const FRAME_BORDER_WIDTH = '8px'; // Added as a parameter to adjust border thick
 
 export const AppView = () => {
   const variant = useUnit(appInstance.activeVariant) as unknown as string;
+  const params = useUnit(appInstance.input.$params) as any;
 
   return (
     <div className="min-h-screen font-sans text-[#333] flex items-center justify-center p-8 bg-gray-50">
@@ -34,7 +35,9 @@ export const AppView = () => {
           >
             <div className="h-full overflow-y-auto no-scrollbar scroll-smooth">
               {variant === 'restaurants' && <RestaurantScreen />}
-              {variant === 'menu' && <MenuScreen />}
+              {variant === 'menu' && (
+                <Restaurant id={params.restaurantId} variant="full" />
+              )}
               {variant === 'product' && <ProductScreen />}
               {variant === 'cart' && <CartScreen />}
               {variant === 'congrats' && <CheckoutScreen />}

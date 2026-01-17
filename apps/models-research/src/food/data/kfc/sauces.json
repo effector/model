@@ -1,0 +1,37 @@
+[
+  {
+    "type": "sauce",
+    "name": "Сырный Пармеджано",
+    "description": "Нежный соус с богатым вкусом сыра Пармезан.",
+    "basePrice": 40,
+    "nutritionalInfo": { "calories": 90, "weight": 25 }
+  },
+  {
+    "type": "sauce",
+    "name": "Барбекю Смоки",
+    "description": "Густой соус с ароматом дымка и специй.",
+    "basePrice": 40,
+    "nutritionalInfo": { "calories": 45, "weight": 25 }
+  },
+  {
+    "type": "sauce",
+    "name": "Чесночный Ранч",
+    "description": "Сливочно-чесночный соус с пряными травами.",
+    "basePrice": 40,
+    "nutritionalInfo": { "calories": 80, "weight": 25 }
+  },
+  {
+    "type": "sauce",
+    "name": "Кетчуп Томатный",
+    "description": "Классический кетчуп из спелых томатов.",
+    "basePrice": 40,
+    "nutritionalInfo": { "calories": 30, "weight": 25 }
+  },
+  {
+    "type": "sauce",
+    "name": "Трюфельный",
+    "description": "Изысканный соус с ароматом черного трюфеля.",
+    "basePrice": 59,
+    "nutritionalInfo": { "calories": 85, "weight": 25 }
+  }
+]

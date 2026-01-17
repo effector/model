@@ -49,7 +49,7 @@ type ModelInstanceType<M> =
       ? U[keyof U]['_InstanceType'] // Intersection or Union? For lens access, intersection of common fields or specific variant access
       : never;
 
-type LensProxy<M> = Lensify<ModelInstanceType<M>> &
+export type LensProxy<M> = Lensify<ModelInstanceType<M>> &
   Lens & {
     activeVariant: Lens;
     match: (config: {

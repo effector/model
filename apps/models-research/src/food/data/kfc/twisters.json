@@ -1,0 +1,35 @@
+[
+  {
+    "type": "twister",
+    "name": "Твистер Оригинальный",
+    "description": "Классика жанра: кусочки нежного филе, свежие томаты, салат и майонезный соус, завернутые в пшеничную тортилью, поджаренную на гриле.",
+    "basePrice": 199,
+    "nutritionalInfo": { "calories": 220, "weight": 180 },
+    "extraIngredients": [
+      { "id": "cheese_sauce", "name": "Сырный Соус", "price": 29 },
+      { "id": "bacon_crispy", "name": "Хрустящий Бекон", "price": 49 },
+      { "id": "jalapeno", "name": "Халапеньо", "price": 29 }
+    ],
+    "defaultIngredients": [
+      { "id": "tomatoes", "name": "Томаты" },
+      { "id": "lettuce", "name": "Салат" },
+      { "id": "mayo", "name": "Майонез" }
+    ]
+  },
+  {
+    "type": "twister",
+    "name": "Твистер Спешл",
+    "description": "Насыщенный вкус с беконом, сыром и пикантным горчичным соусом.",
+    "basePrice": 229,
+    "nutritionalInfo": { "calories": 260, "weight": 200 },
+    "extraIngredients": [
+      { "id": "hashbrown", "name": "Хашбраун", "price": 59 },
+      { "id": "extra_fillet", "name": "Доп. Стрипсы", "price": 69 }
+    ],
+    "defaultIngredients": [
+      { "id": "bacon", "name": "Бекон" },
+      { "id": "cheese", "name": "Сыр" },
+      { "id": "mustard_sauce", "name": "Горчичный соус" }
+    ]
+  }
+]
