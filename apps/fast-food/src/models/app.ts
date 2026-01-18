@@ -6,13 +6,7 @@ import {
   create,
 } from '@effector-model/core-experimental';
 import { createFactory, invoke } from '@withease/factories';
-import {
-  createStore,
-  createEvent,
-  sample,
-  createEffect,
-  Store,
-} from 'effector';
+import { createEvent, sample, createEffect, Store } from 'effector';
 import { ProductData } from '../types';
 import { createCartModel, productUnion, CartItem } from './cart';
 
@@ -138,7 +132,7 @@ const createAppImpl = () => {
       },
     },
     impl: {
-      restaurants: (input) => {
+      restaurants: () => {
         sample({
           clock: selectRestaurant,
           fn: (id) => ({
@@ -154,7 +148,7 @@ const createAppImpl = () => {
           target: updateState,
         });
       },
-      globalCart: (input) => {
+      globalCart: () => {
         sample({
           clock: globalCartBack,
           fn: () => ({ screen: 'restaurants' as const, params: {} }),
@@ -396,7 +390,7 @@ const createAppImpl = () => {
           target: updateState,
         });
       },
-      congrats: (input) => {
+      congrats: () => {
         sample({
           clock: finishOrder,
           fn: () => ({ screen: 'restaurants' as const, params: {} }),

@@ -1,8 +1,11 @@
 import { facet, define } from '@effector-model/core-experimental';
-import { sample, Event } from 'effector';
+import { sample } from 'effector';
+import { SizeOption } from '../types';
 
 // --- Helper ---
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getValue = (payload: any) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (payload && typeof payload === 'object' && 'value' in payload)
     return payload.value;
   return payload;
@@ -112,7 +115,7 @@ export const ingredientsFacet = facet({
 export const sizeFacet = facet({
   $size: define.store<string>(''),
   setSize: define.event<string>(),
-  $options: define.store<any[]>([]),
+  $options: define.store<SizeOption[]>([]),
 }).use((t) => {
   sample({
     clock: t.setSize,
@@ -124,7 +127,7 @@ export const sizeFacet = facet({
 export const doughFacet = facet({
   $dough: define.store<string>(''),
   setDough: define.event<string>(),
-  $options: define.store<any[]>([]),
+  $options: define.store<{ id: string; label: string }[]>([]),
 }).use((t) => {
   sample({
     clock: t.setDough,

@@ -1,4 +1,4 @@
-const sizeLimit = require('size-limit');
+const sizeLimit = require('size-limit').default;
 const filePlugin = require('@size-limit/file');
 const { promisify } = require('util');
 const glob = promisify(require('glob'));
@@ -10,9 +10,12 @@ module.exports = async function sizeLimitExecutor(
   { outputPath, limit },
   context,
 ) {
-  const files = await glob(path.join(context.cwd, outputPath, '**/*.js'));
+  const filePaths = await glob(path.join(context.cwd, outputPath, '**/*.js'));
+  const files = filePaths.map((path) => ({ path }));
 
-  const [{ size }] = await sizeLimit([filePlugin], files);
+  const result = await sizeLimit([filePlugin], files);
+
+  const size = result.reduce((acc, item) => acc + (item.size || 0), 0);
 
   const success = size <= bytes.parse(limit);
 

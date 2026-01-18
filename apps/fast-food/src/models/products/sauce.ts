@@ -1,5 +1,5 @@
 import { model, define } from '@effector-model/core-experimental';
-import { sample, is } from 'effector';
+import { is } from 'effector';
 import { productTrait } from '../traits';
 
 export const sauceModel = model({
@@ -23,7 +23,7 @@ export const sauceModel = model({
   facets: {
     product: productTrait,
   },
-  impl: (input, facets) => {
+  impl: (input) => {
     return {
       product: {
         $name: input.name,

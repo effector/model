@@ -142,7 +142,7 @@ const createCartModelImpl = () => {
         typeof payload === 'object' ? payload?.restaurantId : undefined;
 
       return Object.entries(instances)
-        .filter(([_, instance]) => {
+        .filter(([, instance]) => {
           if (!restaurantId) return true;
           const inst = instance as ProductInstance;
           const product = inst.facets.product as unknown as CommonProductFacet;

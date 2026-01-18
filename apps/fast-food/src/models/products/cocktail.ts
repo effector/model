@@ -1,5 +1,5 @@
 import { model, define } from '@effector-model/core-experimental';
-import { sample, combine, is } from 'effector';
+import { combine, is } from 'effector';
 import { productTrait, ingredientsFacet } from '../traits';
 import { IngredientOption } from '../../types';
 

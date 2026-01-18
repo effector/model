@@ -27,7 +27,7 @@ export const twisterModel = model({
     product: productTrait,
     ingredients: ingredientsFacet,
   },
-  init: (data: any) => ({}),
+  init: () => ({}),
   impl: (input, facets) => {
     const $extrasCost = combine(
       facets.ingredients.$selectedExtras,
