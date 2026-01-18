@@ -1,8 +1,8 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import * as React from 'react';
 import { useUnit } from 'effector-react';
-import { createStore, allSettled, fork, createEvent, sample } from 'effector';
+import { createStore, allSettled, fork, createEvent } from 'effector';
 import { Provider } from 'effector-react';
 import {
   model,
@@ -11,7 +11,6 @@ import {
   keyval,
   union,
   select,
-  match,
 } from '@effector-model/core-experimental';
 
 // --- Definitions ---
@@ -33,6 +32,7 @@ const guestModel = model({
   facets: {
     user: chatUserFacet,
   },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fn: ({ nickname }: any) => ({
     user: {
       $nickname: nickname,
@@ -50,6 +50,7 @@ const memberModel = model({
     user: chatUserFacet,
     membership: memberFacet,
   },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fn: ({ nickname, role }: any) => ({
     user: {
       $nickname: nickname,
@@ -81,6 +82,7 @@ const $selectedUserId = createStore<string | null>(null).on(
 const $currentUser = usersList.getItem($selectedUserId);
 const $currentUserName = select($currentUser)
   .facet('user')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   .path((facet: any) => facet.$nickname)
   .fallback('');
 
@@ -88,7 +90,7 @@ const $currentUserName = select($currentUser)
 
 function UserDemo() {
   const [items] = useUnit([usersList.$items]);
-  const [selectedId, select] = useUnit([$selectedUserId, selectUser]);
+  const [, select] = useUnit([$selectedUserId, selectUser]);
   const [currentName] = useUnit([$currentUserName]);
   const [add] = useUnit([usersList.add]);
 

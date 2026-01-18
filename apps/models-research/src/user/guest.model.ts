@@ -9,6 +9,7 @@ export const guestModel = model({
   facets: {
     user: chatUserFacet,
   },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fn: ({ nickname }: any) => ({
     user: {
       $nickname: nickname,

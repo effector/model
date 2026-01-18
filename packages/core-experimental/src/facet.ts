@@ -5,7 +5,8 @@ export interface FacetShape {
   [key: string]:
     | StoreDef<unknown>
     | EventDef<unknown>
-    | Facet<FacetShape>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    | Facet<any>
     | RefDef
     | ArrayDef<unknown>;
 }
@@ -19,7 +20,9 @@ export type InferFacetCtx<S extends FacetShape> = {
         ? EventCallable<T>
         : S[K] extends Facet<infer FS>
           ? InferFacetCtx<FS>
-          : unknown;
+          : S[K] extends RefDef
+            ? StoreWritable<unknown>
+            : unknown;
 };
 
 export type Facet<S extends FacetShape> = {

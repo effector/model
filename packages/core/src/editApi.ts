@@ -45,7 +45,9 @@ function runUpdatesForInstance<Enriched, Output, Api, Input>(
   };
   freshState.items[idx] = newItem;
   const instance = freshState.instances[idx];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const storesToUpdate = [] as any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updates = [] as any[];
   for (const key in inputUpdate) {
     //@ts-expect-error type mismatch
@@ -79,6 +81,7 @@ function runNewItemInstance<Input, Enriched, Output, Api, Shape>(
     /** actually it is an enriched part only */
     partial: Partial<Enriched>;
   }>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   api: Record<string, EventCallable<any>>,
 ) {
   freshState.keys.push(key);
@@ -104,9 +107,11 @@ function runNewItemInstance<Input, Enriched, Output, Api, Shape>(
       for (const key in instance.api) {
         sample({
           clock: api[key] as EventCallable<
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             | { key: string | number; data: any }
             | {
                 key: Array<string | number>;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 data: any[];
               }
           >,
@@ -118,6 +123,7 @@ function runNewItemInstance<Input, Enriched, Output, Api, Shape>(
           },
           fn: (upd) =>
             Array.isArray(upd.key) ? upd.data[upd.key.indexOf(key)] : upd.data,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           target: instance.api[key] as EventCallable<any>,
         });
       }
@@ -143,6 +149,7 @@ export function createEditApi<Input, Enriched, Output, Api, Shape>(
   $entities: StoreWritable<ListState<Enriched, Output, Api>>,
   getKey: (entity: Input) => string | number,
   keyField: keyof Input | null,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   api: Record<string, EventCallable<any>>,
   kvModel:
     | Model<
@@ -264,6 +271,7 @@ export function createEditApi<Input, Enriched, Output, Api, Shape>(
             if (field in item) {
               launch({
                 target: instance.keyvalShape[field].edit.replaceAll,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 params: (item as any)[field],
                 defer: true,
               });
@@ -381,6 +389,7 @@ export function createEditApi<Input, Enriched, Output, Api, Shape>(
         let idx = state.keys.indexOf(key);
         if (upsert && idx === -1) {
           state = refresh();
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           const idObject = { [keyField!]: key } as Input;
           runNewItemInstance(
             state,

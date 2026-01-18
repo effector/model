@@ -19,6 +19,7 @@ import { isKeyval } from './define';
 import { createRegionalNode, installStateHooks } from './factoryStatePaths';
 import { callInLazyStack } from './lazy';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let childInstancesTracking: Instance<any, any>[] | null = null;
 
 export function spawn<
@@ -59,6 +60,7 @@ export function spawn<
   },
   Api,
 >(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   model: Model<T, Output, Api, any>,
   params: Params & {
     [K in {
@@ -73,6 +75,7 @@ export function spawn<
   },
 ): Instance<Output, Api> {
   const region = createRegionalNode(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   installStateHooks(params as any, region, model.factoryStatePaths);
   const parentTracking = childInstancesTracking;
   childInstancesTracking = [];
@@ -88,12 +91,14 @@ export function spawn<
       const resultShape = {
         ...storeOutputs,
       } as Output;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const keyvalShape = {} as Instance<any, any>['keyvalShape'];
       for (const field of model.keyvalFields) {
         if (isKeyval(storeOutputs[field])) {
           const kv = storeOutputs[field];
           if (field in params) {
             // TODO implement without additional retrigger
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             kv.edit.add((params as any)[field]);
           }
           // @ts-expect-error generic mismatch

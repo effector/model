@@ -28,6 +28,7 @@ const gameModel = model({
     visual: visualFacet,
   },
   variant: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     source: (input: { $score: any }) => input.$score,
     cases: {
       winning: (score: number) => score > 0,
@@ -42,6 +43,7 @@ const gameModel = model({
     draw: () => ({
       visual: { $color: define.store('gray') },
     }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     losing: ({ $score }: { $score: any }) => {
       const $intensity = $score.map((s: number) =>
         Math.min(Math.abs(s) * 5, 100),
@@ -64,6 +66,7 @@ const statsModel = model({
   input: {
     game: gameModel,
   },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fn: ({ game }: any) => {
     const $totalLosingTime = createStore(0);
     const start = createEvent();

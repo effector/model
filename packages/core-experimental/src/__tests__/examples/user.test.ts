@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   createStore,
   createEvent,
@@ -33,6 +33,7 @@ const guestModel = model({
   facets: {
     user: chatUserFacet,
   },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fn: ({ nickname }: any) => ({
     user: {
       $nickname: nickname,
@@ -50,6 +51,7 @@ const memberModel = model({
     user: chatUserFacet,
     membership: memberFacet,
   },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fn: ({ nickname, role }: any) => ({
     user: {
       $nickname: nickname,
@@ -95,16 +97,21 @@ const onGuestPromoteError = createEvent(); // For testing
 match({
   source: userToPromote.activeVariant,
   cases: {
-    member: (memberScope: any, trigger: Event<string>) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    member: (memberScope: any, trigger: Event<unknown>) => {
       sample({
         clock: trigger,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         target: memberScope.facets.membership.promote as Event<any>,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     guest: (_: any, trigger: any) => {
       sample({
         clock: trigger,
         target: onGuestPromoteError,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
     },
   },
@@ -116,11 +123,13 @@ const $currentUser = usersList.getItem($selectedUserId);
 const $currentUserRole = select($currentUser)
   .variant('member')
   .facet('membership')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   .path((facet: any) => facet.$role)
   .fallback('guest');
 
 const $currentUserName = select($currentUser)
   .facet('user')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   .path((facet: any) => facet.$nickname)
   .fallback('');
 
@@ -143,6 +152,7 @@ describe('UserUnion & Keyval', () => {
     // 2. Add Member
     await allSettled(usersList.add, {
       scope,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       params: {
         id: 'admin1',
         variant: 'member',
@@ -150,7 +160,7 @@ describe('UserUnion & Keyval', () => {
           nickname: createStore('AdminUser'),
           role: createStore('admin'),
         },
-      },
+      } as any,
     });
 
     expect(scope.getState(usersList.$items)).toEqual(['guest1', 'admin1']);

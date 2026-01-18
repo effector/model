@@ -10,8 +10,11 @@ import {
 type Descriptor = 'store' | 'event' | 'effect';
 
 type TypeMap = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   store: Store<any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   event: Event<any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   effect: Effect<any, any, any>;
 };
 
@@ -19,6 +22,7 @@ export let currentSkipLazyCb = true;
 export let isRoot = true;
 export let isInitClone = false;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function callInLazyStack<T extends () => any>(
   fn: T,
   skipLazyCb: boolean,
@@ -47,16 +51,20 @@ export function lazy<
   R extends { [K in keyof S]: TypeMap[S[K]] },
 >(shape: S, creator: () => R): R;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function lazy(shapeRaw: any, creatorRaw?: () => any): any {
   const isSingle = typeof shapeRaw === 'function';
   const shape = isSingle ? { single: 'store' } : shapeRaw;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const creator: () => any = isSingle ? shapeRaw : creatorRaw;
   if (currentSkipLazyCb) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = Array.isArray(shape) ? [] : ({} as any);
     for (const key in shape) {
       switch (shape[key]) {
         case 'store':
           result[key] = createStore(null, { serialize: 'ignore' }).map(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (x: any) => x,
           );
           break;
@@ -64,7 +72,7 @@ export function lazy(shapeRaw: any, creatorRaw?: () => any): any {
           result[key] = createEvent();
           break;
         case 'effect':
-          result[key] = createEffect(() => {});
+          result[key] = createEffect(() => undefined);
           break;
       }
     }

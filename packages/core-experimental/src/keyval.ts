@@ -13,13 +13,16 @@ import { create } from './instance';
 import { Lens } from './lens';
 import { Facet, FacetShape } from './facet';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type UnionConfig<M extends Record<string, Model<any, any, any>>> = M;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Union<M extends Record<string, Model<any, any, any>>> = {
   type: 'union';
   models: M;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function union<M extends Record<string, Model<any, any, any>>>(
   models: M,
 ): Union<M> {
@@ -35,6 +38,7 @@ export type KeyvalConfig<M> = {
 
 // Helper types for LensProxy
 type Lensify<T> =
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   T extends Store<infer V>
     ? Lens
     : T extends EventCallable<infer P>
@@ -44,6 +48,7 @@ type Lensify<T> =
         : unknown;
 
 type ModelInstanceType<M> =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   M extends Model<any, any, any>
     ? M['_InstanceType']
     : M extends Union<infer U>
@@ -60,6 +65,7 @@ export type LensProxy<M> = Lensify<ModelInstanceType<M>> &
   };
 
 export type InferKeyvalInput<M> =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   M extends Model<infer I, any, any>
     ? InferConfigInput<I>
     : M extends Union<infer U>
@@ -94,6 +100,7 @@ export type Keyval<M> = {
   $state: Store<Record<string, unknown>>;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function keyval<M extends Union<any> | Model<any, any, any>>(
   config: KeyvalConfig<M>,
 ): Keyval<M> {
@@ -214,10 +221,12 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
   });
 
   $state.on(remove, (state, id) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { [id]: _, ...rest } = state;
     return rest;
   });
   $state.on(clearInstanceState, (state, id) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { [id]: _, ...rest } = state;
     return rest;
   });
@@ -226,13 +235,17 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
   sample({
     clock: add,
     filter: ({ id, variant, input }) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const actualVariant = variant || (input as any)?.type;
       console.log(
         `[keyval] Validating add for ${id} (variant: ${actualVariant})`,
       );
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let modelDef: Model<any, any, any>;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if ((config.model as any).type === 'union') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const unionModel = config.model as Union<any>;
         if (!actualVariant || !unionModel.models[actualVariant]) {
           console.error(`[keyval] Variant ${actualVariant} not found in union`);
@@ -240,6 +253,7 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
         }
         modelDef = unionModel.models[actualVariant];
       } else {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         modelDef = config.model as Model<any, any, any>;
       }
 
@@ -271,6 +285,7 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
     [id]: variant,
   }));
   $activeVariants.on(remove, (state, id) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { [id]: _, ...rest } = state;
     return rest;
   });
@@ -295,7 +310,9 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
       >;
       const resolvedVariant = variant || (input as { type?: string })?.type;
       if ('type' in config.model && config.model.type === 'union') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const unionModel = config.model as Union<any>;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         modelDef = unionModel.models[resolvedVariant!];
       } else {
         modelDef = config.model as Model<
@@ -365,6 +382,7 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
     const instance = instances[id] as { destroy?: () => void };
     if (!instance) return instances;
     if (instance.destroy) instance.destroy();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { [id]: _, ...rest } = instances;
     return rest;
   });
@@ -390,6 +408,7 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
   $items.on(remove, (items, id) => items.filter((x) => x !== id));
   $items.reset(reset);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const proxyCache = new Map<any, any>();
 
   const getItem = (
@@ -468,22 +487,32 @@ function traverseAndBind(
 }
 
 function getFieldDef(
-  model:
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  model: // eslint-disable-next-line @typescript-eslint/no-explicit-any
     | Model<Record<string, unknown>, Record<string, unknown>, any>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     | Union<any>,
   facetName: string,
   fieldName: string,
 ) {
   if ('type' in model && model.type === 'union') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const union = model as Union<any>;
     for (const subModel of Object.values(union.models)) {
-      const facets = (
-        subModel as Model<Record<string, unknown>, Record<string, unknown>, any>
-      ).config.facets as Record<string, Facet<FacetShape>> | undefined;
+      const facets =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (
+          subModel as Model<
+            Record<string, unknown>,
+            Record<string, unknown>,
+            any
+          >
+        ).config.facets as Record<string, Facet<FacetShape>> | undefined;
       const def = facets?.[facetName]?.shape?.[fieldName];
       if (def) return def;
     }
   } else {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const m = model as Model<
       Record<string, unknown>,
       Record<string, unknown>,
@@ -568,8 +597,9 @@ export function createItemProxy(
   $instances: Store<Record<string, unknown>>,
   $state: Store<Record<string, unknown>>,
   idOrStore: unknown,
-  modelDef:
+  modelDef: // eslint-disable-next-line @typescript-eslint/no-explicit-any
     | Model<Record<string, unknown>, Record<string, unknown>, any>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     | Union<any>,
   $activeVariants?: Store<Record<string, string | null>>,
 ) {

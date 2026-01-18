@@ -22,6 +22,7 @@ describe('instance', () => {
           raw: define.store(0),
         },
         // type-coverage:ignore-next-line
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         fn: (input: any) => ({ input }),
       });
 
@@ -42,6 +43,7 @@ describe('instance', () => {
     it('should process static value inputs', async () => {
       const testModel = model({
         input: { $val: define.store(0) },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         fn: ({ $val }: any) => ({ $val }),
       });
 
@@ -58,6 +60,7 @@ describe('instance', () => {
       const testModel = model({
         input: { $val: define.store(0) },
         // type-coverage:ignore-next-line
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         fn: ({ $val }: any) => ({ $val }),
       });
 
@@ -70,12 +73,14 @@ describe('instance', () => {
         input: {
           $val,
           extra: createStore(99),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
       });
 
       expect(is.store(instance.input.$val)).toBe(true);
       expect(scope.getState(instance.input.$val)).toBe(10);
       // type-coverage:ignore-next-line
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((instance.input as any).extra).toBeUndefined();
     });
   });
@@ -85,6 +90,7 @@ describe('instance', () => {
       const testModel = model({
         input: { $val: define.store(0) },
         // type-coverage:ignore-next-line
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         fn: ({ $val }: any) => {
           // type-coverage:ignore-next-line
           const $doubled = $val.map((x: number) => x * 2);
@@ -114,6 +120,7 @@ describe('instance', () => {
         input: { $s: define.store('a') },
         variant: {
           // type-coverage:ignore-next-line
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           source: (i: any) => i.$s,
           cases: {
             A: (s: string) => s === 'a',
@@ -140,6 +147,7 @@ describe('instance', () => {
         input: { $score: define.store(0) },
         variant: {
           // type-coverage:ignore-next-line
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           source: ({ $score }: { $score: any }) => $score,
           cases: {
             positive: (s: number) => s > 0,
@@ -160,6 +168,7 @@ describe('instance', () => {
 
       // Helper to watch events
       // type-coverage:ignore-next-line
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const watch = (event: EventCallable<void>, fn: any) => {
         const watcher = createEvent();
         watcher.watch(fn);
@@ -214,6 +223,7 @@ describe('instance', () => {
         facets: { f },
         variant: {
           // type-coverage:ignore-next-line
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           source: (i: any) => i.$s,
           cases: { A: (s: string) => s === 'a' },
         },
@@ -251,6 +261,7 @@ describe('instance', () => {
         facets: { f },
         variant: {
           // type-coverage:ignore-next-line
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           source: (i: any) => i.$s,
           cases: {
             A: (s: string) => s === 'a',
@@ -307,6 +318,7 @@ describe('instance', () => {
         input: { $s: define.store(0) },
         variant: {
           // type-coverage:ignore-next-line
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           source: (i: any) => i.$s,
           cases: { A: (s: number) => s === 1 },
         },
@@ -340,6 +352,7 @@ describe('instance', () => {
       const child = model({
         input: { $v: define.store(0) },
         // type-coverage:ignore-next-line
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         fn: ({ $v }: any) => {
           // type-coverage:ignore-next-line
           const $derived = $v.map((x: number) => x);
@@ -350,6 +363,7 @@ describe('instance', () => {
       const parent = model({
         input: { $v: define.store(0) },
         // type-coverage:ignore-next-line
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         fn: ({ $v }: any) => {
           const c = create(child, { input: { $v } });
           return { c };

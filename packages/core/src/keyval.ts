@@ -25,10 +25,14 @@ import { isKeyval } from './define';
 export function keyval<
   ReactiveState,
   FullState extends {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [K in keyof ReactiveState]: ReactiveState[K] extends Keyval<
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       any,
       infer V,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       any
     >
       ? V[]
@@ -38,20 +42,29 @@ export function keyval<
   },
   WritableState extends {
     [K in {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       [P in keyof ReactiveState]: ReactiveState[P] extends Keyval<
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         any
       >
         ? P
-        : ReactiveState[P] extends StoreWritable<any>
+        : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ReactiveState[P] extends StoreWritable<any>
           ? P
           : never;
     }[keyof ReactiveState]]: ReactiveState[K] extends Keyval<
       infer V,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       any
     >
       ? V[]
@@ -59,7 +72,7 @@ export function keyval<
         ? V
         : never;
   },
-  Api = {},
+  Api = Record<string, unknown>,
   OptionalFields extends keyof WritableState = never,
 >(
   create: () => {
@@ -78,10 +91,10 @@ export function keyval<
 export function keyval<T, Shape>(options: {
   key: ((entity: T) => string | number) | keyof T;
   shape: Shape;
-}): Keyval<T, T, {}, ConvertToLensShape<Shape>>;
+}): Keyval<T, T, Record<string, never>, ConvertToLensShape<Shape>>;
 export function keyval<T>(options: {
   key: ((entity: T) => string | number) | keyof T;
-}): Keyval<T, T, {}, {}>;
+}): Keyval<T, T, Record<string, never>, Record<string, never>>;
 export function keyval<Input, Output, Api, Shape>(
   keyval: Keyval<Input, Output, Api, Shape>,
 ): Keyval<Input, Output, Api, Shape>;
@@ -90,9 +103,12 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
     | {
         key: ((entity: Input) => string | number) | keyof Input;
         shape?: Shape;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         props?: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         create?: any;
       }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     | Function
     | Keyval<Input, Input & ModelEnhance, Api, Shape>,
 ): Keyval<Input, Input & ModelEnhance, Api, Shape> {
@@ -104,6 +120,7 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
   type Output = {
     [K in keyof ModelEnhance]:
       | Store<ModelEnhance[K]>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       | Keyval<any, ModelEnhance[K], any, any>;
   };
   type KeyvalListState = ListState<Enriched, Output, Api>;
@@ -133,12 +150,14 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
         });
     let shape: Shape;
     if (typeof options === 'function') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       create = options as any;
     } else {
       ({
         key: getKeyRaw,
         shape = {} as Shape,
         create,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } = options as Exclude<typeof options, Keyval<any, any, any, any>>);
     }
     const {
@@ -162,7 +181,9 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
         clone: init,
         isClone,
         cloneOf,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         getCloneData: cloneOf?.getCloneData ?? (() => null as any),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any as Keyval<Input, Input & ModelEnhance, Api, Shape>,
       () => {
         let kvModel:
@@ -201,10 +222,11 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
             ? ({
                 type: 'structKeyval',
                 getKey,
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 shape: kvModel.__struct!.shape,
                 defaultItem: kvModel.defaultState,
               } as StructKeyval)
-            : shape!
+            : shape
               ? ({
                   type: 'structKeyval',
                   getKey,
@@ -212,9 +234,11 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
                   // TODO add support for .itemStore
                   defaultItem: () => null,
                 } as StructKeyval)
-              : (null as any as StructKeyval));
+              : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (null as any as StructKeyval));
 
         const defaultState =
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           defaultStateClone ?? (() => kvModel?.defaultState() ?? (null as any));
 
         const getCloneData =
@@ -240,11 +264,13 @@ export function keyval<Input, ModelEnhance, Api, Shape>(
 
         return {
           type: 'keyval' as const,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           api: api as any,
           __lens: shape,
           __struct: structShape,
           $items,
           $keys,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           __$listState: $entities as any,
           defaultState,
           edit: editApi,

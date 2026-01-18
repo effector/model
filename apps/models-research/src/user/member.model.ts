@@ -11,13 +11,16 @@ export const memberModel = model({
     user: chatUserFacet,
     membership: memberFacet,
   },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fn: ({ nickname, role }: { nickname: any; role: any }) => {
     const promote = createEvent();
 
     sample({
       clock: promote,
       source: role,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       fn: (currentRole: any) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (currentRole === 'admin' ? 'user' : 'admin') as any,
       target: role,
     });

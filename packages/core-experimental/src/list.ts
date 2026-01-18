@@ -277,7 +277,7 @@ function createMockStore<T>(value: T): MockStore<T> {
     map: (fn) => createMockStore(fn(value)),
     watch: (fn) => {
       fn(value);
-      return () => {};
+      return () => undefined;
     },
   };
 }

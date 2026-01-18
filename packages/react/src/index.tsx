@@ -29,14 +29,18 @@ import { spawn } from '@effector/model';
 type ModelStack =
   | {
       type: 'entity';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       model: Keyval<unknown, any, unknown, unknown>;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       clone: Keyval<unknown, any, unknown, unknown> | null;
       value: string | number;
       parent: ModelStack | null;
     }
   | {
       type: 'instance';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       model: Model<any, any, any, any>;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       value: Instance<any, any>;
       parent: ModelStack | null;
     };
@@ -48,6 +52,7 @@ export function EntityProvider<T>({
   value,
   children,
 }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   model: Keyval<any, T, any, any>;
   value: string | number;
   children: ReactNode;
@@ -101,6 +106,7 @@ export function ModelProvider<
   value,
   children,
 }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   model: Model<T, any, any, any>;
   value: Params & {
     [K in {
@@ -115,6 +121,7 @@ export function ModelProvider<
   };
   children: ReactNode;
 }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const deps: any[] = [model];
   if (typeof value === 'object' && value !== null) {
     deps.push(...Object.keys(value), ...Object.values(value));
@@ -122,7 +129,8 @@ export function ModelProvider<
     deps.push(value);
   }
   const instance = useMemo(() => spawn(model, value), deps);
-  useEffect(() => () => clearNode(instance.region), deps);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  useEffect(() => () => clearNode(instance.region as any), deps);
   const currentStack = useContext(ModelStackContext);
   const nextStack = {
     type: 'instance' as const,
@@ -138,22 +146,28 @@ export function ModelProvider<
 }
 
 function useGetKeyvalKey<Input, T, Api>(
-  args:
+  args: // eslint-disable-next-line @typescript-eslint/no-explicit-any
     | [keyval: Keyval<Input, T, Api, any>]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     | [keyval: Keyval<Input, T, Api, any>, key: string | number],
   allowUndefinedKey?: false,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): [keyval: Keyval<Input, T, Api, any>, key: string | number];
 function useGetKeyvalKey<Input, T, Api>(
-  args:
+  args: // eslint-disable-next-line @typescript-eslint/no-explicit-any
     | [keyval: Keyval<Input, T, Api, any>]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     | [keyval: Keyval<Input, T, Api, any>, key: string | number],
   allowUndefinedKey: true,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): [keyval: Keyval<Input, T, Api, any>, key: string | number | void];
 function useGetKeyvalKey<Input, T, Api>(
-  args:
+  args: // eslint-disable-next-line @typescript-eslint/no-explicit-any
     | [keyval: Keyval<Input, T, Api, any>]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     | [keyval: Keyval<Input, T, Api, any>, key: string | number],
-  allowUndefinedKey: boolean = false,
+  allowUndefinedKey = false,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): [keyval: Keyval<Input, T, Api, any>, key: string | number] {
   if (args.length === 1) {
     let [keyval] = args;
@@ -178,14 +192,17 @@ function useGetKeyvalKey<Input, T, Api>(
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function useEntityItem<T>(keyval: Keyval<any, T, any, any>): T;
 export function useEntityItem<T>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   keyval: Keyval<any, T, any, any>,
   key: string | number,
 ): T;
 export function useEntityItem<T>(
-  ...args:
+  ...args: // eslint-disable-next-line @typescript-eslint/no-explicit-any
     | [keyval: Keyval<any, T, any, any>]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     | [keyval: Keyval<any, T, any, any>, key: string | number]
 ) {
   const [keyval, key] = useGetKeyvalKey(args);
@@ -207,19 +224,25 @@ export function useEntityItem<T>(
 }
 
 export function useEntityList<T>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   keyval: Keyval<any, T, any, any>,
   View: () => ReactNode,
 ): ReactNode;
 export function useEntityList<T>(config: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   keyval: Keyval<any, T, any, any>;
   field: keyof T;
   fn: () => ReactNode;
 }): ReactNode;
 export function useEntityList<T>(
-  ...[keyvalOrConfig, viewFn]:
+  ...[
+    keyvalOrConfig,
+    viewFn,
+  ]: // eslint-disable-next-line @typescript-eslint/no-explicit-any
     | [keyval: Keyval<any, T, any, any>, View: () => ReactNode]
     | [
         config: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           keyval: Keyval<any, T, any, any>;
           field: keyof T;
           fn: () => ReactNode;
@@ -227,6 +250,7 @@ export function useEntityList<T>(
       ]
 ) {
   let View: () => ReactNode;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let keyvalToIterate: Keyval<any, T, any, any>;
   if (isKeyval(keyvalOrConfig)) {
     [keyvalToIterate, View] = [keyvalOrConfig, viewFn!];
@@ -237,6 +261,7 @@ export function useEntityList<T>(
       fn,
     } = keyvalOrConfig as Exclude<
       typeof keyvalOrConfig,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       Keyval<any, any, any, any>
     >;
     View = fn;
@@ -267,8 +292,9 @@ export function useEntityList<T>(
 }
 
 export function useItemApi<T, Api>(
-  ...args:
+  ...args: // eslint-disable-next-line @typescript-eslint/no-explicit-any
     | [keyval: Keyval<any, T, Api, any>]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     | [keyval: Keyval<any, T, Api, any>, key: string | number]
 ): {
   [K in keyof Api]: Api[K] extends EventCallable<infer V>
@@ -278,10 +304,12 @@ export function useItemApi<T, Api>(
   const [keyval, key] = useGetKeyvalKey(args);
   const commonApi = useUnit(keyval.api);
   return useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = {} as any;
     for (const field in commonApi) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const fn = (data: any) =>
-        //@ts-expect-error
+        //@ts-expect-error type mismatch
         commonApi[field]({
           key,
           data,
@@ -293,8 +321,9 @@ export function useItemApi<T, Api>(
 }
 
 export function useEditItemField<Input>(
-  ...args:
+  ...args: // eslint-disable-next-line @typescript-eslint/no-explicit-any
     | [keyval: Keyval<Input, any, any, any>]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     | [keyval: Keyval<Input, any, any, any>, key: string | number]
 ): {
   [K in keyof Input]-?: (params: Input[K]) => void;
@@ -302,10 +331,12 @@ export function useEditItemField<Input>(
   const [keyval, key] = useGetKeyvalKey(args);
   const commonApi = useUnit(keyval.editField);
   return useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = {} as any;
     for (const field in commonApi) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const fn = (data: any) =>
-        //@ts-expect-error
+        //@ts-expect-error type mismatch
         commonApi[field]({
           key,
           data,
@@ -317,6 +348,7 @@ export function useEditItemField<Input>(
 }
 
 export function useEditKeyval<Input, Output>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   keyval: Keyval<Input, Output, any, any>,
 ) {
   const [currentKeyval] = useGetKeyvalKey([keyval], true);

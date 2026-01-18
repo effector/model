@@ -52,8 +52,7 @@ export const PencilIcon = ({
   </svg>
 );
 
-interface MainButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface MainButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   label?: string;
   price?: number;
   count?: number;

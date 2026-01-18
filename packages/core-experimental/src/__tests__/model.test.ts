@@ -17,6 +17,7 @@ describe('model', () => {
         visual: visualFacet,
       },
       variant: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         source: (i: any) => i.$score,
         cases: {
           winning: (s: number) => s > 0,

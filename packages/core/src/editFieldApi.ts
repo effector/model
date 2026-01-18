@@ -16,10 +16,12 @@ export function createEditFieldApi<Input, Enriched, Output, Api, Shape>(
     | undefined,
   editApiUpdate: Keyval<Input, Enriched, Api, Shape>['edit']['update'],
 ): Keyval<Input, Enriched, Api, Shape>['editField'] {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const editField = {} as any;
 
   //TODO add support for generated keys
   if (kvModel && keyField) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const structShape = kvModel.__struct!.shape;
     for (const field in structShape) {
       const fieldStruct = structShape[field];
@@ -29,8 +31,10 @@ export function createEditFieldApi<Input, Enriched, Output, Api, Shape>(
           continue;
         }
         const fieldEditor = editApiUpdate.prepend(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (upd: { key: KeyOrKeys; data: any }) => {
             const keySet = Array.isArray(upd.key) ? upd.key : [upd.key];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const dataSet: Array<any> = Array.isArray(upd.key)
               ? upd.data
               : [upd.data];
@@ -39,9 +43,9 @@ export function createEditFieldApi<Input, Enriched, Output, Api, Shape>(
               const keyValue = keySet[i];
               const dataValue = dataSet[i];
               const item = {} as Partial<Input>;
-              //@ts-expect-error
+              //@ts-expect-error type mismatch
               item[keyField] = keyValue;
-              //@ts-expect-error
+              //@ts-expect-error type mismatch
               item[field] = dataValue;
               results.push(item);
             }

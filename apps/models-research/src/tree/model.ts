@@ -1,5 +1,5 @@
 import { model, define, ref } from '@effector-model/core-experimental';
-import { createEvent, createStore, sample, combine, Store } from 'effector';
+import { createEvent, createStore, sample, combine } from 'effector';
 import { nodeFacet, folderFacet, visualFacet } from './facets';
 
 /**
@@ -15,6 +15,7 @@ export const fileModel = model({
     node: nodeFacet,
     visual: visualFacet,
   },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fn: ({ name, id, $selectedId }: { name: any; id: any; $selectedId: any }) => {
     const select = createEvent();
     const rename = createEvent<string>();
@@ -68,6 +69,7 @@ export const folderModel = model({
     folder: folderFacet,
     visual: visualFacet,
   },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fn: ({
     name,
     id,

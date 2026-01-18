@@ -12,6 +12,7 @@ describe('Cursor', () => {
       $value: define.store(0),
     },
     // type-coverage:ignore-next-line
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fn: ({ $id, $value }: any) => ({ $id, $value }),
   });
 
@@ -55,6 +56,7 @@ describe('Cursor', () => {
   it('should filter items', async () => {
     const { list, scope } = await setup();
     // type-coverage:ignore-next-line
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cursor = createCursor(list).filter((item: any) =>
       // type-coverage:ignore-next-line
       item.$value.map((v: number) => v > 20),
@@ -80,6 +82,7 @@ describe('Cursor', () => {
   it('should remove items via cursor', async () => {
     const { list, scope } = await setup();
     // type-coverage:ignore-next-line
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cursor = createCursor(list).filter((item: any) =>
       // type-coverage:ignore-next-line
       item.$value.map((v: number) => v > 20),
@@ -98,6 +101,7 @@ describe('Cursor', () => {
   it('should update items via cursor', async () => {
     const { list, scope } = await setup();
     // type-coverage:ignore-next-line
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cursor = createCursor(list).filter((item: any) =>
       // type-coverage:ignore-next-line
       item.$value.map((v: number) => v < 20),
@@ -115,7 +119,6 @@ describe('Cursor', () => {
     // if (input) ... (store as any).rehydrate(val)
 
     // Let's verify via item access
-    const item1 = list.getItem('1');
     // Using select to get value might be tricky in test without 'select' helper,
     // but we can check internal store state if exposed, or trust the update logic (tested in keyval.test.ts)
     // Actually, let's map it to verify.
@@ -126,6 +129,7 @@ describe('Cursor', () => {
     const root = createCursor(list);
 
     // type-coverage:ignore-next-line
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const $values = root.map((item: any) => item.$value);
     expect(scope.getState($values)).toEqual([10, 20, 30, 40]);
   });
@@ -133,6 +137,7 @@ describe('Cursor', () => {
   it('should support aggregation', async () => {
     const { list, scope } = await setup();
     // type-coverage:ignore-next-line
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cursor = createCursor(list).filter((item: any) =>
       // type-coverage:ignore-next-line
       item.$value.map((v: number) => v > 20),
@@ -142,7 +147,8 @@ describe('Cursor', () => {
     expect(scope.getState(cursor.$isEmpty)).toBe(false);
 
     // type-coverage:ignore-next-line
-    const empty = cursor.filter((_: any) => false);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const empty = cursor.filter(() => false);
     expect(scope.getState(empty.$isEmpty)).toBe(true);
   });
 
@@ -151,6 +157,7 @@ describe('Cursor', () => {
     const cursor = createCursor(list);
 
     // type-coverage:ignore-next-line
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const $hasBig = cursor.some((item: any) =>
       // type-coverage:ignore-next-line
       item.$value.map((v: number) => v > 35),
@@ -158,6 +165,7 @@ describe('Cursor', () => {
     expect(scope.getState($hasBig)).toBe(true);
 
     // type-coverage:ignore-next-line
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const $allPositive = cursor.every((item: any) =>
       // type-coverage:ignore-next-line
       item.$value.map((v: number) => v > 0),
@@ -165,6 +173,7 @@ describe('Cursor', () => {
     expect(scope.getState($allPositive)).toBe(true);
 
     // type-coverage:ignore-next-line
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const $allBig = cursor.every((item: any) =>
       // type-coverage:ignore-next-line
       item.$value.map((v: number) => v > 35),
@@ -177,11 +186,13 @@ describe('Cursor', () => {
     const root = createCursor(list);
 
     // type-coverage:ignore-next-line
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const c1 = root.filter((item: any) =>
       // type-coverage:ignore-next-line
       item.$value.map((v: number) => v < 25),
     ); // 1, 2
     // type-coverage:ignore-next-line
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const c2 = root.filter((item: any) =>
       // type-coverage:ignore-next-line
       item.$value.map((v: number) => v > 15),
@@ -213,6 +224,7 @@ describe('Cursor', () => {
     // But how do we pass the function? forEach(fn) returns EventCallable<void>
     // So:
     // type-coverage:ignore-next-line
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
     const process = cursor.forEach((item: any) => {
       // item is a proxy. We can read state?
       // In test, maybe just callback with ID?
@@ -239,6 +251,7 @@ describe('Cursor', () => {
 
     // Sort descending by value
     // type-coverage:ignore-next-line
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sorted = createCursor(list).sort((a: any, b: any) => {
       return b.$value - a.$value;
     });
@@ -252,6 +265,7 @@ describe('Cursor', () => {
 
     const result = createCursor(list)
       // type-coverage:ignore-next-line
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .filter((item: any) => item.$value.map((v: number) => v >= 20)) // 2, 3, 4
       .take(2); // 2, 3
 
@@ -261,6 +275,7 @@ describe('Cursor', () => {
   it('should be reactive to additions', async () => {
     const { list, scope } = await setup();
     // type-coverage:ignore-next-line
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cursor = createCursor(list).filter((item: any) =>
       // type-coverage:ignore-next-line
       item.$value.map((v: number) => v > 50),

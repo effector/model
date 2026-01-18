@@ -1054,7 +1054,6 @@ Effector Models utilizes **Facets** (Traits) to define capabilities.
     ```
 
 2.  **Define Models:**
-
     - `GuestModel` implements `BaseUserFacet`.
     - `AdminModel` implements `BaseUserFacet` AND `AdminFacet`.
 

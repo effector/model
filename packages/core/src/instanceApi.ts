@@ -14,16 +14,19 @@ export function createInstanceApi<Input, Enriched, Output, Api, Shape>(
       >
     | undefined,
 ): Keyval<Input, Enriched, Api, Shape>['api'] {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const api = {} as Record<keyof Api, any>;
   if (kvModel) {
     for (const prop of kvModel.apiFields) {
       const evt = createEvent<
         | {
             key: string | number;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             data: any;
           }
         | {
             key: Array<string | number>;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             data: any[];
           }
       >();
@@ -37,7 +40,9 @@ export function createInstanceApi<Input, Enriched, Output, Api, Shape>(
                 : Array.from({ length: payload.key.length }),
             ]
           : [[payload.key], [payload.data]];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const targets = [] as any[];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const params = [] as any[];
         for (let i = 0; i < key.length; i++) {
           const idx = state.keys.indexOf(key[i]);

@@ -59,14 +59,16 @@ describe('match', () => {
       source: item.activeVariant,
       cases: {
         // type-coverage:ignore-next-line
-        A: (scope: any, trg: Event<string>) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        A: (scope: any, trg: Event<unknown>) => {
           sample({
             clock: trg,
             target: watcherA,
           });
         },
         // type-coverage:ignore-next-line
-        B: (scope: any, trg: Event<string>) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        B: (scope: any, trg: Event<unknown>) => {
           sample({
             clock: trg,
             target: watcherB,
@@ -104,6 +106,7 @@ describe('match', () => {
       input: { $tag: define.store('A') },
       variant: {
         // type-coverage:ignore-next-line
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         source: (i: any) => i.$tag,
         cases: { A: (t: string) => t === 'A', B: (t: string) => t === 'B' },
       },
@@ -133,8 +136,10 @@ describe('match', () => {
       source: itemProxy.activeVariant,
       cases: {
         A: (scope, trigger) =>
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           sample({ clock: trigger as Event<any>, target: triggerA }),
         B: (scope, trigger) =>
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           sample({ clock: trigger as Event<any>, target: triggerB }),
       },
     });

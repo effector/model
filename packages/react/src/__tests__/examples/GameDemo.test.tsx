@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import * as React from 'react';
 import { useUnit } from 'effector-react';
@@ -25,6 +25,7 @@ const gameModel = model({
     visual: visualFacet,
   },
   variant: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     source: (input: { $score: any }) => input.$score,
     cases: {
       winning: (score: number) => score > 0,
@@ -39,6 +40,7 @@ const gameModel = model({
     draw: () => ({
       visual: { $color: define.store('gray') },
     }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     losing: ({ $score }: { $score: any }) => {
       const $intensity = $score.map((s: number) =>
         Math.min(Math.abs(s) * 5, 100),
@@ -58,9 +60,12 @@ const gameModel = model({
 
 // --- Component ---
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function GameDemo({ game, $score, updateScore }: any) {
   const [score, update] = useUnit([$score, updateScore]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const color = useUnit(game.facets.visual.$color) as any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const activeVariant = useUnit(game.activeVariant) as any;
 
   return (
@@ -68,7 +73,9 @@ function GameDemo({ game, $score, updateScore }: any) {
       <div data-testid="score">{score as React.ReactNode}</div>
       <div data-testid="color">{color as React.ReactNode}</div>
       <div data-testid="variant">{activeVariant as React.ReactNode}</div>
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       <button onClick={() => (update as any)(10)}>Win</button>
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       <button onClick={() => (update as any)(-10)}>Lose</button>
     </div>
   );

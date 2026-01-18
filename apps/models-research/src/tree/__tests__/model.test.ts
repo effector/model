@@ -4,6 +4,7 @@ import { create } from '@effector-model/core-experimental';
 import { fileModel, folderModel } from '../model';
 
 // Helper to find node by ID in the tree (DFS)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const findNode = (root: any, id: string): any => {
   const rootId = root.input.id.getState();
   if (rootId === id) return root;
@@ -19,6 +20,7 @@ const findNode = (root: any, id: string): any => {
 };
 
 // Helper to calculate trace (array of instances from root to target)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getTrace = (root: any, id: string, acc: any[] = []): any[] | null => {
   const rootId = root.input.id.getState();
   const currentTrace = [...acc, root];
@@ -80,6 +82,7 @@ describe('Tree Models Logic', () => {
       const name = createStore('src');
       const id = createStore('folder-1');
       const $selectedId = createStore<string | null>(null);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const children: any[] = [];
 
       const instance = create(folderModel, {
@@ -119,6 +122,7 @@ describe('Tree Models Logic', () => {
       const children = folder.facets.folder.children.getState();
       expect(children).toHaveLength(1);
       expect(children[0]).toBe(file);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((children[0] as any).facets.node.$name.getState()).toBe(
         'child.txt',
       );
@@ -167,10 +171,14 @@ describe('Tree Models Logic', () => {
 
     it('getTrace should calculate path to node', () => {
       const trace = getTrace(rootFolder, 'node-1');
-      expect(trace).toHaveLength(3);
-      expect(trace![0]).toBe(rootFolder);
-      expect(trace![1]).toBe(srcFolder);
-      expect(trace![2]).toBe(file1);
+      if (trace) {
+        expect(trace).toHaveLength(3);
+        expect(trace[0]).toBe(rootFolder);
+        expect(trace[1]).toBe(srcFolder);
+        expect(trace[2]).toBe(file1);
+      } else {
+        throw new Error('Trace not found');
+      }
 
       expect(getTrace(rootFolder, 'non-existent')).toBe(null);
     });

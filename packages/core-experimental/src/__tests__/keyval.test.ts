@@ -1,12 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import {
-  createStore,
-  allSettled,
-  fork,
-  createEvent,
-  sample,
-  is,
-} from 'effector';
+import { createStore, allSettled, fork, createEvent, is } from 'effector';
 import { model } from '../model';
 import { define } from '../define';
 import { keyval, union } from '../keyval';
@@ -17,6 +10,7 @@ describe('keyval', () => {
   const m = model({
     input: { $id: define.store('default') },
     // type-coverage:ignore-next-line
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fn: ({ $id }: any) => ({ $id }),
   });
 
@@ -73,7 +67,7 @@ describe('keyval', () => {
     expect(scope.getState(list.$items)).toEqual(['1']);
 
     // Test invalid variant
-    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     await allSettled(list.add, {
       scope,
       params: {
@@ -114,6 +108,7 @@ describe('keyval', () => {
 
     const $val = select(p2)
       // type-coverage:ignore-next-line
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .path((x: any) => x.$id)
       .fallback('missing');
 
@@ -133,8 +128,10 @@ describe('keyval', () => {
 
     // Check properties on Event Proxy
     // type-coverage:ignore-next-line
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expect((p3.activeVariant as any)._sourceEvent).toBe(evt);
     // type-coverage:ignore-next-line
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expect(is.store((p3.activeVariant as any)._instances)).toBe(true);
 
     // Check caching
@@ -144,7 +141,17 @@ describe('keyval', () => {
   });
 
   it('should handle facets and activeVariant in proxies', () => {
-    const list = keyval({ model: m });
+    const mWithFacets = model({
+      input: {},
+      facets: {
+        f: facet({
+          field: define.store(0),
+          method: define.event<void>(),
+        }),
+      },
+      fn: () => ({}),
+    });
+    const list = keyval({ model: mWithFacets });
 
     // Store/String Proxy
     const p1 = list.getItem('1');
@@ -214,7 +221,7 @@ describe('keyval', () => {
       params: { id: '1', input: { $id: createStore('1') } },
     });
 
-    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
 
     // Add same ID with different input
     await allSettled(list.add, {
@@ -223,7 +230,6 @@ describe('keyval', () => {
     });
 
     // Should still be '1' (original)
-    const item = list.getItem('1');
     // We need to select to see value
     // But we can rely on $items list being length 1
     expect(scope.getState(list.$items)).toHaveLength(1);
@@ -235,18 +241,20 @@ describe('keyval', () => {
     const mRequired = model({
       input: { $id: define.store<string>() }, // No default
       // type-coverage:ignore-next-line
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       fn: ({ $id }: any) => ({ $id }),
     });
     const list = keyval({ model: mRequired });
     const scope = fork();
 
-    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
 
     await allSettled(list.add, {
       scope,
       params: {
         id: '1',
         // type-coverage:ignore-next-line
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         input: {} as any, // Missing $id
       },
     });

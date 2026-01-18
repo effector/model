@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
-import { createStore, allSettled, fork, createEvent, sample } from 'effector';
+import { describe, it, expect } from 'vitest';
+import { createStore, allSettled, fork } from 'effector';
 import { model } from '../model';
 import { define } from '../define';
 import { keyval } from '../keyval';
@@ -12,6 +12,7 @@ describe('lens', () => {
     input: { $v: define.store(0) },
     facets: { f },
     // type-coverage:ignore-next-line
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fn: ({ $v }: any) => ({
       f: { $val: $v },
       staticVal: 123,
@@ -49,6 +50,7 @@ describe('lens', () => {
       .variant('ignored') // Should return builder
       .facet('f')
       // type-coverage:ignore-next-line
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .path((x: any) => x.$val)
       .fallback(-1);
 
@@ -79,6 +81,7 @@ describe('lens', () => {
     // Static value
     const $static = select(item)
       // type-coverage:ignore-next-line
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .path((x: any) => x.staticVal)
       .fallback(0);
     expect(scope.getState($static)).toBe(123);
@@ -86,6 +89,7 @@ describe('lens', () => {
     // Nested path
     const $nested = select(item)
       // type-coverage:ignore-next-line
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .path((x: any) => x.nested.deep.val)
       .fallback(0);
     expect(scope.getState($nested)).toBe(456);
@@ -100,12 +104,14 @@ describe('lens', () => {
     const item = list.getItem('1');
     const $missing = select(item)
       // type-coverage:ignore-next-line
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .path((x: any) => x.nonExistent)
       .fallback(999);
     expect(scope.getState($missing)).toBe(999);
 
     const $missingDeep = select(item)
       // type-coverage:ignore-next-line
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .path((x: any) => x.nested.nonExistent)
       .fallback(999);
     expect(scope.getState($missingDeep)).toBe(999);
@@ -124,6 +130,7 @@ describe('lens', () => {
     const $val = select(item)
       .facet('f')
       // type-coverage:ignore-next-line
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .path((x: any) => x.$val)
       .fallback(0);
 
@@ -134,8 +141,10 @@ describe('lens', () => {
     const item = list.getItem('1');
     const b1 = select(item).facet('f');
     // type-coverage:ignore-next-line
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const b2 = b1.path((x: any) => x.x);
     // type-coverage:ignore-next-line
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const b3 = b1.path((x: any) => x.y);
 
     // b1 should not be modified by b2 call

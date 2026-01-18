@@ -33,6 +33,7 @@ const kickAllowedFx = createEffect(
     variants,
     id,
   }: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     state: Record<string, any>;
     variants: Record<string, string | null>;
     id: string;
@@ -70,13 +71,16 @@ const userToPromote = usersList.getItem(promoteUser);
 match({
   source: userToPromote.activeVariant,
   cases: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     member: (memberScope: any, trigger: Event<unknown>) => {
       // Explicitly wire the trigger to the method
       sample({
         clock: trigger,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         target: memberScope.facets.membership.promote as any,
       });
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     guest: (_: any, trigger: any) => {
       trigger.watch(() => console.error('Нельзя повысить гостя!'));
     },
@@ -89,11 +93,13 @@ const $currentUser = usersList.getItem($selectedUserId);
 export const $currentUserRole = select($currentUser)
   .variant('member')
   .facet('membership')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   .path((facet: any) => facet.$role)
   .fallback('guest') as Store<string>;
 
 export const $currentUserName = select($currentUser)
   .facet('user')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   .path((facet: any) => facet.$nickname)
   .fallback('') as Store<string>;
 
@@ -108,6 +114,7 @@ sample({
     variant: 'guest',
     input: { nickname: createStore(name) },
   }),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   target: usersList.add as any,
 });
 
@@ -121,5 +128,6 @@ sample({
       role: createStore(role),
     },
   }),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   target: usersList.add as any,
 });

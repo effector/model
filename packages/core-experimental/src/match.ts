@@ -15,8 +15,9 @@ interface InternalSource {
   _instances: Store<Record<string, unknown>>;
   _activeVariants: Store<Record<string, string | null>>;
   _state: Store<Record<string, unknown>>;
-  _modelDef:
+  _modelDef: // eslint-disable-next-line @typescript-eslint/no-explicit-any
     | Model<Record<string, unknown>, Record<string, unknown>, any>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     | Union<any>;
 }
 
@@ -79,6 +80,7 @@ export function match(config: MatchConfig) {
           return currentVariant === variantName;
         },
         fn: (
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           { instances }: { instances: Record<string, unknown> },
           payload: unknown,
         ) => {

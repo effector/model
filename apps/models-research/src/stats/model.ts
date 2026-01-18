@@ -7,6 +7,7 @@ export const statsModel = model({
   input: {
     game: gameModel,
   },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fn: ({ game }: any) => {
     const $totalLosingTime = createStore(0);
 
@@ -16,13 +17,17 @@ export const statsModel = model({
 
     // Bind to lifecycle
     sample({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       clock: game.variant.losing.enter as any,
       target: start,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
     sample({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       clock: game.variant.losing.leave as any,
       target: stop,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
     sample({

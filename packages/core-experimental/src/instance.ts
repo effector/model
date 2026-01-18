@@ -32,15 +32,17 @@ export function create<
   Facets extends Record<string, unknown>,
   Variants extends {
     source: unknown;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cases: Record<string, (val: any) => boolean>;
   },
+  FnResult = Record<string, unknown>,
 >(
-  modelDef: Model<Input, Facets, Variants>,
+  modelDef: Model<Input, Facets, Variants, FnResult>,
   config: {
     input?: InferConfigInput<Input>;
     state?: Record<string, unknown>;
   } = {},
-): Model<Input, Facets, Variants>['_InstanceType'] {
+): Model<Input, Facets, Variants, FnResult>['_InstanceType'] {
   const { config: modelConfig } = modelDef;
 
   // 1. Process Input -> Extra
@@ -224,6 +226,7 @@ export function create<
           | EventDef<unknown>
           | ArrayDef<unknown>
           | Facet<FacetShape>
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           | any;
 
         if (isRef(def)) {
@@ -251,6 +254,7 @@ export function create<
               (facetRes?.impl as Record<string, unknown>) || facetRes;
 
             if (variantFacetImpl && variantFacetImpl[fieldName]) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               let val = variantFacetImpl[fieldName] as any;
               if (val && val.type === 'store') {
                 val = createWritableStore(val.initial, { skipVoid: false });
@@ -262,6 +266,7 @@ export function create<
           const fnResFacet = fnResult[facetName] as Record<string, unknown>;
           const fnResFacetImpl =
             (fnResFacet?.impl as Record<string, unknown>) || fnResFacet;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           let baseStore = fnResFacetImpl?.[fieldName] as any;
 
           if (!baseStore) {
@@ -335,6 +340,7 @@ export function create<
       facets[facetName] = facetInstance;
 
       if (typeof (facetDef as Facet<FacetShape>)._linker === 'function') {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         (facetDef as Facet<FacetShape>)._linker!(facetInstance);
       }
     }
@@ -402,5 +408,10 @@ export function create<
   }
   result.input = reactiveExtra;
 
-  return result as Model<Input, Facets, Variants>['_InstanceType'];
+  return result as unknown as Model<
+    Input,
+    Facets,
+    Variants,
+    FnResult
+  >['_InstanceType'];
 }

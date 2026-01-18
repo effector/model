@@ -4,12 +4,14 @@ import type { FactoryPathMap } from './types';
 
 /** Monkey patching for effector 23 for proper initial state in stores */
 export function installStateHooks(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   initState: Record<string, any>,
   node: Node,
   currentFactoryPathToStateKey: FactoryPathMap,
 ) {
   wrapPush(node.family.links, (item, idx) => {
     if (!currentFactoryPathToStateKey.has(idx)) return;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const currentPath = currentFactoryPathToStateKey.get(idx)!;
     if (typeof currentPath === 'string') {
       if (item.scope.state && currentPath in initState) {
@@ -37,6 +39,7 @@ function wrapPush<T>(arr: T[], cb: (item: T, realIdx: number) => void) {
 
 /** Collect factory paths for further patching */
 export function collectFactoryPaths(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   state: Record<string, any>,
   initRegion: Node,
 ) {
@@ -44,6 +47,7 @@ export function collectFactoryPaths(
   for (const key in state) {
     const value = state[key];
     if (is.store(value) && is.targetable(value)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const path = findNodeInTree((value as any).graphite, initRegion);
       if (path) {
         let nestedFactoryPathMap = factoryPathToStateKey;

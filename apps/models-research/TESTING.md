@@ -9,11 +9,9 @@ The core package contains the primitives for the new Model API. Tests must cover
 ### 1.1 Primitives (Unit Tests)
 
 - **`index.ts`**:
-
   - [x] **Gap**: Verify all public primitives are exported (`model`, `define`, `keyval`, `union`, `facet`, `select`, `match`, `create`, `isLens`).
 
 - **`define.ts`**:
-
   - [x] `store`: Verify creation of store definitions.
   - [x] `event`: Verify creation of event definitions.
   - [x] `array`: Verify creation of array definitions.
@@ -21,18 +19,15 @@ The core package contains the primitives for the new Model API. Tests must cover
   - [ ] **Gap**: Verify type inference for definitions (compile-time check).
 
 - **`facet.ts`**:
-
   - [x] `facet`: Verify facet definition structure.
   - [x] **Gap**: Test empty facet definition.
   - [x] **Gap**: Test nested facets.
 
 - **`model.ts`**:
-
   - [x] `model`: Verify configuration object creation.
   - [x] **Gap**: Test invalid/empty model configurations.
 
 - **`instance.ts`**:
-
   - [x] `create`: Verify instance creation from model.
   - [x] `input`: Verify input processing and reactivity.
   - [x] `variant`: Verify variant switching logic.
@@ -43,7 +38,6 @@ The core package contains the primitives for the new Model API. Tests must cover
   - [x] **Gap**: Test `create` with extra input fields (ignored).
 
 - **`keyval.ts`**:
-
   - [x] `add`/`remove`: Verify basic list operations.
   - [x] `getItem`: Verify proxy creation (Store vs Event).
   - [x] `union`: Verify handling of union models (polymorphism).
@@ -53,7 +47,6 @@ The core package contains the primitives for the new Model API. Tests must cover
   - [x] **Gap**: Test `add` with missing required input fields.
 
 - **`lens.ts`**:
-
   - [x] `select`: Verify builder API.
   - [x] `path`: Verify path resolution (static, nested).
   - [x] `fallback`: Verify fallback values when path is missing or ID is null.
@@ -71,7 +64,6 @@ The core package contains the primitives for the new Model API. Tests must cover
 ### 1.2 Examples (Business Logic Tests)
 
 - **Game Model (`examples/game.test.ts`)**:
-
   - [x] `winning`/`losing`/`draw` states.
   - [x] Facet implementation per state.
   - [x] **Fix**: `StatsModel` timing test (timeout issue).
@@ -90,7 +82,6 @@ Tests ensure that the models works correctly within React components using `effe
 ### 2.1 Examples
 
 - **`GameDemo.test.tsx`**:
-
   - [x] Rendering model state (`useUnit`).
   - [x] Triggering events.
   - [x] Reacting to variant changes.
