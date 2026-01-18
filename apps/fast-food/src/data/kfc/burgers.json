@@ -1,0 +1,146 @@
+[
+  {
+    "type": "burger",
+    "name": "Сандерс Бургер Оригинальный",
+    "description": "Легендарное филе в секретной панировке 11 трав и специй, хрустящие маринованные огурчики, сладкий красный лук и фирменный соус на мягкой булочке с кунжутом.",
+    "basePrice": 179,
+    "nutritionalInfo": {
+      "calories": 280,
+      "weight": 160
+    },
+    "extraIngredients": [
+      {
+        "id": "cheddar",
+        "name": "Сыр Чеддер",
+        "price": 39
+      },
+      {
+        "id": "bacon_crispy",
+        "name": "Хрустящий Бекон",
+        "price": 49
+      },
+      {
+        "id": "jalapeno",
+        "name": "Халапеньо",
+        "price": 29
+      },
+      {
+        "id": "extra_fillet",
+        "name": "Доп. Филе",
+        "price": 99
+      }
+    ],
+    "defaultIngredients": [
+      {
+        "id": "pickles",
+        "name": "Маринованные огурчики"
+      },
+      {
+        "id": "onion",
+        "name": "Лук"
+      },
+      {
+        "id": "ketchup",
+        "name": "Кетчуп"
+      },
+      {
+        "id": "mayo",
+        "name": "Майонез"
+      }
+    ],
+    "composition": "Булочка с кунжутом, филе куриное оригинальное, огурцы маринованные, лук репчатый, кетчуп томатный, майонез."
+  },
+  {
+    "type": "burger",
+    "name": "Шефбургер Де Люкс",
+    "description": "Большое сочное филе, свежие томаты, хрустящий салат айсберг и сливочный соус Цезарь. Идеальный баланс вкуса.",
+    "basePrice": 199,
+    "nutritionalInfo": {
+      "calories": 320,
+      "weight": 215
+    },
+    "extraIngredients": [
+      {
+        "id": "cheddar",
+        "name": "Сыр Чеддер",
+        "price": 39
+      },
+      {
+        "id": "bacon_crispy",
+        "name": "Хрустящий Бекон",
+        "price": 49
+      },
+      {
+        "id": "hashbrown",
+        "name": "Хашбраун",
+        "price": 59
+      },
+      {
+        "id": "cheese_sauce",
+        "name": "Сырный Соус",
+        "price": 29
+      }
+    ],
+    "defaultIngredients": [
+      {
+        "id": "tomatoes",
+        "name": "Томаты"
+      },
+      {
+        "id": "lettuce",
+        "name": "Салат Айсберг"
+      },
+      {
+        "id": "caesar_sauce",
+        "name": "Соус Цезарь"
+      }
+    ],
+    "composition": "Булочка с кунжутом, филе куриное оригинальное, томаты свежие, салат айсберг, соус Цезарь."
+  },
+  {
+    "type": "burger",
+    "name": "Маэстро Бургер Гурмэ",
+    "description": "Премиальный бургер на бриоши. Нежное филе, благородный сыр Эмменталь, копченый бекон, свежий салат и авторский соус.",
+    "basePrice": 289,
+    "nutritionalInfo": {
+      "calories": 480,
+      "weight": 260
+    },
+    "extraIngredients": [
+      {
+        "id": "extra_fillet",
+        "name": "Доп. Филе",
+        "price": 99
+      },
+      {
+        "id": "fried_onion",
+        "name": "Лук Фри",
+        "price": 29
+      },
+      {
+        "id": "jalapeno",
+        "name": "Халапеньо",
+        "price": 29
+      }
+    ],
+    "defaultIngredients": [
+      {
+        "id": "cheese_emmental",
+        "name": "Сыр Эмменталь"
+      },
+      {
+        "id": "bacon",
+        "name": "Бекон"
+      },
+      {
+        "id": "lettuce",
+        "name": "Салат"
+      },
+      {
+        "id": "maestro_sauce",
+        "name": "Соус Маэстро"
+      }
+    ],
+    "composition": "Булочка бриошь, филе куриное оригинальное, сыр Эмменталь, бекон, салат айсберг, соус Маэстро."
+  }
+]
