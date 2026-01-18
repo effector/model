@@ -1,13 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { createCursor } from '@effector-model/core-experimental';
-import {
-  openProduct,
-  openCart,
-  menuBack,
-  selectRestaurant,
-} from '../models/app';
-import { cartModel } from '../models/cart';
+import { useApp } from './AppContext';
 import { RESTAURANTS, getRestaurantTheme } from '../data/restaurants';
 import { MainButton } from './components/Common';
 
@@ -26,21 +20,21 @@ import kfcDrinks from '../data/kfc/drinks.json';
 import kfcSauces from '../data/kfc/sauces.json';
 
 const DODO_CATEGORIES = [
-  { id: 'pizza', title: 'Пицца', items: dodoPizzas },
-  { id: 'snack', title: 'Закуски', items: dodoSnacks },
-  { id: 'coffee', title: 'Кофе', items: dodoCoffee },
-  { id: 'drinks', title: 'Напитки', items: dodoDrinks },
-  { id: 'cocktails', title: 'Коктейли', items: dodoCocktails },
-  { id: 'sauces', title: 'Соусы', items: dodoSauces },
+  { id: 'dodo_pizza', title: 'Пицца', items: dodoPizzas },
+  { id: 'dodo_snack', title: 'Закуски', items: dodoSnacks },
+  { id: 'dodo_coffee', title: 'Кофе', items: dodoCoffee },
+  { id: 'dodo_drinks', title: 'Напитки', items: dodoDrinks },
+  { id: 'dodo_cocktails', title: 'Коктейли', items: dodoCocktails },
+  { id: 'dodo_sauces', title: 'Соусы', items: dodoSauces },
 ];
 
 const KFC_CATEGORIES = [
-  { id: 'burger', title: 'Бургеры', items: kfcBurgers },
-  { id: 'twister', title: 'Твистеры', items: kfcTwisters },
-  { id: 'bucket', title: 'Баскеты', items: kfcBuckets },
-  { id: 'snack', title: 'Снэки', items: kfcSnacks },
-  { id: 'drinks', title: 'Напитки', items: kfcDrinks },
-  { id: 'sauces', title: 'Соусы', items: kfcSauces },
+  { id: 'kfc_burger', title: 'Бургеры', items: kfcBurgers },
+  { id: 'kfc_twister', title: 'Твистеры', items: kfcTwisters },
+  { id: 'kfc_bucket', title: 'Баскеты', items: kfcBuckets },
+  { id: 'kfc_snack', title: 'Снэки', items: kfcSnacks },
+  { id: 'kfc_drinks', title: 'Напитки', items: kfcDrinks },
+  { id: 'kfc_sauces', title: 'Соусы', items: kfcSauces },
 ];
 
 interface RestaurantProps {
@@ -64,7 +58,8 @@ export const Restaurant = ({ id, variant }: RestaurantProps) => {
 };
 
 const RestaurantCard = ({ restaurant }: { restaurant: any }) => {
-  const select = useUnit(selectRestaurant);
+  const { events } = useApp();
+  const select = useUnit(events.selectRestaurant);
 
   return (
     <div
@@ -116,9 +111,10 @@ const RestaurantCard = ({ restaurant }: { restaurant: any }) => {
 };
 
 const RestaurantMenu = ({ restaurant }: { restaurant: any }) => {
-  const open = useUnit(openProduct);
-  const toCart = useUnit(openCart);
-  const back = useUnit(menuBack);
+  const { events, cartModel } = useApp();
+  const open = useUnit(events.openProduct);
+  const toCart = useUnit(events.openCart);
+  const back = useUnit(events.menuBack);
 
   const cartView = useMemo(() => {
     return createCursor(cartModel).filter((item: any) =>
@@ -126,7 +122,7 @@ const RestaurantMenu = ({ restaurant }: { restaurant: any }) => {
         (id: string) => id === restaurant.id,
       ),
     );
-  }, [restaurant.id]);
+  }, [restaurant.id, cartModel]);
 
   const $itemTotals = useMemo(() => {
     return cartView.map((item: any) => {
@@ -169,7 +165,18 @@ const RestaurantMenu = ({ restaurant }: { restaurant: any }) => {
       if (!tabsEl) return;
 
       const tabsRect = tabsEl.getBoundingClientRect();
-      const threshold = tabsRect.bottom + 10;
+      // Increased threshold to be more forgiving and prevent flickering
+      const threshold = tabsRect.bottom + 25;
+
+      // Check if we are at the bottom of the scroll container
+      const isAtBottom =
+        container.scrollHeight - container.scrollTop - container.clientHeight <
+        50;
+
+      if (isAtBottom) {
+        setActiveTab(categories[categories.length - 1].id);
+        return;
+      }
 
       let currentActive = categories[0].id;
 

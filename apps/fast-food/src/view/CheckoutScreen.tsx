@@ -1,9 +1,21 @@
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
-import { finishOrder } from '../models/app';
-import { receiptModel, $receiptTotalPrice } from '../models/cart';
+import { useApp } from './AppContext';
 import { useLens } from './hooks';
 import { MainButton } from './components/Common';
+import { Match } from './components/ProductView';
+
+const cases = {
+  pizza: () => null,
+  drink: () => null,
+  coffee: () => null,
+  cocktail: () => null,
+  sauce: () => null,
+  burger: () => null,
+  twister: () => null,
+  bucket: () => null,
+  snack: () => null,
+};
 
 const ReceiptItem = ({ id, model }: { id: string; model: any }) => {
   const item = useMemo(() => model.getItem(id), [id, model]);
@@ -15,6 +27,7 @@ const ReceiptItem = ({ id, model }: { id: string; model: any }) => {
     <div className="flex justify-between items-start py-2 border-b border-dashed border-gray-300 last:border-0 font-mono text-sm text-gray-800">
       <div className="flex-1 pr-4">
         <div className="font-bold">{name}</div>
+        <Match model={item} cases={cases as any} mode="cart" />
         {quantity > 1 && (
           <div className="text-gray-500 text-xs mt-0.5">
             {price} ₽ x {quantity}
@@ -29,9 +42,10 @@ const ReceiptItem = ({ id, model }: { id: string; model: any }) => {
 };
 
 export const CheckoutScreen = () => {
-  const finish = useUnit(finishOrder);
+  const { events, receiptModel, stores } = useApp();
+  const finish = useUnit(events.finishOrder);
   const items = useUnit(receiptModel.$items);
-  const total = useUnit($receiptTotalPrice);
+  const total = useUnit(stores.$receiptTotalPrice);
 
   return (
     <div className="h-full bg-white flex flex-col">
@@ -55,7 +69,7 @@ export const CheckoutScreen = () => {
           </p>
         </div>
 
-        <div className="px-6 pb-8">
+        <div className="px-6">
           <div className="bg-white shadow-xl shadow-gray-200/50 mx-auto max-w-sm relative">
             {/* Receipt Top Jagged Edge (Simulated with CSS or keep simple) */}
             <div className="h-2 bg-gray-800 w-full absolute top-0 left-0 opacity-0"></div>
@@ -92,6 +106,7 @@ export const CheckoutScreen = () => {
             </div>
           </div>
         </div>
+        <div className="h-32" />
       </div>
 
       <div className="absolute bottom-6 left-0 w-full flex justify-center z-30 pointer-events-none px-4">

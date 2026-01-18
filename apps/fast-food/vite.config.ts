@@ -11,7 +11,13 @@ export default defineConfig({
   plugins: [
     tsconfigPaths(),
     // babel({ extensions: ['.ts', '.tsx'], babelHelpers: 'bundled' }),
-    react(),
+    react({
+      babel: {
+        plugins: [
+          ['effector/babel-plugin', { factories: ['@withease/factories'] }],
+        ],
+      },
+    }),
   ],
   build: { outDir: '../../../dist/apps/fast-food' },
 });

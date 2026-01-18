@@ -105,6 +105,7 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
     path: string[];
     value: any;
   }>();
+  const clearInstanceState = createEvent<string>();
 
   // Update Logic
   const updateInstanceFx = createEffect(
@@ -173,6 +174,10 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
   });
 
   $state.on(remove, (state, id) => {
+    const { [id]: _, ...rest } = state;
+    return rest;
+  });
+  $state.on(clearInstanceState, (state, id) => {
     const { [id]: _, ...rest } = state;
     return rest;
   });
@@ -271,6 +276,12 @@ export function keyval<M extends Union<any> | Model<any, any, any>>(
       return { id, instance };
     },
   );
+
+  sample({
+    clock: addValid,
+    fn: ({ id }) => id,
+    target: clearInstanceState,
+  });
 
   sample({
     clock: addValid,

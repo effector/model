@@ -5,3 +5,12 @@
 .categories:not(:last-child):after {
   content: ', ';
 }
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

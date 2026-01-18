@@ -6,19 +6,15 @@ import {
   ArrowPathIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline';
-import { cartModel } from '../../models/cart';
 import { useLens } from '../hooks';
 import { Match } from './ProductView';
-import { editItem, appInstance } from '../../models/app';
+import { useApp } from '../AppContext';
 
-export const CartItem = ({
-  id,
-  model = cartModel,
-}: {
-  id: string;
-  model?: any;
-}) => {
-  const item = useMemo(() => model.getItem(id), [id, model]);
+export const CartItem = ({ id, model }: { id: string; model?: any }) => {
+  const { cartModel, events, appInstance } = useApp();
+  const activeModel = model || cartModel;
+
+  const item = useMemo(() => activeModel.getItem(id), [id, activeModel]);
   const isDeleted = useLens((item as any).facets.product.$isDeleted, false);
   const name = useLens((item as any).facets.product.$name, 'Loading...');
   const price = useLens((item as any).facets.product.$price, 0);
@@ -28,10 +24,10 @@ export const CartItem = ({
     restore: (item as any).facets.product.restore,
     increment: (item as any).facets.product.increment,
     decrement: (item as any).facets.product.decrement,
-    remove: model.remove,
+    remove: activeModel.remove,
   }) as any;
 
-  const openEdit = useUnit(editItem);
+  const openEdit = useUnit(events.editItem);
   const screen = useUnit(appInstance.input.$screen);
   const isCheckout = (screen as any) === 'congrats';
 
@@ -73,11 +69,11 @@ export const CartItem = ({
       </div>
 
       {/* Footer: Price, Edit, Quantity */}
-      <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-50">
+      <div className="flex justify-between items-center mt-4">
         <div
           className={`transition-all ${isDeleted ? 'opacity-50 grayscale' : 'opacity-100'}`}
         >
-          <div className="text-[var(--theme-color,#ff6900)] px-3 py-1 rounded-lg font-bold text-base border border-[var(--theme-color,#ff6900)]">
+          <div className="bg-gray-100 text-[var(--theme-color,#ff6900)] px-4 py-2 rounded-2xl font-bold text-base">
             {price * quantity} ₽
           </div>
         </div>
@@ -102,16 +98,16 @@ export const CartItem = ({
             <>
               {!isCheckout && (
                 <button
-                  className="text-[var(--theme-color,#ff6900)] font-semibold text-sm hover:underline"
+                  className="text-[var(--theme-color,#ff6900)] font-bold text-sm hover:opacity-80 active:scale-95 transition-all"
                   onClick={() => openEdit(id)}
                 >
                   Изменить
                 </button>
               )}
 
-              <div className="flex items-center gap-3 bg-gray-100 px-2 py-1 rounded-lg">
+              <div className="flex items-center gap-3 bg-gray-100 px-3 py-1.5 rounded-2xl">
                 <button
-                  className="p-1 text-gray-600 hover:text-gray-900 active:scale-90 transition-all disabled:opacity-30 disabled:pointer-events-none"
+                  className="p-0.5 text-gray-600 hover:text-gray-900 active:scale-90 transition-all disabled:opacity-30 disabled:pointer-events-none"
                   onClick={() => decrement()}
                   disabled={isCheckout}
                 >

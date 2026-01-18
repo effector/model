@@ -1,17 +1,17 @@
 import { useUnit } from 'effector-react';
 import { RESTAURANTS } from '../data/restaurants';
 import { Restaurant } from './Restaurant';
-import { $globalCartStats } from '../models/cart';
-import { openGlobalCart } from '../models/app';
+import { useApp } from './AppContext';
 import { MainButton } from './components/Common';
 
 export const RestaurantScreen = () => {
-  const stats = useUnit($globalCartStats) as {
+  const { stores, events } = useApp();
+  const stats = useUnit(stores.$globalCartStats) as {
     total: number;
     count: number;
     cartsCount: number;
   };
-  const handleOpenGlobalCart = useUnit(openGlobalCart);
+  const handleOpenGlobalCart = useUnit(events.openGlobalCart);
 
   return (
     <div className="h-full bg-[#f3f3f7] flex flex-col relative">

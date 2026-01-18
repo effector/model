@@ -15,7 +15,7 @@
     "format": "nx format:write",
     "size": "nx run-many --target=size --all",
     "changes": "changeset",
-    "dev": "nx serve models-research --port=3000"
+    "dev": "nx serve fast-food --port=3000"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

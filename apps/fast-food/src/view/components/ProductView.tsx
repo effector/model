@@ -1,6 +1,34 @@
 import { useUnit } from 'effector-react';
 import { useLens } from '../hooks';
 
+const LiquidSelector = ({
+  options,
+  value,
+  onChange,
+}: {
+  options: any[];
+  value: string;
+  onChange: (id: string) => void;
+}) => {
+  return (
+    <div className="flex bg-gray-200/60 backdrop-blur-md p-1.5 rounded-2xl border border-white/20 shadow-inner">
+      {options.map((opt) => (
+        <button
+          key={opt.id}
+          className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
+            value === opt.id
+              ? 'bg-white shadow-md text-gray-900 ring-1 ring-black/5'
+              : 'text-gray-500 hover:text-gray-900 hover:bg-white/40'
+          }`}
+          onClick={() => onChange(opt.id)}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
+};
+
 export const ProductView = ({
   item,
   mode = 'full',
@@ -265,38 +293,18 @@ export const PizzaDetails = ({ item, mode }: { item: any; mode: string }) => {
       {showSelectors && (
         <div className="space-y-3">
           {sizes.length > 0 ? (
-            <div className="flex bg-gray-100 p-1 rounded-xl">
-              {sizes.map((s: any) => (
-                <button
-                  key={s.id}
-                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${
-                    size === s.id ? 'bg-white shadow-sm' : 'text-gray-500'
-                  }`}
-                  onClick={() => setSize(s.id)}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
+            <LiquidSelector options={sizes} value={size} onChange={setSize} />
           ) : (
             <div className="text-red-500 text-xs p-2 bg-red-50 rounded">
               No Sizes ({sizes.length}).
             </div>
           )}
           {doughs.length > 0 ? (
-            <div className="flex bg-gray-100 p-1 rounded-xl">
-              {doughs.map((d: any) => (
-                <button
-                  key={d.id}
-                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${
-                    dough === d.id ? 'bg-white shadow-sm' : 'text-gray-500'
-                  }`}
-                  onClick={() => setDough(d.id)}
-                >
-                  {d.label}
-                </button>
-              ))}
-            </div>
+            <LiquidSelector
+              options={doughs}
+              value={dough}
+              onChange={setDough}
+            />
           ) : (
             <div className="text-red-500 text-xs p-2 bg-red-50 rounded">
               No Doughs ({doughs.length}).
@@ -417,19 +425,7 @@ export const DrinkDetails = ({ item, mode }: { item: any; mode: string }) => {
   return (
     <div className="space-y-4">
       {sizes.length > 0 && (
-        <div className="flex bg-gray-100 p-1 rounded-xl">
-          {sizes.map((s: any) => (
-            <button
-              key={s.id}
-              className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${
-                size === s.id ? 'bg-white shadow-sm' : 'text-gray-500'
-              }`}
-              onClick={() => setSize(s.id)}
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
+        <LiquidSelector options={sizes} value={size} onChange={setSize} />
       )}
     </div>
   );
@@ -464,19 +460,7 @@ export const CoffeeDetails = ({ item, mode }: { item: any; mode: string }) => {
   return (
     <div className="space-y-6">
       {showSelectors && sizes.length > 0 && (
-        <div className="flex bg-gray-100 p-1 rounded-xl">
-          {sizes.map((s: any) => (
-            <button
-              key={s.id}
-              className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${
-                size === s.id ? 'bg-white shadow-sm' : 'text-gray-500'
-              }`}
-              onClick={() => setSize(s.id)}
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
+        <LiquidSelector options={sizes} value={size} onChange={setSize} />
       )}
 
       {/* Additions - Liquid Glass Design - Static Dimensions */}

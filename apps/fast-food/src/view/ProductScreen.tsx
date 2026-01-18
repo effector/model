@@ -1,21 +1,16 @@
 import { useUnit } from 'effector-react';
 import { select } from '@effector-model/core-experimental';
-import {
-  draftModel,
-  closeProduct,
-  addToCart,
-  toggleProductMode,
-  appInstance,
-} from '../models/app';
+import { useApp } from './AppContext';
 import { ProductView } from './components/ProductView';
 import { useLens } from './hooks';
 import { MainButton, PlusIcon, PencilIcon } from './components/Common';
 import { getRestaurantTheme } from '../data/restaurants';
 
 export const ProductScreen = () => {
-  const close = useUnit(closeProduct);
-  const submit = useUnit(addToCart);
-  const toggleMode = useUnit(toggleProductMode);
+  const { draftModel, events, appInstance } = useApp();
+  const close = useUnit(events.closeProduct);
+  const submit = useUnit(events.addToCart);
+  const toggleMode = useUnit(events.toggleProductMode);
   const params = useUnit(appInstance.input.$params);
   const mode = params.mode || 'preview'; // 'preview' | 'ingredients'
 

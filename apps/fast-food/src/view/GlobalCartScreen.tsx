@@ -1,17 +1,17 @@
 import { useUnit } from 'effector-react';
-import { $cartByRestaurant } from '../models/cart';
-import { globalCartBack, openCart } from '../models/app';
+import { useApp } from './AppContext';
 import { RESTAURANTS } from '../data/restaurants';
 
 type CartGroup = { items: any[]; total: number; count: number };
 
 export const GlobalCartScreen = () => {
-  const cartByRestaurant = useUnit($cartByRestaurant) as Record<
+  const { stores, events } = useApp();
+  const cartByRestaurant = useUnit(stores.$cartByRestaurant) as Record<
     string,
     CartGroup
   >;
-  const handleBack = useUnit(globalCartBack);
-  const handleOpenCart = useUnit(openCart);
+  const handleBack = useUnit(events.globalCartBack);
+  const handleOpenCart = useUnit(events.openCart);
 
   const hasItems = Object.keys(cartByRestaurant).length > 0;
 
