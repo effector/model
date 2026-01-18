@@ -1,3 +1,3 @@
-# Food order app
+# Fast-food order app
 
-Run `npx nx run food-order:serve` to start
+Run `npx nx run fast-food:serve` to start

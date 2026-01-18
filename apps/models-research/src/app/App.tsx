@@ -2,10 +2,9 @@ import { useState } from 'react';
 import { GameDemo } from './GameDemo';
 import { UserDemo } from './UserDemo';
 import { TreeDemo } from './TreeDemo';
-import { AppView as FoodDemo } from '../food/view/AppView';
 
 export default function App() {
-  const [tab, setTab] = useState<'game' | 'user' | 'tree' | 'food'>('food');
+  const [tab, setTab] = useState<'game' | 'user' | 'tree'>('game');
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8 font-sans text-gray-900">
@@ -47,23 +46,11 @@ export default function App() {
           >
             Recursive Tree
           </button>
-          <button
-            disabled={tab === 'food'}
-            onClick={() => setTab('food')}
-            className={`px-4 py-2 rounded-md transition-colors duration-200 whitespace-nowrap ${
-              tab === 'food'
-                ? 'bg-indigo-100 text-indigo-700 font-medium'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            Food Order (New)
-          </button>
         </div>
 
         {tab === 'game' && <GameDemo />}
         {tab === 'user' && <UserDemo />}
         {tab === 'tree' && <TreeDemo />}
-        {tab === 'food' && <FoodDemo />}
       </div>
     </div>
   );
