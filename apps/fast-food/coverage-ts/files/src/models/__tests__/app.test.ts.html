@@ -1,0 +1,226 @@
+
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <title>app.test.ts</title>
+      <link href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css" type="text/css" rel="stylesheet">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/mode/javascript/javascript.min.js" type="text/javascript" charset="utf-8"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.css" type="text/css" rel="stylesheet">
+<script src="../../../../assets/source-file.js" type="text/javascript" charset="utf-8"></script>
+<link href="../../../../assets/source-file.css" type="text/css" rel="stylesheet">
+    </head>
+    <body>
+    <div style="margin-top:3em" class="ui container"><h1 class="ui header"><a href="../../../../index.html">TypeScript coverage report</a></h1><table style="margin-top:2em" class="ui celled table"><thead class=""><tr class=""><th class="">Filename</th><th class="">Percent</th><th class="">Threshold</th><th class="">Total</th><th class="">Covered</th><th class="">Uncovered</th></tr></thead><tbody class=""><tr class="positive"><td class="">src/models/__tests__/app.test.ts</td><td class="">83.25%</td><td class="">80%</td><td class="">388</td><td class="">323</td><td class="">65</td></tr></tbody></table><textarea id="editor" readonly="" style="margin-top:3em">import { describe, it, expect, vi, beforeEach } from &#x27;vitest&#x27;;
+import { createApp } from &#x27;../app&#x27;;
+import { invoke } from &#x27;@withease/factories&#x27;;
+import { allSettled, fork } from &#x27;effector&#x27;;
+
+// Mock crypto.randomUUID
+const globalObject =
+  typeof globalThis !== &#x27;undefined&#x27;
+    ? globalThis
+    : typeof global !== &#x27;undefined&#x27;
+      ? global
+      : window;
+
+if (!globalObject.crypto) {
+  Object.defineProperty(globalObject, &#x27;crypto&#x27;, {
+    value: {
+      randomUUID: () =&gt; &#x27;test-uuid&#x27;,
+    },
+  });
+} else if (!globalObject.crypto.randomUUID) {
+  Object.defineProperty(globalObject.crypto, &#x27;randomUUID&#x27;, {
+    value: () =&gt; &#x27;test-uuid&#x27;,
+  });
+}
+
+describe(&#x27;App Model&#x27;, () =&gt; {
+  let scope: any;
+  let app: ReturnType&lt;typeof createApp&gt;;
+
+  beforeEach(() =&gt; {
+    scope = fork();
+    app = invoke(createApp);
+  });
+
+  it(&#x27;should initialize with default screen &quot;restaurants&quot;&#x27;, () =&gt; {
+    expect(scope.getState(app.appInstance.input.$screen)).toBe(&#x27;restaurants&#x27;);
+  });
+
+  it(&#x27;should navigate to menu when a restaurant is selected&#x27;, async () =&gt; {
+    await allSettled(app.events.selectRestaurant, {
+      scope,
+      params: &#x27;restaurant-1&#x27;,
+    });
+
+    expect(scope.getState(app.appInstance.input.$screen)).toBe(&#x27;menu&#x27;);
+    expect(scope.getState(app.appInstance.input.$params)).toEqual({
+      restaurantId: &#x27;restaurant-1&#x27;,
+    });
+  });
+
+  it(&#x27;should open global cart&#x27;, async () =&gt; {
+    await allSettled(app.events.openGlobalCart, {
+      scope,
+    });
+
+    expect(scope.getState(app.appInstance.input.$screen)).toBe(&#x27;globalCart&#x27;);
+  });
+
+  it(&#x27;should navigate back from global cart&#x27;, async () =&gt; {
+    await allSettled(app.events.openGlobalCart, { scope });
+    await allSettled(app.events.globalCartBack, { scope });
+
+    expect(scope.getState(app.appInstance.input.$screen)).toBe(&#x27;restaurants&#x27;);
+  });
+
+  it(&#x27;should open product and create a draft&#x27;, async () =&gt; {
+    const productData = {
+      type: &#x27;burger&#x27;,
+      id: &#x27;burger-1&#x27;,
+      name: &#x27;Test Burger&#x27;,
+      basePrice: 100,
+    };
+
+    await allSettled(app.events.selectRestaurant, {
+      scope,
+      params: &#x27;restaurant-1&#x27;,
+    });
+
+    await allSettled(app.events.openProduct, {
+      scope,
+      params: { data: productData, restaurantId: &#x27;restaurant-1&#x27; },
+    });
+
+    expect(scope.getState(app.appInstance.input.$screen)).toBe(&#x27;product&#x27;);
+
+    // Verify draft creation
+    const draftInstances = scope.getState((app.draftModel as any).$instances);
+    const draft = draftInstances[&#x27;draft&#x27;];
+    expect(draft).toBeDefined();
+    expect(draft.facets.product.$name.getState()).toBe(&#x27;Test Burger&#x27;);
+  });
+
+  it(&#x27;should add product to cart&#x27;, async () =&gt; {
+    const productData = {
+      type: &#x27;burger&#x27;,
+      id: &#x27;burger-1&#x27;,
+      name: &#x27;Test Burger&#x27;,
+      basePrice: 100,
+    };
+
+    // 1. Navigate to product
+    await allSettled(app.events.selectRestaurant, {
+      scope,
+      params: &#x27;restaurant-1&#x27;,
+    });
+
+    await allSettled(app.events.openProduct, {
+      scope,
+      params: { data: productData, restaurantId: &#x27;restaurant-1&#x27; },
+    });
+
+    // 2. Add to cart
+    await allSettled(app.events.addToCart, { scope });
+
+    // 3. Verify it returns to menu
+    expect(scope.getState(app.appInstance.input.$screen)).toBe(&#x27;menu&#x27;);
+
+    // 4. Verify item is in cart
+    const cartInstances = scope.getState((app.cartModel as any).$instances);
+    const cartItems = Object.values(cartInstances);
+    expect(cartItems).toHaveLength(1);
+    expect((cartItems[0] as any).facets.product.$name.getState()).toBe(
+      &#x27;Test Burger&#x27;,
+    );
+  });
+
+  it(&#x27;should handle checkout flow&#x27;, async () =&gt; {
+    // 1. Add item to cart
+    const productData = {
+      type: &#x27;burger&#x27;,
+      id: &#x27;b1&#x27;,
+      name: &#x27;B1&#x27;,
+      basePrice: 100,
+    };
+    await allSettled(app.events.selectRestaurant, { scope, params: &#x27;r1&#x27; });
+    await allSettled(app.events.openProduct, {
+      scope,
+      params: { data: productData, restaurantId: &#x27;r1&#x27; },
+    });
+    await allSettled(app.events.addToCart, { scope });
+
+    // 2. Open cart
+    await allSettled(app.events.openCart, {
+      scope,
+      params: { restaurantId: &#x27;r1&#x27; },
+    });
+    expect(scope.getState(app.appInstance.input.$screen)).toBe(&#x27;cart&#x27;);
+
+    // 3. Checkout
+    await allSettled(app.events.checkout, { scope });
+
+    // 4. Verify receipt has item
+    const receiptInstances = scope.getState(
+      (app.receiptModel as any).$instances,
+    );
+    expect(Object.keys(receiptInstances)).toHaveLength(1);
+
+    // 5. Verify cart is cleared for restaurant (async effect)
+    // Wait for effect to finish
+    await new Promise((r) =&gt; setTimeout(r, 0));
+
+    // Check screen is congrats
+    expect(scope.getState(app.appInstance.input.$screen)).toBe(&#x27;congrats&#x27;);
+
+    // 6. Finish order
+    await allSettled(app.events.finishOrder, { scope });
+    expect(scope.getState(app.appInstance.input.$screen)).toBe(&#x27;restaurants&#x27;);
+  });
+
+  it(&#x27;should handle editing item from cart&#x27;, async () =&gt; {
+    // 1. Add item
+    const productData = {
+      type: &#x27;burger&#x27;,
+      id: &#x27;b1&#x27;,
+      name: &#x27;B1&#x27;,
+      basePrice: 100,
+    };
+    await allSettled(app.events.selectRestaurant, { scope, params: &#x27;r1&#x27; });
+    await allSettled(app.events.openProduct, {
+      scope,
+      params: { data: productData, restaurantId: &#x27;r1&#x27; },
+    });
+    await allSettled(app.events.addToCart, { scope });
+
+    const cartInstances = scope.getState((app.cartModel as any).$instances);
+    const itemId = Object.keys(cartInstances)[0];
+
+    // 2. Edit item
+    await allSettled(app.events.openCart, {
+      scope,
+      params: { restaurantId: &#x27;r1&#x27; },
+    });
+    await allSettled(app.events.editItem, { scope, params: itemId });
+
+    expect(scope.getState(app.appInstance.input.$screen)).toBe(&#x27;product&#x27;);
+    const params = scope.getState(app.appInstance.input.$params);
+    expect(params.returnTo).toBe(&#x27;cart&#x27;);
+    expect(params.editId).toBe(itemId);
+
+    // 3. Save changes (add to cart again, which updates existing because of editId)
+    await allSettled(app.events.addToCart, { scope });
+
+    expect(scope.getState(app.appInstance.input.$screen)).toBe(&#x27;cart&#x27;);
+    // Verify we still have 1 item (updated), not 2
+    const newCartInstances = scope.getState((app.cartModel as any).$instances);
+    expect(Object.keys(newCartInstances)).toHaveLength(1);
+  });
+});
+</textarea><pre id="annotations" style="display:none">[{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:26,&quot;character&quot;:6,&quot;text&quot;:&quot;scope&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:30,&quot;character&quot;:4,&quot;text&quot;:&quot;scope&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:35,&quot;character&quot;:11,&quot;text&quot;:&quot;scope&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:35,&quot;character&quot;:17,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:44,&quot;character&quot;:11,&quot;text&quot;:&quot;scope&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:44,&quot;character&quot;:17,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:45,&quot;character&quot;:11,&quot;text&quot;:&quot;scope&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:45,&quot;character&quot;:17,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:55,&quot;character&quot;:11,&quot;text&quot;:&quot;scope&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:55,&quot;character&quot;:17,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:62,&quot;character&quot;:11,&quot;text&quot;:&quot;scope&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:62,&quot;character&quot;:17,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:83,&quot;character&quot;:11,&quot;text&quot;:&quot;scope&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:83,&quot;character&quot;:17,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:86,&quot;character&quot;:10,&quot;text&quot;:&quot;draftInstances&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:86,&quot;character&quot;:27,&quot;text&quot;:&quot;scope&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:86,&quot;character&quot;:33,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:86,&quot;character&quot;:66,&quot;text&quot;:&quot;$instances&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:87,&quot;character&quot;:10,&quot;text&quot;:&quot;draft&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:87,&quot;character&quot;:18,&quot;text&quot;:&quot;draftInstances&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:88,&quot;character&quot;:11,&quot;text&quot;:&quot;draft&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:89,&quot;character&quot;:11,&quot;text&quot;:&quot;draft&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:89,&quot;character&quot;:17,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:89,&quot;character&quot;:24,&quot;text&quot;:&quot;product&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:89,&quot;character&quot;:32,&quot;text&quot;:&quot;$name&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:89,&quot;character&quot;:38,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:115,&quot;character&quot;:11,&quot;text&quot;:&quot;scope&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:115,&quot;character&quot;:17,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:118,&quot;character&quot;:10,&quot;text&quot;:&quot;cartInstances&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:118,&quot;character&quot;:26,&quot;text&quot;:&quot;scope&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:118,&quot;character&quot;:32,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:118,&quot;character&quot;:64,&quot;text&quot;:&quot;$instances&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:121,&quot;character&quot;:33,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:121,&quot;character&quot;:40,&quot;text&quot;:&quot;product&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:121,&quot;character&quot;:48,&quot;text&quot;:&quot;$name&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:121,&quot;character&quot;:54,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:146,&quot;character&quot;:11,&quot;text&quot;:&quot;scope&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:146,&quot;character&quot;:17,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:152,&quot;character&quot;:10,&quot;text&quot;:&quot;receiptInstances&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:152,&quot;character&quot;:29,&quot;text&quot;:&quot;scope&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:152,&quot;character&quot;:35,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:153,&quot;character&quot;:32,&quot;text&quot;:&quot;$instances&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:162,&quot;character&quot;:11,&quot;text&quot;:&quot;scope&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:162,&quot;character&quot;:17,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:166,&quot;character&quot;:11,&quot;text&quot;:&quot;scope&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:166,&quot;character&quot;:17,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:184,&quot;character&quot;:10,&quot;text&quot;:&quot;cartInstances&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:184,&quot;character&quot;:26,&quot;text&quot;:&quot;scope&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:184,&quot;character&quot;:32,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:184,&quot;character&quot;:64,&quot;text&quot;:&quot;$instances&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:194,&quot;character&quot;:11,&quot;text&quot;:&quot;scope&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:194,&quot;character&quot;:17,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:195,&quot;character&quot;:10,&quot;text&quot;:&quot;params&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:195,&quot;character&quot;:19,&quot;text&quot;:&quot;scope&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:195,&quot;character&quot;:25,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:196,&quot;character&quot;:11,&quot;text&quot;:&quot;params&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:196,&quot;character&quot;:18,&quot;text&quot;:&quot;returnTo&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:197,&quot;character&quot;:11,&quot;text&quot;:&quot;params&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:197,&quot;character&quot;:18,&quot;text&quot;:&quot;editId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:202,&quot;character&quot;:11,&quot;text&quot;:&quot;scope&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:202,&quot;character&quot;:17,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:204,&quot;character&quot;:10,&quot;text&quot;:&quot;newCartInstances&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:204,&quot;character&quot;:29,&quot;text&quot;:&quot;scope&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:204,&quot;character&quot;:35,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/__tests__/app.test.ts&quot;,&quot;line&quot;:204,&quot;character&quot;:67,&quot;text&quot;:&quot;$instances&quot;,&quot;kind&quot;:1}]</pre></div>
+    <p class="footer-text">TypeScript Coverage Report generated by <a href="https://github.com/plantain-00/type-coverage">type-coverage</a> and <a href="https://github.com/alexcanessa/typescript-coverage-report">typescript-coverage-report</a> at Sun, 18 Jan 2026 05:15:02 GMT</p>
+    </body>
+  </html>
+  

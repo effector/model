@@ -35,35 +35,39 @@ export const ProductScreen = () => {
   );
   const total = price * quantity;
 
-  if (!draftItem || !(draftItem as any).facets?.product) {
-    return null;
-  }
-
   // Optional Facets (Safe Topological Access via select)
   const size = useLens(
     select(draftItem)
       .facet('size')
-      .path((s) => s.$size),
+      .path((s) => s.$size)
+      .fallback(''),
     '',
   );
   const dough = useLens(
     select(draftItem)
       .facet('dough')
-      .path((s) => s.$dough),
+      .path((s) => s.$dough)
+      .fallback(''),
     '',
   );
   const sizes = useLens(
     select(draftItem)
       .facet('size')
-      .path((s) => s.$options),
+      .path((s) => s.$options)
+      .fallback([]),
     [],
   );
   const doughs = useLens(
     select(draftItem)
       .facet('dough')
-      .path((s) => s.$options),
+      .path((s) => s.$options)
+      .fallback([]),
     [],
   );
+
+  if (!draftItem || !(draftItem as any).facets?.product) {
+    return null;
+  }
 
   const sizeLabel = (
     (Array.isArray(sizes) ? sizes : Object.values(sizes || {})) as any[]
@@ -145,7 +149,7 @@ export const ProductScreen = () => {
           </div>
 
           <div className="flex-1 overflow-y-auto px-6 pt-6 pb-32 no-scrollbar">
-            <ProductView item={draftItem} mode="ingredients" />
+            <ProductView item={draftItem as any} mode="ingredients" />
 
             <div className="mt-12 pt-8 border-t border-gray-200 space-y-4">
               <h3 className="font-bold text-lg text-[#333]">Детали продукта</h3>
@@ -234,7 +238,7 @@ export const ProductScreen = () => {
               {description}
             </p>
 
-            <ProductView item={draftItem} mode="selectors" />
+            <ProductView item={draftItem as any} mode="selectors" />
           </div>
         </div>
 

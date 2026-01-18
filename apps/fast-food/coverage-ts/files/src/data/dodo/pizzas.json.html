@@ -1,0 +1,841 @@
+
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <title>pizzas.json</title>
+      <link href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css" type="text/css" rel="stylesheet">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/mode/javascript/javascript.min.js" type="text/javascript" charset="utf-8"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.css" type="text/css" rel="stylesheet">
+<script src="../../../../assets/source-file.js" type="text/javascript" charset="utf-8"></script>
+<link href="../../../../assets/source-file.css" type="text/css" rel="stylesheet">
+    </head>
+    <body>
+    <div style="margin-top:3em" class="ui container"><h1 class="ui header"><a href="../../../../index.html">TypeScript coverage report</a></h1><table style="margin-top:2em" class="ui celled table"><thead class=""><tr class=""><th class="">Filename</th><th class="">Percent</th><th class="">Threshold</th><th class="">Total</th><th class="">Covered</th><th class="">Uncovered</th></tr></thead><tbody class=""><tr class="positive"><td class="">src/data/dodo/pizzas.json</td><td class="">100.00%</td><td class="">80%</td><td class="">0</td><td class="">0</td><td class="">0</td></tr></tbody></table><textarea id="editor" readonly="" style="margin-top:3em">[
+  {
+    &quot;type&quot;: &quot;pizza&quot;,
+    &quot;name&quot;: &quot;Додо Пицца&quot;,
+    &quot;description&quot;: &quot;Легендарная пицца. Бекон, митболы из говядины, пикантная пепперони, моцарелла, томаты, шампиньоны, сладкий перец, красный лук, чеснок, томатный соус&quot;,
+    &quot;basePrice&quot;: 639,
+    &quot;nutritionalInfo&quot;: {
+      &quot;calories&quot;: 260,
+      &quot;weight&quot;: 580
+    },
+    &quot;sizes&quot;: [
+      {
+        &quot;id&quot;: &quot;25&quot;,
+        &quot;label&quot;: &quot;25 см&quot;,
+        &quot;price&quot;: 0
+      },
+      {
+        &quot;id&quot;: &quot;30&quot;,
+        &quot;label&quot;: &quot;30 см&quot;,
+        &quot;price&quot;: 200
+      },
+      {
+        &quot;id&quot;: &quot;35&quot;,
+        &quot;label&quot;: &quot;35 см&quot;,
+        &quot;price&quot;: 400
+      }
+    ],
+    &quot;doughs&quot;: [
+      {
+        &quot;id&quot;: &quot;traditional&quot;,
+        &quot;label&quot;: &quot;Традиционное&quot;
+      },
+      {
+        &quot;id&quot;: &quot;thin&quot;,
+        &quot;label&quot;: &quot;Тонкое&quot;
+      }
+    ],
+    &quot;defaultIngredients&quot;: [
+      {
+        &quot;id&quot;: &quot;bacon&quot;,
+        &quot;name&quot;: &quot;Бекон&quot;
+      },
+      {
+        &quot;id&quot;: &quot;meatballs&quot;,
+        &quot;name&quot;: &quot;Митболы&quot;
+      },
+      {
+        &quot;id&quot;: &quot;pepperoni&quot;,
+        &quot;name&quot;: &quot;Пепперони&quot;
+      },
+      {
+        &quot;id&quot;: &quot;mozzarella&quot;,
+        &quot;name&quot;: &quot;Моцарелла&quot;
+      },
+      {
+        &quot;id&quot;: &quot;tomatoes&quot;,
+        &quot;name&quot;: &quot;Томаты&quot;
+      },
+      {
+        &quot;id&quot;: &quot;mushrooms&quot;,
+        &quot;name&quot;: &quot;Шампиньоны&quot;
+      },
+      {
+        &quot;id&quot;: &quot;sweet_pepper&quot;,
+        &quot;name&quot;: &quot;Сладкий перец&quot;
+      },
+      {
+        &quot;id&quot;: &quot;red_onion&quot;,
+        &quot;name&quot;: &quot;Красный лук&quot;
+      },
+      {
+        &quot;id&quot;: &quot;garlic&quot;,
+        &quot;name&quot;: &quot;Чеснок&quot;
+      },
+      {
+        &quot;id&quot;: &quot;tomato_sauce&quot;,
+        &quot;name&quot;: &quot;Томатный соус&quot;
+      }
+    ],
+    &quot;extraIngredients&quot;: [
+      {
+        &quot;id&quot;: &quot;jalapeno&quot;,
+        &quot;name&quot;: &quot;Острый халапеньо&quot;,
+        &quot;price&quot;: 49
+      },
+      {
+        &quot;id&quot;: &quot;cheese_crust&quot;,
+        &quot;name&quot;: &quot;Сырный бортик&quot;,
+        &quot;price&quot;: 99
+      },
+      {
+        &quot;id&quot;: &quot;mushrooms&quot;,
+        &quot;name&quot;: &quot;Шампиньоны&quot;,
+        &quot;price&quot;: 39
+      },
+      {
+        &quot;id&quot;: &quot;cheddar_parmesan&quot;,
+        &quot;name&quot;: &quot;Чеддер и пармезан&quot;,
+        &quot;price&quot;: 59
+      },
+      {
+        &quot;id&quot;: &quot;bacon&quot;,
+        &quot;name&quot;: &quot;Бекон&quot;,
+        &quot;price&quot;: 59
+      },
+      {
+        &quot;id&quot;: &quot;feta&quot;,
+        &quot;name&quot;: &quot;Брынза&quot;,
+        &quot;price&quot;: 59
+      },
+      {
+        &quot;id&quot;: &quot;red_onion&quot;,
+        &quot;name&quot;: &quot;Красный лук&quot;,
+        &quot;price&quot;: 29
+      }
+    ],
+    &quot;defaultSize&quot;: &quot;30&quot;,
+    &quot;defaultDough&quot;: &quot;traditional&quot;,
+    &quot;composition&quot;: &quot;Тесто (мука пшеничная, вода, масло, сахар, дрожжи), соус томатный, сыр моцарелла, бекон, митболы (говядина), пепперони, шампиньоны, перец сладкий, лук красный, чеснок.&quot;
+  },
+  {
+    &quot;type&quot;: &quot;pizza&quot;,
+    &quot;name&quot;: &quot;Мексиканская&quot;,
+    &quot;description&quot;: &quot;Острая пицца с перчинкой. Цыпленок, острый перец халапеньо, соус сальса, томаты, сладкий перец, красный лук, моцарелла, томатный соус&quot;,
+    &quot;basePrice&quot;: 589,
+    &quot;nutritionalInfo&quot;: {
+      &quot;calories&quot;: 245,
+      &quot;weight&quot;: 560
+    },
+    &quot;sizes&quot;: [
+      {
+        &quot;id&quot;: &quot;25&quot;,
+        &quot;label&quot;: &quot;25 см&quot;,
+        &quot;price&quot;: 0
+      },
+      {
+        &quot;id&quot;: &quot;30&quot;,
+        &quot;label&quot;: &quot;30 см&quot;,
+        &quot;price&quot;: 200
+      },
+      {
+        &quot;id&quot;: &quot;35&quot;,
+        &quot;label&quot;: &quot;35 см&quot;,
+        &quot;price&quot;: 400
+      }
+    ],
+    &quot;doughs&quot;: [
+      {
+        &quot;id&quot;: &quot;traditional&quot;,
+        &quot;label&quot;: &quot;Традиционное&quot;
+      },
+      {
+        &quot;id&quot;: &quot;thin&quot;,
+        &quot;label&quot;: &quot;Тонкое&quot;
+      }
+    ],
+    &quot;defaultIngredients&quot;: [
+      {
+        &quot;id&quot;: &quot;chicken&quot;,
+        &quot;name&quot;: &quot;Цыпленок&quot;
+      },
+      {
+        &quot;id&quot;: &quot;jalapeno&quot;,
+        &quot;name&quot;: &quot;Халапеньо&quot;
+      },
+      {
+        &quot;id&quot;: &quot;salsa_sauce&quot;,
+        &quot;name&quot;: &quot;Соус сальса&quot;
+      },
+      {
+        &quot;id&quot;: &quot;tomatoes&quot;,
+        &quot;name&quot;: &quot;Томаты&quot;
+      },
+      {
+        &quot;id&quot;: &quot;sweet_pepper&quot;,
+        &quot;name&quot;: &quot;Сладкий перец&quot;
+      },
+      {
+        &quot;id&quot;: &quot;red_onion&quot;,
+        &quot;name&quot;: &quot;Красный лук&quot;
+      },
+      {
+        &quot;id&quot;: &quot;mozzarella&quot;,
+        &quot;name&quot;: &quot;Моцарелла&quot;
+      },
+      {
+        &quot;id&quot;: &quot;tomato_sauce&quot;,
+        &quot;name&quot;: &quot;Томатный соус&quot;
+      }
+    ],
+    &quot;extraIngredients&quot;: [
+      {
+        &quot;id&quot;: &quot;cheese_crust&quot;,
+        &quot;name&quot;: &quot;Сырный бортик&quot;,
+        &quot;price&quot;: 99
+      },
+      {
+        &quot;id&quot;: &quot;chicken_extra&quot;,
+        &quot;name&quot;: &quot;Цыпленок&quot;,
+        &quot;price&quot;: 59
+      },
+      {
+        &quot;id&quot;: &quot;jalapeno&quot;,
+        &quot;name&quot;: &quot;Острый халапеньо&quot;,
+        &quot;price&quot;: 49
+      },
+      {
+        &quot;id&quot;: &quot;mushrooms&quot;,
+        &quot;name&quot;: &quot;Шампиньоны&quot;,
+        &quot;price&quot;: 39
+      },
+      {
+        &quot;id&quot;: &quot;cheddar_parmesan&quot;,
+        &quot;name&quot;: &quot;Чеддер и пармезан&quot;,
+        &quot;price&quot;: 59
+      },
+      {
+        &quot;id&quot;: &quot;bacon&quot;,
+        &quot;name&quot;: &quot;Бекон&quot;,
+        &quot;price&quot;: 59
+      },
+      {
+        &quot;id&quot;: &quot;feta&quot;,
+        &quot;name&quot;: &quot;Брынза&quot;,
+        &quot;price&quot;: 59
+      },
+      {
+        &quot;id&quot;: &quot;red_onion&quot;,
+        &quot;name&quot;: &quot;Красный лук&quot;,
+        &quot;price&quot;: 29
+      }
+    ],
+    &quot;defaultSize&quot;: &quot;30&quot;,
+    &quot;defaultDough&quot;: &quot;traditional&quot;,
+    &quot;composition&quot;: &quot;Тесто (мука пшеничная, вода, масло, сахар, дрожжи), соус томатный, сыр моцарелла, цыпленок, перец халапеньо, соус сальса, перец сладкий, томаты, лук красный.&quot;
+  },
+  {
+    &quot;type&quot;: &quot;pizza&quot;,
+    &quot;name&quot;: &quot;Сырный цыпленок&quot;,
+    &quot;description&quot;: &quot;Нежный вкус. Цыпленок, моцарелла, сыры чеддер и пармезан, сырный соус, томаты&quot;,
+    &quot;basePrice&quot;: 539,
+    &quot;nutritionalInfo&quot;: {
+      &quot;calories&quot;: 290,
+      &quot;weight&quot;: 540
+    },
+    &quot;sizes&quot;: [
+      {
+        &quot;id&quot;: &quot;25&quot;,
+        &quot;label&quot;: &quot;25 см&quot;,
+        &quot;price&quot;: 0
+      },
+      {
+        &quot;id&quot;: &quot;30&quot;,
+        &quot;label&quot;: &quot;30 см&quot;,
+        &quot;price&quot;: 200
+      },
+      {
+        &quot;id&quot;: &quot;35&quot;,
+        &quot;label&quot;: &quot;35 см&quot;,
+        &quot;price&quot;: 400
+      }
+    ],
+    &quot;doughs&quot;: [
+      {
+        &quot;id&quot;: &quot;traditional&quot;,
+        &quot;label&quot;: &quot;Традиционное&quot;
+      },
+      {
+        &quot;id&quot;: &quot;thin&quot;,
+        &quot;label&quot;: &quot;Тонкое&quot;
+      }
+    ],
+    &quot;defaultIngredients&quot;: [
+      {
+        &quot;id&quot;: &quot;chicken&quot;,
+        &quot;name&quot;: &quot;Цыпленок&quot;
+      },
+      {
+        &quot;id&quot;: &quot;mozzarella&quot;,
+        &quot;name&quot;: &quot;Моцарелла&quot;
+      },
+      {
+        &quot;id&quot;: &quot;cheddar&quot;,
+        &quot;name&quot;: &quot;Сыр чеддер&quot;
+      },
+      {
+        &quot;id&quot;: &quot;parmesan&quot;,
+        &quot;name&quot;: &quot;Сыр пармезан&quot;
+      },
+      {
+        &quot;id&quot;: &quot;cheese_sauce&quot;,
+        &quot;name&quot;: &quot;Сырный соус&quot;
+      },
+      {
+        &quot;id&quot;: &quot;tomatoes&quot;,
+        &quot;name&quot;: &quot;Томаты&quot;
+      }
+    ],
+    &quot;extraIngredients&quot;: [
+      {
+        &quot;id&quot;: &quot;bacon&quot;,
+        &quot;name&quot;: &quot;Бекон&quot;,
+        &quot;price&quot;: 59
+      },
+      {
+        &quot;id&quot;: &quot;jalapeno&quot;,
+        &quot;name&quot;: &quot;Острый халапеньо&quot;,
+        &quot;price&quot;: 49
+      },
+      {
+        &quot;id&quot;: &quot;cheese_crust&quot;,
+        &quot;name&quot;: &quot;Сырный бортик&quot;,
+        &quot;price&quot;: 99
+      },
+      {
+        &quot;id&quot;: &quot;mushrooms&quot;,
+        &quot;name&quot;: &quot;Шампиньоны&quot;,
+        &quot;price&quot;: 39
+      },
+      {
+        &quot;id&quot;: &quot;cheddar_parmesan&quot;,
+        &quot;name&quot;: &quot;Чеддер и пармезан&quot;,
+        &quot;price&quot;: 59
+      },
+      {
+        &quot;id&quot;: &quot;feta&quot;,
+        &quot;name&quot;: &quot;Брынза&quot;,
+        &quot;price&quot;: 59
+      },
+      {
+        &quot;id&quot;: &quot;red_onion&quot;,
+        &quot;name&quot;: &quot;Красный лук&quot;,
+        &quot;price&quot;: 29
+      }
+    ],
+    &quot;defaultSize&quot;: &quot;30&quot;,
+    &quot;defaultDough&quot;: &quot;traditional&quot;,
+    &quot;composition&quot;: &quot;Тесто (мука пшеничная, вода, масло, сахар, дрожжи), сырный соус, сыр моцарелла, цыпленок, сыр чеддер, сыр пармезан, томаты.&quot;
+  },
+  {
+    &quot;type&quot;: &quot;pizza&quot;,
+    &quot;name&quot;: &quot;Чизбургер-пицца&quot;,
+    &quot;description&quot;: &quot;Вкус любимого бургера. Мясной соус болоньезе, моцарелла, красный лук, томаты, соленые огурчики, соус бургер&quot;,
+    &quot;basePrice&quot;: 539,
+    &quot;nutritionalInfo&quot;: {
+      &quot;calories&quot;: 270,
+      &quot;weight&quot;: 550
+    },
+    &quot;sizes&quot;: [
+      {
+        &quot;id&quot;: &quot;25&quot;,
+        &quot;label&quot;: &quot;25 см&quot;,
+        &quot;price&quot;: 0
+      },
+      {
+        &quot;id&quot;: &quot;30&quot;,
+        &quot;label&quot;: &quot;30 см&quot;,
+        &quot;price&quot;: 200
+      },
+      {
+        &quot;id&quot;: &quot;35&quot;,
+        &quot;label&quot;: &quot;35 см&quot;,
+        &quot;price&quot;: 400
+      }
+    ],
+    &quot;doughs&quot;: [
+      {
+        &quot;id&quot;: &quot;traditional&quot;,
+        &quot;label&quot;: &quot;Традиционное&quot;
+      },
+      {
+        &quot;id&quot;: &quot;thin&quot;,
+        &quot;label&quot;: &quot;Тонкое&quot;
+      }
+    ],
+    &quot;defaultIngredients&quot;: [
+      {
+        &quot;id&quot;: &quot;bolognese&quot;,
+        &quot;name&quot;: &quot;Соус болоньезе&quot;
+      },
+      {
+        &quot;id&quot;: &quot;mozzarella&quot;,
+        &quot;name&quot;: &quot;Моцарелла&quot;
+      },
+      {
+        &quot;id&quot;: &quot;red_onion&quot;,
+        &quot;name&quot;: &quot;Красный лук&quot;
+      },
+      {
+        &quot;id&quot;: &quot;tomatoes&quot;,
+        &quot;name&quot;: &quot;Томаты&quot;
+      },
+      {
+        &quot;id&quot;: &quot;pickles&quot;,
+        &quot;name&quot;: &quot;Соленые огурчики&quot;
+      },
+      {
+        &quot;id&quot;: &quot;burger_sauce&quot;,
+        &quot;name&quot;: &quot;Соус бургер&quot;
+      }
+    ],
+    &quot;extraIngredients&quot;: [
+      {
+        &quot;id&quot;: &quot;jalapeno&quot;,
+        &quot;name&quot;: &quot;Острый халапеньо&quot;,
+        &quot;price&quot;: 49
+      },
+      {
+        &quot;id&quot;: &quot;cheese_crust&quot;,
+        &quot;name&quot;: &quot;Сырный бортик&quot;,
+        &quot;price&quot;: 99
+      },
+      {
+        &quot;id&quot;: &quot;mushrooms&quot;,
+        &quot;name&quot;: &quot;Шампиньоны&quot;,
+        &quot;price&quot;: 39
+      },
+      {
+        &quot;id&quot;: &quot;cheddar_parmesan&quot;,
+        &quot;name&quot;: &quot;Чеддер и пармезан&quot;,
+        &quot;price&quot;: 59
+      },
+      {
+        &quot;id&quot;: &quot;bacon&quot;,
+        &quot;name&quot;: &quot;Бекон&quot;,
+        &quot;price&quot;: 59
+      },
+      {
+        &quot;id&quot;: &quot;feta&quot;,
+        &quot;name&quot;: &quot;Брынза&quot;,
+        &quot;price&quot;: 59
+      }
+    ],
+    &quot;defaultSize&quot;: &quot;30&quot;,
+    &quot;defaultDough&quot;: &quot;traditional&quot;,
+    &quot;composition&quot;: &quot;Тесто (мука пшеничная, вода, масло, сахар, дрожжи), соус бургер, сыр моцарелла, мясной соус болоньезе, лук красный, томаты, огурцы маринованные.&quot;
+  },
+  {
+    &quot;type&quot;: &quot;pizza&quot;,
+    &quot;name&quot;: &quot;Ветчина и грибы&quot;,
+    &quot;description&quot;: &quot;Классическое сочетание. Ветчина, шампиньоны, увеличенная порция моцареллы, томатный соус&quot;,
+    &quot;basePrice&quot;: 489,
+    &quot;nutritionalInfo&quot;: {
+      &quot;calories&quot;: 230,
+      &quot;weight&quot;: 520
+    },
+    &quot;sizes&quot;: [
+      {
+        &quot;id&quot;: &quot;25&quot;,
+        &quot;label&quot;: &quot;25 см&quot;,
+        &quot;price&quot;: 0
+      },
+      {
+        &quot;id&quot;: &quot;30&quot;,
+        &quot;label&quot;: &quot;30 см&quot;,
+        &quot;price&quot;: 200
+      },
+      {
+        &quot;id&quot;: &quot;35&quot;,
+        &quot;label&quot;: &quot;35 см&quot;,
+        &quot;price&quot;: 400
+      }
+    ],
+    &quot;doughs&quot;: [
+      {
+        &quot;id&quot;: &quot;traditional&quot;,
+        &quot;label&quot;: &quot;Традиционное&quot;
+      },
+      {
+        &quot;id&quot;: &quot;thin&quot;,
+        &quot;label&quot;: &quot;Тонкое&quot;
+      }
+    ],
+    &quot;defaultIngredients&quot;: [
+      {
+        &quot;id&quot;: &quot;ham&quot;,
+        &quot;name&quot;: &quot;Ветчина&quot;
+      },
+      {
+        &quot;id&quot;: &quot;mushrooms&quot;,
+        &quot;name&quot;: &quot;Шампиньоны&quot;
+      },
+      {
+        &quot;id&quot;: &quot;mozzarella&quot;,
+        &quot;name&quot;: &quot;Моцарелла&quot;
+      },
+      {
+        &quot;id&quot;: &quot;tomato_sauce&quot;,
+        &quot;name&quot;: &quot;Томатный соус&quot;
+      }
+    ],
+    &quot;extraIngredients&quot;: [
+      {
+        &quot;id&quot;: &quot;cheese_crust&quot;,
+        &quot;name&quot;: &quot;Сырный бортик&quot;,
+        &quot;price&quot;: 99
+      },
+      {
+        &quot;id&quot;: &quot;feta&quot;,
+        &quot;name&quot;: &quot;Брынза&quot;,
+        &quot;price&quot;: 59
+      },
+      {
+        &quot;id&quot;: &quot;jalapeno&quot;,
+        &quot;name&quot;: &quot;Острый халапеньо&quot;,
+        &quot;price&quot;: 49
+      },
+      {
+        &quot;id&quot;: &quot;cheddar_parmesan&quot;,
+        &quot;name&quot;: &quot;Чеддер и пармезан&quot;,
+        &quot;price&quot;: 59
+      },
+      {
+        &quot;id&quot;: &quot;bacon&quot;,
+        &quot;name&quot;: &quot;Бекон&quot;,
+        &quot;price&quot;: 59
+      },
+      {
+        &quot;id&quot;: &quot;red_onion&quot;,
+        &quot;name&quot;: &quot;Красный лук&quot;,
+        &quot;price&quot;: 29
+      }
+    ],
+    &quot;defaultSize&quot;: &quot;30&quot;,
+    &quot;defaultDough&quot;: &quot;traditional&quot;,
+    &quot;composition&quot;: &quot;Тесто (мука пшеничная, вода, масло, сахар, дрожжи), соус томатный, сыр моцарелла, ветчина, шампиньоны.&quot;
+  },
+  {
+    &quot;type&quot;: &quot;pizza&quot;,
+    &quot;name&quot;: &quot;Пепперони Фреш&quot;,
+    &quot;description&quot;: &quot;Легкая версия любимой классики. Пикантная пепперони, увеличенная порция моцареллы, томаты, томатный соус&quot;,
+    &quot;basePrice&quot;: 289,
+    &quot;nutritionalInfo&quot;: {
+      &quot;calories&quot;: 250,
+      &quot;weight&quot;: 500
+    },
+    &quot;sizes&quot;: [
+      {
+        &quot;id&quot;: &quot;25&quot;,
+        &quot;label&quot;: &quot;25 см&quot;,
+        &quot;price&quot;: 0
+      },
+      {
+        &quot;id&quot;: &quot;30&quot;,
+        &quot;label&quot;: &quot;30 см&quot;,
+        &quot;price&quot;: 200
+      },
+      {
+        &quot;id&quot;: &quot;35&quot;,
+        &quot;label&quot;: &quot;35 см&quot;,
+        &quot;price&quot;: 400
+      }
+    ],
+    &quot;doughs&quot;: [
+      {
+        &quot;id&quot;: &quot;traditional&quot;,
+        &quot;label&quot;: &quot;Традиционное&quot;
+      },
+      {
+        &quot;id&quot;: &quot;thin&quot;,
+        &quot;label&quot;: &quot;Тонкое&quot;
+      }
+    ],
+    &quot;defaultIngredients&quot;: [
+      {
+        &quot;id&quot;: &quot;pepperoni&quot;,
+        &quot;name&quot;: &quot;Пепперони&quot;
+      },
+      {
+        &quot;id&quot;: &quot;mozzarella&quot;,
+        &quot;name&quot;: &quot;Моцарелла&quot;
+      },
+      {
+        &quot;id&quot;: &quot;tomatoes&quot;,
+        &quot;name&quot;: &quot;Томаты&quot;
+      },
+      {
+        &quot;id&quot;: &quot;tomato_sauce&quot;,
+        &quot;name&quot;: &quot;Томатный соус&quot;
+      }
+    ],
+    &quot;extraIngredients&quot;: [
+      {
+        &quot;id&quot;: &quot;cheese_crust&quot;,
+        &quot;name&quot;: &quot;Сырный бортик&quot;,
+        &quot;price&quot;: 99
+      },
+      {
+        &quot;id&quot;: &quot;jalapeno&quot;,
+        &quot;name&quot;: &quot;Острый халапеньо&quot;,
+        &quot;price&quot;: 49
+      },
+      {
+        &quot;id&quot;: &quot;mushrooms&quot;,
+        &quot;name&quot;: &quot;Шампиньоны&quot;,
+        &quot;price&quot;: 39
+      },
+      {
+        &quot;id&quot;: &quot;cheddar_parmesan&quot;,
+        &quot;name&quot;: &quot;Чеддер и пармезан&quot;,
+        &quot;price&quot;: 59
+      },
+      {
+        &quot;id&quot;: &quot;bacon&quot;,
+        &quot;name&quot;: &quot;Бекон&quot;,
+        &quot;price&quot;: 59
+      },
+      {
+        &quot;id&quot;: &quot;feta&quot;,
+        &quot;name&quot;: &quot;Брынза&quot;,
+        &quot;price&quot;: 59
+      },
+      {
+        &quot;id&quot;: &quot;red_onion&quot;,
+        &quot;name&quot;: &quot;Красный лук&quot;,
+        &quot;price&quot;: 29
+      }
+    ],
+    &quot;defaultSize&quot;: &quot;30&quot;,
+    &quot;defaultDough&quot;: &quot;traditional&quot;,
+    &quot;composition&quot;: &quot;Тесто (мука пшеничная, вода, масло, сахар, дрожжи), соус томатный, сыр моцарелла, пепперони, томаты.&quot;
+  },
+  {
+    &quot;type&quot;: &quot;pizza&quot;,
+    &quot;name&quot;: &quot;Аррива!&quot;,
+    &quot;description&quot;: &quot;Яркая и острая. Цыпленок, острая чоризо, соус бургер, сладкий перец, красный лук, томаты, моцарелла, соус ранч, чеснок&quot;,
+    &quot;basePrice&quot;: 589,
+    &quot;nutritionalInfo&quot;: {
+      &quot;calories&quot;: 280,
+      &quot;weight&quot;: 570
+    },
+    &quot;sizes&quot;: [
+      {
+        &quot;id&quot;: &quot;25&quot;,
+        &quot;label&quot;: &quot;25 см&quot;,
+        &quot;price&quot;: 0
+      },
+      {
+        &quot;id&quot;: &quot;30&quot;,
+        &quot;label&quot;: &quot;30 см&quot;,
+        &quot;price&quot;: 200
+      },
+      {
+        &quot;id&quot;: &quot;35&quot;,
+        &quot;label&quot;: &quot;35 см&quot;,
+        &quot;price&quot;: 400
+      }
+    ],
+    &quot;doughs&quot;: [
+      {
+        &quot;id&quot;: &quot;traditional&quot;,
+        &quot;label&quot;: &quot;Традиционное&quot;
+      },
+      {
+        &quot;id&quot;: &quot;thin&quot;,
+        &quot;label&quot;: &quot;Тонкое&quot;
+      }
+    ],
+    &quot;defaultIngredients&quot;: [
+      {
+        &quot;id&quot;: &quot;chicken&quot;,
+        &quot;name&quot;: &quot;Цыпленок&quot;
+      },
+      {
+        &quot;id&quot;: &quot;chorizo&quot;,
+        &quot;name&quot;: &quot;Острая чоризо&quot;
+      },
+      {
+        &quot;id&quot;: &quot;burger_sauce&quot;,
+        &quot;name&quot;: &quot;Соус бургер&quot;
+      },
+      {
+        &quot;id&quot;: &quot;sweet_pepper&quot;,
+        &quot;name&quot;: &quot;Сладкий перец&quot;
+      },
+      {
+        &quot;id&quot;: &quot;red_onion&quot;,
+        &quot;name&quot;: &quot;Красный лук&quot;
+      },
+      {
+        &quot;id&quot;: &quot;tomatoes&quot;,
+        &quot;name&quot;: &quot;Томаты&quot;
+      },
+      {
+        &quot;id&quot;: &quot;mozzarella&quot;,
+        &quot;name&quot;: &quot;Моцарелла&quot;
+      },
+      {
+        &quot;id&quot;: &quot;ranch_sauce&quot;,
+        &quot;name&quot;: &quot;Соус ранч&quot;
+      },
+      {
+        &quot;id&quot;: &quot;garlic&quot;,
+        &quot;name&quot;: &quot;Чеснок&quot;
+      }
+    ],
+    &quot;extraIngredients&quot;: [
+      {
+        &quot;id&quot;: &quot;jalapeno&quot;,
+        &quot;name&quot;: &quot;Острый халапеньо&quot;,
+        &quot;price&quot;: 49
+      },
+      {
+        &quot;id&quot;: &quot;cheese_crust&quot;,
+        &quot;name&quot;: &quot;Сырный бортик&quot;,
+        &quot;price&quot;: 99
+      },
+      {
+        &quot;id&quot;: &quot;mushrooms&quot;,
+        &quot;name&quot;: &quot;Шампиньоны&quot;,
+        &quot;price&quot;: 39
+      },
+      {
+        &quot;id&quot;: &quot;cheddar_parmesan&quot;,
+        &quot;name&quot;: &quot;Чеддер и пармезан&quot;,
+        &quot;price&quot;: 59
+      },
+      {
+        &quot;id&quot;: &quot;bacon&quot;,
+        &quot;name&quot;: &quot;Бекон&quot;,
+        &quot;price&quot;: 59
+      },
+      {
+        &quot;id&quot;: &quot;feta&quot;,
+        &quot;name&quot;: &quot;Брынза&quot;,
+        &quot;price&quot;: 59
+      }
+    ],
+    &quot;defaultSize&quot;: &quot;30&quot;,
+    &quot;defaultDough&quot;: &quot;traditional&quot;,
+    &quot;composition&quot;: &quot;Тесто (мука пшеничная, вода, масло, сахар, дрожжи), соус ранч, соус бургер, сыр моцарелла, цыпленок, чоризо, перец сладкий, лук красный, томаты, чеснок.&quot;
+  },
+  {
+    &quot;type&quot;: &quot;pizza&quot;,
+    &quot;name&quot;: &quot;Овощи и грибы&quot;,
+    &quot;description&quot;: &quot;Сочная и легкая. Томатный соус, моцарелла, сладкий перец, шампиньоны, красный лук, томаты, маслины, брынза&quot;,
+    &quot;basePrice&quot;: 499,
+    &quot;nutritionalInfo&quot;: {
+      &quot;calories&quot;: 190,
+      &quot;weight&quot;: 530
+    },
+    &quot;sizes&quot;: [
+      {
+        &quot;id&quot;: &quot;25&quot;,
+        &quot;label&quot;: &quot;25 см&quot;,
+        &quot;price&quot;: 0
+      },
+      {
+        &quot;id&quot;: &quot;30&quot;,
+        &quot;label&quot;: &quot;30 см&quot;,
+        &quot;price&quot;: 200
+      },
+      {
+        &quot;id&quot;: &quot;35&quot;,
+        &quot;label&quot;: &quot;35 см&quot;,
+        &quot;price&quot;: 400
+      }
+    ],
+    &quot;doughs&quot;: [
+      {
+        &quot;id&quot;: &quot;traditional&quot;,
+        &quot;label&quot;: &quot;Традиционное&quot;
+      },
+      {
+        &quot;id&quot;: &quot;thin&quot;,
+        &quot;label&quot;: &quot;Тонкое&quot;
+      }
+    ],
+    &quot;defaultIngredients&quot;: [
+      {
+        &quot;id&quot;: &quot;tomato_sauce&quot;,
+        &quot;name&quot;: &quot;Томатный соус&quot;
+      },
+      {
+        &quot;id&quot;: &quot;mozzarella&quot;,
+        &quot;name&quot;: &quot;Моцарелла&quot;
+      },
+      {
+        &quot;id&quot;: &quot;sweet_pepper&quot;,
+        &quot;name&quot;: &quot;Сладкий перец&quot;
+      },
+      {
+        &quot;id&quot;: &quot;mushrooms&quot;,
+        &quot;name&quot;: &quot;Шампиньоны&quot;
+      },
+      {
+        &quot;id&quot;: &quot;red_onion&quot;,
+        &quot;name&quot;: &quot;Красный лук&quot;
+      },
+      {
+        &quot;id&quot;: &quot;tomatoes&quot;,
+        &quot;name&quot;: &quot;Томаты&quot;
+      },
+      {
+        &quot;id&quot;: &quot;olives&quot;,
+        &quot;name&quot;: &quot;Маслины&quot;
+      },
+      {
+        &quot;id&quot;: &quot;feta&quot;,
+        &quot;name&quot;: &quot;Брынза&quot;
+      }
+    ],
+    &quot;extraIngredients&quot;: [
+      {
+        &quot;id&quot;: &quot;cheese_crust&quot;,
+        &quot;name&quot;: &quot;Сырный бортик&quot;,
+        &quot;price&quot;: 99
+      },
+      {
+        &quot;id&quot;: &quot;jalapeno&quot;,
+        &quot;name&quot;: &quot;Острый халапеньо&quot;,
+        &quot;price&quot;: 49
+      },
+      {
+        &quot;id&quot;: &quot;cheddar_parmesan&quot;,
+        &quot;name&quot;: &quot;Чеддер и пармезан&quot;,
+        &quot;price&quot;: 59
+      }
+    ],
+    &quot;defaultSize&quot;: &quot;30&quot;,
+    &quot;defaultDough&quot;: &quot;traditional&quot;,
+    &quot;composition&quot;: &quot;Тесто (мука пшеничная, вода, масло, сахар, дрожжи), соус томатный, сыр моцарелла, перец сладкий, шампиньоны, лук красный, томаты, маслины, сыр брынза.&quot;
+  }
+]</textarea><pre id="annotations" style="display:none">[]</pre></div>
+    <p class="footer-text">TypeScript Coverage Report generated by <a href="https://github.com/plantain-00/type-coverage">type-coverage</a> and <a href="https://github.com/alexcanessa/typescript-coverage-report">typescript-coverage-report</a> at Sun, 18 Jan 2026 05:15:02 GMT</p>
+    </body>
+  </html>
+  

@@ -1,0 +1,752 @@
+
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <title>keyval.ts</title>
+      <link href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css" type="text/css" rel="stylesheet">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/mode/javascript/javascript.min.js" type="text/javascript" charset="utf-8"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.css" type="text/css" rel="stylesheet">
+<script src="../../assets/source-file.js" type="text/javascript" charset="utf-8"></script>
+<link href="../../assets/source-file.css" type="text/css" rel="stylesheet">
+    </head>
+    <body>
+    <div style="margin-top:3em" class="ui container"><h1 class="ui header"><a href="../../index.html">TypeScript coverage report</a></h1><table style="margin-top:2em" class="ui celled table"><thead class=""><tr class=""><th class="">Filename</th><th class="">Percent</th><th class="">Threshold</th><th class="">Total</th><th class="">Covered</th><th class="">Uncovered</th></tr></thead><tbody class=""><tr class="positive"><td class="">src/keyval.ts</td><td class="">98.06%</td><td class="">80%</td><td class="">1136</td><td class="">1114</td><td class="">22</td></tr></tbody></table><textarea id="editor" readonly="" style="margin-top:3em">import {
+  Store,
+  Event,
+  EventCallable,
+  createStore,
+  createEvent,
+  sample,
+  createEffect,
+  is,
+} from &#x27;effector&#x27;;
+import { Model, InferConfigInput } from &#x27;./model&#x27;;
+import { create } from &#x27;./instance&#x27;;
+import { Lens } from &#x27;./lens&#x27;;
+import { Facet, FacetShape } from &#x27;./facet&#x27;;
+
+export type UnionConfig&lt;M extends Record&lt;string, Model&lt;any, any, any&gt;&gt;&gt; = M;
+
+export type Union&lt;M extends Record&lt;string, Model&lt;any, any, any&gt;&gt;&gt; = {
+  type: &#x27;union&#x27;;
+  models: M;
+};
+
+export function union&lt;M extends Record&lt;string, Model&lt;any, any, any&gt;&gt;&gt;(
+  models: M,
+): Union&lt;M&gt; {
+  return {
+    type: &#x27;union&#x27;,
+    models,
+  };
+}
+
+export type KeyvalConfig&lt;M&gt; = {
+  model: M;
+};
+
+// Helper types for LensProxy
+type Lensify&lt;T&gt; =
+  T extends Store&lt;infer V&gt;
+    ? Lens
+    : T extends EventCallable&lt;infer P&gt;
+      ? EventCallable&lt;P&gt;
+      : T extends Record&lt;string, unknown&gt;
+        ? { [K in keyof T]: Lensify&lt;T[K]&gt; }
+        : unknown;
+
+type ModelInstanceType&lt;M&gt; =
+  M extends Model&lt;any, any, any&gt;
+    ? M[&#x27;_InstanceType&#x27;]
+    : M extends Union&lt;infer U&gt;
+      ? U[keyof U][&#x27;_InstanceType&#x27;]
+      : never;
+
+export type LensProxy&lt;M&gt; = Lensify&lt;ModelInstanceType&lt;M&gt;&gt; &amp;
+  Lens &amp; {
+    activeVariant: Lens;
+    match: (config: {
+      source?: unknown;
+      cases: Record&lt;string, (scope: unknown) =&gt; unknown&gt;;
+    }) =&gt; unknown;
+  };
+
+export type InferKeyvalInput&lt;M&gt; =
+  M extends Model&lt;infer I, any, any&gt;
+    ? InferConfigInput&lt;I&gt;
+    : M extends Union&lt;infer U&gt;
+      ? { [K in keyof U]: InferKeyvalInput&lt;U[K]&gt; }[keyof U]
+      : unknown;
+
+export type Keyval&lt;M&gt; = {
+  type: &#x27;keyval&#x27;;
+  model: M;
+  add: EventCallable&lt;{
+    id: string;
+    variant?: string;
+    input: InferKeyvalInput&lt;M&gt;;
+    state?: Record&lt;string, unknown&gt;;
+  }&gt;;
+  update: EventCallable&lt;{
+    id: string;
+    input?: Partial&lt;InferKeyvalInput&lt;M&gt;&gt;;
+    state?: Record&lt;string, unknown&gt;;
+  }&gt;;
+  remove: EventCallable&lt;string&gt;;
+  reset: EventCallable&lt;void&gt;;
+  getItem: (
+    idOrStore:
+      | string
+      | Store&lt;string | null&gt;
+      | Event&lt;string&gt;
+      | Event&lt;{ id: string }&gt;,
+  ) =&gt; LensProxy&lt;M&gt;;
+  $items: Store&lt;string[]&gt;;
+  $activeVariants: Store&lt;Record&lt;string, string | null&gt;&gt;;
+  $state: Store&lt;Record&lt;string, unknown&gt;&gt;;
+};
+
+export function keyval&lt;M extends Union&lt;any&gt; | Model&lt;any, any, any&gt;&gt;(
+  config: KeyvalConfig&lt;M&gt;,
+): Keyval&lt;M&gt; {
+  const $items = createStore&lt;string[]&gt;([]);
+  const $instances = createStore&lt;Record&lt;string, unknown&gt;&gt;({});
+  const $activeVariants = createStore&lt;Record&lt;string, string | null&gt;&gt;({});
+  const $state = createStore&lt;Record&lt;string, unknown&gt;&gt;({});
+
+  const add = createEvent&lt;{
+    id: string;
+    variant?: string;
+    input: InferKeyvalInput&lt;M&gt;;
+    state?: Record&lt;string, unknown&gt;;
+  }&gt;();
+  const update = createEvent&lt;{
+    id: string;
+    input?: Partial&lt;InferKeyvalInput&lt;M&gt;&gt;;
+    state?: Record&lt;string, unknown&gt;;
+  }&gt;();
+  const remove = createEvent&lt;string&gt;();
+  const reset = createEvent();
+  const addValid = createEvent&lt;{
+    id: string;
+    variant?: string;
+    input: InferKeyvalInput&lt;M&gt;;
+    state?: Record&lt;string, unknown&gt;;
+  }&gt;();
+  const updateState = createEvent&lt;{
+    id: string;
+    path: string[];
+    value: unknown;
+  }&gt;();
+  const clearInstanceState = createEvent&lt;string&gt;();
+
+  // Update Logic
+  const updateInstanceFx = createEffect(
+    ({
+      instances,
+      id,
+      input,
+      state,
+    }: {
+      instances: Record&lt;string, unknown&gt;;
+      id: string;
+      input?: Record&lt;string, unknown&gt;;
+      state?: Record&lt;string, unknown&gt;;
+    }) =&gt; {
+      const instance = instances[id] as Record&lt;string, unknown&gt;;
+      if (!instance) return;
+
+      // Update Inputs
+      if (input) {
+        // instance.input contains stores
+        const instanceInput = instance.input as Record&lt;string, unknown&gt;;
+        for (const [key, val] of Object.entries(input)) {
+          const store = instanceInput[key];
+          if (
+            store &amp;&amp;
+            (store as { rehydrate: EventCallable&lt;unknown&gt; }).rehydrate
+          ) {
+            (store as { rehydrate: EventCallable&lt;unknown&gt; }).rehydrate(val);
+          }
+        }
+      }
+
+      // Update State (Facets)
+      if (state) {
+        // Traverse state and update stores
+        for (const [facetName, facetState] of Object.entries(state)) {
+          const facets = instance.facets as Record&lt;
+            string,
+            Record&lt;string, unknown&gt;
+          &gt;;
+          const facet = facets?.[facetName];
+          if (facet &amp;&amp; typeof facetState === &#x27;object&#x27; &amp;&amp; facetState !== null) {
+            for (const [fieldName, val] of Object.entries(
+              facetState as Record&lt;string, unknown&gt;,
+            )) {
+              const store = facet[fieldName];
+              if (
+                store &amp;&amp;
+                (store as { rehydrate: EventCallable&lt;unknown&gt; }).rehydrate
+              ) {
+                (store as { rehydrate: EventCallable&lt;unknown&gt; }).rehydrate(val);
+              }
+            }
+          }
+        }
+      }
+    },
+  );
+
+  sample({
+    clock: update,
+    source: $instances,
+    fn: (instances, { id, input, state }) =&gt; ({ instances, id, input, state }),
+    target: updateInstanceFx,
+  });
+
+  $state.on(updateState, (state, { id, path, value }) =&gt; {
+    const newState = { ...state };
+    let current = (newState[id] ? { ...newState[id] } : {}) as Record&lt;
+      string,
+      unknown
+    &gt;;
+    newState[id] = current;
+
+    for (let i = 0; i &lt; path.length - 1; i++) {
+      const key = path[i];
+      current[key] = (current[key] ? { ...current[key] } : {}) as Record&lt;
+        string,
+        unknown
+      &gt;;
+      current = current[key] as Record&lt;string, unknown&gt;;
+    }
+    current[path[path.length - 1]] = value;
+    return newState;
+  });
+
+  $state.on(remove, (state, id) =&gt; {
+    const { [id]: _, ...rest } = state;
+    return rest;
+  });
+  $state.on(clearInstanceState, (state, id) =&gt; {
+    const { [id]: _, ...rest } = state;
+    return rest;
+  });
+  $state.reset(reset);
+
+  sample({
+    clock: add,
+    filter: ({ id, variant, input }) =&gt; {
+      const actualVariant = variant || (input as any)?.type;
+      console.log(
+        `[keyval] Validating add for ${id} (variant: ${actualVariant})`,
+      );
+
+      let modelDef: Model&lt;any, any, any&gt;;
+      if ((config.model as any).type === &#x27;union&#x27;) {
+        const unionModel = config.model as Union&lt;any&gt;;
+        if (!actualVariant || !unionModel.models[actualVariant]) {
+          console.error(`[keyval] Variant ${actualVariant} not found in union`);
+          return false;
+        }
+        modelDef = unionModel.models[actualVariant];
+      } else {
+        modelDef = config.model as Model&lt;any, any, any&gt;;
+      }
+
+      const modelExtraDef =
+        modelDef.config.extra || modelDef.config.input || {};
+      const typedInput = input as Record&lt;string, unknown&gt;;
+      for (const key in modelExtraDef) {
+        const def = modelExtraDef[key];
+        // Only check if it&#x27;s a required input (no initial value)
+        if (def.type === &#x27;store&#x27; &amp;&amp; def.initial === undefined) {
+          if (!typedInput || typedInput[key] === undefined) {
+            console.error(
+              `[keyval] Required input &quot;${key}&quot; missing for item ${id}. Input:`,
+              input,
+            );
+            return false;
+          }
+        }
+      }
+
+      return true;
+    },
+    target: addValid,
+  });
+
+  const updateVariant = createEvent&lt;{ id: string; variant: string | null }&gt;();
+  $activeVariants.on(updateVariant, (state, { id, variant }) =&gt; ({
+    ...state,
+    [id]: variant,
+  }));
+  $activeVariants.on(remove, (state, id) =&gt; {
+    const { [id]: _, ...rest } = state;
+    return rest;
+  });
+  $activeVariants.reset(reset);
+
+  const createInstanceFx = createEffect(
+    ({
+      id,
+      variant,
+      input,
+      state,
+    }: {
+      id: string;
+      variant?: string;
+      input: unknown;
+      state?: unknown;
+    }) =&gt; {
+      let modelDef: Model&lt;
+        Record&lt;string, unknown&gt;,
+        Record&lt;string, unknown&gt;,
+        any
+      &gt;;
+      const resolvedVariant = variant || (input as { type?: string })?.type;
+      if (&#x27;type&#x27; in config.model &amp;&amp; config.model.type === &#x27;union&#x27;) {
+        const unionModel = config.model as Union&lt;any&gt;;
+        modelDef = unionModel.models[resolvedVariant!];
+      } else {
+        modelDef = config.model as Model&lt;
+          Record&lt;string, unknown&gt;,
+          Record&lt;string, unknown&gt;,
+          any
+        &gt;;
+      }
+
+      const instance = create(modelDef, {
+        input: input as InferConfigInput&lt;Record&lt;string, unknown&gt;&gt;,
+        state: state as Record&lt;string, unknown&gt;,
+      });
+      (instance as unknown as { _variant: string | null })._variant =
+        resolvedVariant || instance.activeVariant.getState();
+
+      sample({
+        clock: instance.activeVariant,
+        fn: (v) =&gt; ({ id, variant: v }),
+        target: updateVariant,
+      });
+
+      const initialVariant = instance.activeVariant.getState();
+      if (initialVariant !== null) {
+        updateVariant({ id, variant: initialVariant });
+      }
+
+      traverseAndBind(instance, [], id, updateState);
+
+      return { id, instance };
+    },
+  );
+
+  sample({
+    clock: addValid,
+    fn: ({ id }) =&gt; id,
+    target: clearInstanceState,
+  });
+
+  sample({
+    clock: addValid,
+    source: $instances,
+    fn: (instances, { id, variant, input, state }) =&gt; {
+      console.log(
+        `[keyval] addValid triggered for ${id}. Variant: ${variant}. Input keys:`,
+        Object.keys(input || {}),
+      );
+      const existing = instances[id] as { destroy?: () =&gt; void };
+      if (existing) {
+        console.log(`[keyval] Destroying existing instance ${id}`);
+        if (existing.destroy) existing.destroy();
+      }
+      return { id, variant, input, state };
+    },
+    target: createInstanceFx,
+  });
+
+  createInstanceFx.fail.watch((error) =&gt; {
+    console.error(&#x27;[keyval] createInstanceFx failed:&#x27;, error);
+  });
+
+  createInstanceFx.done.watch(({ params, result }) =&gt; {
+    console.log(`[keyval] createInstanceFx done for ${params.id}`, result);
+  });
+
+  $instances.on(remove, (instances, id) =&gt; {
+    const instance = instances[id] as { destroy?: () =&gt; void };
+    if (!instance) return instances;
+    if (instance.destroy) instance.destroy();
+    const { [id]: _, ...rest } = instances;
+    return rest;
+  });
+
+  $instances.on(createInstanceFx.doneData, (instances, { id, instance }) =&gt; ({
+    ...instances,
+    [id]: instance,
+  }));
+
+  $instances.on(reset, (instances) =&gt; {
+    Object.values(instances).forEach((instance) =&gt; {
+      const inst = instance as { destroy?: () =&gt; void };
+      if (inst &amp;&amp; inst.destroy) inst.destroy();
+    });
+    return {};
+  });
+  $instances.reset(reset);
+
+  $items.on(createInstanceFx.doneData, (items, { id }) =&gt; {
+    if (items.includes(id)) return items;
+    return [...items, id];
+  });
+  $items.on(remove, (items, id) =&gt; items.filter((x) =&gt; x !== id));
+  $items.reset(reset);
+
+  const proxyCache = new Map&lt;any, any&gt;();
+
+  const getItem = (
+    idOrStore:
+      | string
+      | Store&lt;string | null&gt;
+      | Event&lt;string&gt;
+      | Event&lt;{ id: string }&gt;,
+  ) =&gt; {
+    const key = is.unit(idOrStore) ? idOrStore : String(idOrStore);
+    if (proxyCache.has(key)) return proxyCache.get(key);
+    const proxy = createItemProxy(
+      $instances,
+      $state,
+      idOrStore,
+      config.model, // Pass model def
+      $activeVariants,
+    );
+    proxyCache.set(key, proxy);
+    return proxy;
+  };
+
+  return {
+    type: &#x27;keyval&#x27;,
+    model: config.model,
+    add,
+    update,
+    remove,
+    reset,
+    getItem,
+    $items,
+    $activeVariants,
+    $state,
+    $instances,
+    // type-coverage:ignore-next-line
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as unknown as Keyval&lt;M&gt;;
+}
+
+function traverseAndBind(
+  obj: unknown,
+  path: string[],
+  id: string,
+  updateState: EventCallable&lt;{ id: string; path: string[]; value: unknown }&gt;,
+  visited = new Set&lt;unknown&gt;(),
+) {
+  if (!obj || typeof obj !== &#x27;object&#x27;) return;
+  if (visited.has(obj)) return;
+  visited.add(obj);
+
+  for (const key in obj) {
+    if (
+      key === &#x27;destroy&#x27; ||
+      key === &#x27;__impls&#x27; ||
+      key === &#x27;__fn&#x27; ||
+      key === &#x27;variant&#x27;
+    )
+      continue;
+    const val = (obj as Record&lt;string, unknown&gt;)[key];
+
+    if (is.store(val)) {
+      sample({
+        clock: val as Store&lt;unknown&gt;,
+        fn: (value) =&gt; ({ id, path: [...path, key], value }),
+        target: updateState,
+      });
+      updateState({ id, path: [...path, key], value: val.getState() });
+    } else if (is.event(val) || is.effect(val)) {
+      // Ignore events/effects for state
+    } else if (typeof val === &#x27;object&#x27;) {
+      traverseAndBind(val, [...path, key], id, updateState, visited);
+    } else {
+      updateState({ id, path: [...path, key], value: val });
+    }
+  }
+}
+
+function getFieldDef(
+  model:
+    | Model&lt;Record&lt;string, unknown&gt;, Record&lt;string, unknown&gt;, any&gt;
+    | Union&lt;any&gt;,
+  facetName: string,
+  fieldName: string,
+) {
+  if (&#x27;type&#x27; in model &amp;&amp; model.type === &#x27;union&#x27;) {
+    const union = model as Union&lt;any&gt;;
+    for (const subModel of Object.values(union.models)) {
+      const facets = (
+        subModel as Model&lt;Record&lt;string, unknown&gt;, Record&lt;string, unknown&gt;, any&gt;
+      ).config.facets as Record&lt;string, Facet&lt;FacetShape&gt;&gt; | undefined;
+      const def = facets?.[facetName]?.shape?.[fieldName];
+      if (def) return def;
+    }
+  } else {
+    const m = model as Model&lt;
+      Record&lt;string, unknown&gt;,
+      Record&lt;string, unknown&gt;,
+      any
+    &gt;;
+    const facets = m.config.facets as
+      | Record&lt;string, Facet&lt;FacetShape&gt;&gt;
+      | undefined;
+    return facets?.[facetName]?.shape?.[fieldName];
+  }
+  return null;
+}
+
+function getTrigger(
+  $instances: Store&lt;Record&lt;string, unknown&gt;&gt;,
+  facetName: string,
+  fieldName: string,
+  unitsCache: Map&lt;string, Event&lt;unknown&gt;&gt;,
+) {
+  const cacheKey = `${facetName}.${fieldName}`;
+  if (unitsCache.has(cacheKey)) return unitsCache.get(cacheKey);
+
+  const trigger = createEvent&lt;unknown&gt;();
+  const fx = createEffect(
+    ({
+      instances,
+      id,
+      payload,
+    }: {
+      instances: Record&lt;string, unknown&gt;;
+      id: string;
+      payload: unknown;
+    }) =&gt; {
+      const instance = instances[id] as Record&lt;string, unknown&gt;;
+      const facets = instance?.facets as Record&lt;
+        string,
+        Record&lt;string, unknown&gt;
+      &gt;;
+      const facet = facets?.[facetName];
+      const facetImpl = (facet?.impl as Record&lt;string, unknown&gt;) || facet;
+      const unit = facetImpl?.[fieldName];
+
+      if (is.event(unit) || is.effect(unit))
+        (unit as EventCallable&lt;unknown&gt;)(payload);
+    },
+  );
+
+  sample({
+    clock: trigger,
+    source: $instances,
+    fn: (instances, payload) =&gt; {
+      let id = payload as string;
+      let realPayload = payload;
+
+      if (
+        typeof payload === &#x27;object&#x27; &amp;&amp;
+        payload !== null &amp;&amp;
+        &#x27;__bound&#x27; in payload
+      ) {
+        const bound = payload as unknown as { id: string; value: unknown };
+        id = bound.id;
+        realPayload = bound.value;
+      } else if (
+        typeof payload === &#x27;object&#x27; &amp;&amp;
+        payload !== null &amp;&amp;
+        &#x27;id&#x27; in payload
+      ) {
+        const withId = payload as unknown as { id: string };
+        id = withId.id;
+      }
+
+      return { instances, id, payload: realPayload };
+    },
+    target: fx,
+  });
+
+  unitsCache.set(cacheKey, trigger);
+  return trigger;
+}
+
+export function createItemProxy(
+  $instances: Store&lt;Record&lt;string, unknown&gt;&gt;,
+  $state: Store&lt;Record&lt;string, unknown&gt;&gt;,
+  idOrStore: unknown,
+  modelDef:
+    | Model&lt;Record&lt;string, unknown&gt;, Record&lt;string, unknown&gt;, any&gt;
+    | Union&lt;any&gt;,
+  $activeVariants?: Store&lt;Record&lt;string, string | null&gt;&gt;,
+) {
+  const unitsCache = new Map&lt;string, Event&lt;unknown&gt;&gt;();
+  const boundEventsCache = new Map&lt;string, Event&lt;unknown&gt;&gt;();
+  let $id: Store&lt;string | null&gt;;
+
+  if (typeof idOrStore === &#x27;string&#x27;) {
+    $id = createStore(idOrStore);
+  } else if (is.store(idOrStore)) {
+    $id = idOrStore as Store&lt;string | null&gt;;
+  } else if (is.event(idOrStore)) {
+    // Event-based proxy (Keep logic for now, but share getTrigger)
+    return new Proxy(
+      {},
+      {
+        get: (target, prop) =&gt; {
+          if (prop === &#x27;activeVariant&#x27;) {
+            return {
+              _sourceEvent: idOrStore,
+              _instances: $instances,
+              _activeVariants: $activeVariants,
+              _state: $state,
+              _modelDef: modelDef,
+            };
+          }
+          if (prop === &#x27;facets&#x27;) {
+            return new Proxy(
+              {},
+              {
+                get: (_, facetName: string) =&gt; {
+                  return new Proxy(
+                    {},
+                    {
+                      get: (_, fieldName: string) =&gt; {
+                        return getTrigger(
+                          $instances,
+                          facetName,
+                          fieldName,
+                          unitsCache,
+                        );
+                      },
+                    },
+                  );
+                },
+              },
+            );
+          }
+          return Reflect.get(target, prop);
+        },
+      },
+    );
+  } else {
+    $id = createStore(null);
+  }
+
+  return new Proxy(
+    {},
+    {
+      get: (target, prop) =&gt; {
+        if (prop === &#x27;__type&#x27;) return &#x27;lens&#x27;;
+        if (prop === &#x27;source&#x27;) return $instances;
+        if (prop === &#x27;state&#x27;) return $state;
+        if (prop === &#x27;id&#x27;) return $id;
+        if (prop === &#x27;path&#x27;) return [];
+
+        if (prop === &#x27;match&#x27;) {
+          return () =&gt; {
+            return {
+              __type: &#x27;lens&#x27;,
+              source: $instances,
+              state: $state,
+              id: $id,
+              path: [], // Root?
+            };
+          };
+        }
+
+        if (prop === &#x27;facets&#x27;) {
+          return new Proxy(
+            {},
+            {
+              get: (_, facetName: string) =&gt; {
+                return new Proxy(
+                  {},
+                  {
+                    get: (_, fieldName: string) =&gt; {
+                      // Check Definition
+                      const def = getFieldDef(modelDef, facetName, fieldName);
+                      if (def &amp;&amp; def.type === &#x27;event&#x27;) {
+                        const cacheKey = `${facetName}.${fieldName}`;
+                        if (boundEventsCache.has(cacheKey)) {
+                          return boundEventsCache.get(cacheKey);
+                        }
+
+                        const trigger = getTrigger(
+                          $instances,
+                          facetName,
+                          fieldName,
+                          unitsCache,
+                        ) as EventCallable&lt;unknown&gt;;
+                        const bound = createEvent&lt;unknown&gt;();
+
+                        sample({
+                          clock: bound,
+                          source: $id,
+                          fn: (id: string | null, payload: unknown) =&gt; ({
+                            __bound: true,
+                            id,
+                            value: payload,
+                          }),
+                          target: trigger,
+                        });
+
+                        boundEventsCache.set(cacheKey, bound);
+                        return bound;
+                      }
+
+                      return {
+                        __type: &#x27;lens&#x27;,
+                        source: $instances,
+                        state: $state,
+                        id: $id,
+                        path: [&#x27;facets&#x27;, facetName, fieldName],
+                      } as Lens;
+                    },
+                  },
+                );
+              },
+            },
+          );
+        }
+        if (prop === &#x27;input&#x27;) {
+          return new Proxy(
+            {},
+            {
+              get: (_, inputName: string) =&gt; {
+                return {
+                  __type: &#x27;lens&#x27;,
+                  source: $instances,
+                  state: $state,
+                  id: $id,
+                  path: [&#x27;input&#x27;, inputName],
+                } as Lens;
+              },
+            },
+          );
+        }
+        if (prop === &#x27;activeVariant&#x27;) {
+          return {
+            __type: &#x27;lens&#x27;,
+            source: $instances,
+            state: $state,
+            id: $id,
+            path: [&#x27;activeVariant&#x27;],
+          } as Lens;
+        }
+        return Reflect.get(target, prop);
+      },
+    },
+  );
+}
+</textarea><pre id="annotations" style="display:none">[{&quot;file&quot;:&quot;src/keyval.ts&quot;,&quot;line&quot;:228,&quot;character&quot;:12,&quot;text&quot;:&quot;actualVariant&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/keyval.ts&quot;,&quot;line&quot;:228,&quot;character&quot;:55,&quot;text&quot;:&quot;type&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/keyval.ts&quot;,&quot;line&quot;:230,&quot;character&quot;:55,&quot;text&quot;:&quot;actualVariant&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/keyval.ts&quot;,&quot;line&quot;:234,&quot;character&quot;:32,&quot;text&quot;:&quot;type&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/keyval.ts&quot;,&quot;line&quot;:236,&quot;character&quot;:13,&quot;text&quot;:&quot;actualVariant&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/keyval.ts&quot;,&quot;line&quot;:236,&quot;character&quot;:42,&quot;text&quot;:&quot;models&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/keyval.ts&quot;,&quot;line&quot;:236,&quot;character&quot;:49,&quot;text&quot;:&quot;actualVariant&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/keyval.ts&quot;,&quot;line&quot;:237,&quot;character&quot;:44,&quot;text&quot;:&quot;actualVariant&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/keyval.ts&quot;,&quot;line&quot;:240,&quot;character&quot;:30,&quot;text&quot;:&quot;models&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/keyval.ts&quot;,&quot;line&quot;:240,&quot;character&quot;:37,&quot;text&quot;:&quot;actualVariant&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/keyval.ts&quot;,&quot;line&quot;:245,&quot;character&quot;:12,&quot;text&quot;:&quot;modelExtraDef&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/keyval.ts&quot;,&quot;line&quot;:246,&quot;character&quot;:24,&quot;text&quot;:&quot;extra&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/keyval.ts&quot;,&quot;line&quot;:246,&quot;character&quot;:49,&quot;text&quot;:&quot;input&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/keyval.ts&quot;,&quot;line&quot;:248,&quot;character&quot;:24,&quot;text&quot;:&quot;modelExtraDef&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/keyval.ts&quot;,&quot;line&quot;:249,&quot;character&quot;:14,&quot;text&quot;:&quot;def&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/keyval.ts&quot;,&quot;line&quot;:249,&quot;character&quot;:20,&quot;text&quot;:&quot;modelExtraDef&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/keyval.ts&quot;,&quot;line&quot;:251,&quot;character&quot;:12,&quot;text&quot;:&quot;def&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/keyval.ts&quot;,&quot;line&quot;:251,&quot;character&quot;:16,&quot;text&quot;:&quot;type&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/keyval.ts&quot;,&quot;line&quot;:251,&quot;character&quot;:36,&quot;text&quot;:&quot;def&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/keyval.ts&quot;,&quot;line&quot;:251,&quot;character&quot;:40,&quot;text&quot;:&quot;initial&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/keyval.ts&quot;,&quot;line&quot;:298,&quot;character&quot;:30,&quot;text&quot;:&quot;models&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/keyval.ts&quot;,&quot;line&quot;:478,&quot;character&quot;:47,&quot;text&quot;:&quot;models&quot;,&quot;kind&quot;:1}]</pre></div>
+    <p class="footer-text">TypeScript Coverage Report generated by <a href="https://github.com/plantain-00/type-coverage">type-coverage</a> and <a href="https://github.com/alexcanessa/typescript-coverage-report">typescript-coverage-report</a> at Sun, 18 Jan 2026 04:50:29 GMT</p>
+    </body>
+  </html>
+  

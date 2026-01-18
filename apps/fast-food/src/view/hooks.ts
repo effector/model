@@ -1,24 +1,24 @@
 import { useMemo, useRef } from 'react';
 import { useUnit } from 'effector-react';
-import { select, isLens } from '@effector-model/core-experimental';
+import { select, isLens, Lens } from '@effector-model/core-experimental';
 import { Store, is, createStore } from 'effector';
 
-export function useLens<T>(lens: any, fallback: T): T {
+export function useLens<T>(lens: Lens | Store<T> | T, fallback: T): T {
   const storeRef = useRef<Store<T> | null>(null);
-  const lensRef = useRef<any>(null);
+  const lensRef = useRef<Lens | null>(null);
 
   const $store = useMemo(() => {
     // 1. If it's already a store, just use it
-    if (is.store(lens)) return lens;
+    if (is.store(lens)) return lens as Store<T>;
 
     // 2. If it's not a lens, wrap fallback in a store
     if (!isLens(lens)) return createStore(fallback);
 
+    const l = lens as Lens;
+
     // 3. Identification for memoization
-    const pathStr = (lens as any).path?.join('.') || '';
-    const lensId = is.store((lens as any).id)
-      ? 'stable'
-      : String((lens as any).id || '');
+    const pathStr = l.path?.join('.') || '';
+    const lensId = is.store(l.id) ? 'stable' : String(l.id || '');
 
     if (
       storeRef.current &&
@@ -33,7 +33,7 @@ export function useLens<T>(lens: any, fallback: T): T {
 
     // 4. Create new store from lens
     try {
-      const s = select(lens).fallback(fallback);
+      const s = select(lens).fallback(fallback) as Store<T>;
       storeRef.current = s;
       lensRef.current = lens;
       return s;

@@ -11,6 +11,7 @@ describe('lens', () => {
   const m = model({
     input: { $v: define.store(0) },
     facets: { f },
+    // type-coverage:ignore-next-line
     fn: ({ $v }: any) => ({
       f: { $val: $v },
       staticVal: 123,
@@ -47,6 +48,7 @@ describe('lens', () => {
     const $val = select(item)
       .variant('ignored') // Should return builder
       .facet('f')
+      // type-coverage:ignore-next-line
       .path((x: any) => x.$val)
       .fallback(-1);
 
@@ -76,12 +78,14 @@ describe('lens', () => {
 
     // Static value
     const $static = select(item)
+      // type-coverage:ignore-next-line
       .path((x: any) => x.staticVal)
       .fallback(0);
     expect(scope.getState($static)).toBe(123);
 
     // Nested path
     const $nested = select(item)
+      // type-coverage:ignore-next-line
       .path((x: any) => x.nested.deep.val)
       .fallback(0);
     expect(scope.getState($nested)).toBe(456);
@@ -95,11 +99,13 @@ describe('lens', () => {
     });
     const item = list.getItem('1');
     const $missing = select(item)
+      // type-coverage:ignore-next-line
       .path((x: any) => x.nonExistent)
       .fallback(999);
     expect(scope.getState($missing)).toBe(999);
 
     const $missingDeep = select(item)
+      // type-coverage:ignore-next-line
       .path((x: any) => x.nested.nonExistent)
       .fallback(999);
     expect(scope.getState($missingDeep)).toBe(999);
@@ -117,6 +123,7 @@ describe('lens', () => {
     // Chain: select(item).facet('f').path(...)
     const $val = select(item)
       .facet('f')
+      // type-coverage:ignore-next-line
       .path((x: any) => x.$val)
       .fallback(0);
 
@@ -126,7 +133,9 @@ describe('lens', () => {
   it('should be immutable', () => {
     const item = list.getItem('1');
     const b1 = select(item).facet('f');
+    // type-coverage:ignore-next-line
     const b2 = b1.path((x: any) => x.x);
+    // type-coverage:ignore-next-line
     const b3 = b1.path((x: any) => x.y);
 
     // b1 should not be modified by b2 call

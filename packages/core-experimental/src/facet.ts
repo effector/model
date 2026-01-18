@@ -1,14 +1,14 @@
 import { StoreWritable, EventCallable } from 'effector';
 import { StoreDef, EventDef, RefDef, ArrayDef } from './define';
 
-export type FacetShape = {
+export interface FacetShape {
   [key: string]:
-    | StoreDef<any>
-    | EventDef<any>
-    | Facet<any>
+    | StoreDef<unknown>
+    | EventDef<unknown>
+    | Facet<FacetShape>
     | RefDef
-    | ArrayDef<any>;
-};
+    | ArrayDef<unknown>;
+}
 
 export type InferFacetCtx<S extends FacetShape> = {
   [K in keyof S]: S[K] extends StoreDef<infer T>
@@ -19,7 +19,7 @@ export type InferFacetCtx<S extends FacetShape> = {
         ? EventCallable<T>
         : S[K] extends Facet<infer FS>
           ? InferFacetCtx<FS>
-          : any;
+          : unknown;
 };
 
 export type Facet<S extends FacetShape> = {
@@ -30,13 +30,13 @@ export type Facet<S extends FacetShape> = {
 };
 
 export function facet<S extends FacetShape>(shape: S): Facet<S> {
-  const f: any = {
+  const f: Facet<S> = {
     type: 'facet',
     shape,
-  };
-  f.use = (linker: any) => {
-    f._linker = linker;
-    return f;
+    use: (linker) => {
+      f._linker = linker;
+      return f;
+    },
   };
   return f;
 }

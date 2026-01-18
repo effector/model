@@ -1,0 +1,272 @@
+
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <title>cart.ts</title>
+      <link href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css" type="text/css" rel="stylesheet">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/mode/javascript/javascript.min.js" type="text/javascript" charset="utf-8"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.css" type="text/css" rel="stylesheet">
+<script src="../../../assets/source-file.js" type="text/javascript" charset="utf-8"></script>
+<link href="../../../assets/source-file.css" type="text/css" rel="stylesheet">
+    </head>
+    <body>
+    <div style="margin-top:3em" class="ui container"><h1 class="ui header"><a href="../../../index.html">TypeScript coverage report</a></h1><table style="margin-top:2em" class="ui celled table"><thead class=""><tr class=""><th class="">Filename</th><th class="">Percent</th><th class="">Threshold</th><th class="">Total</th><th class="">Covered</th><th class="">Uncovered</th></tr></thead><tbody class=""><tr class="positive"><td class="">src/models/cart.ts</td><td class="">88.99%</td><td class="">80%</td><td class="">427</td><td class="">380</td><td class="">47</td></tr></tbody></table><textarea id="editor" readonly="" style="margin-top:3em">import { createEvent, sample, createEffect } from &#x27;effector&#x27;;
+import { createFactory } from &#x27;@withease/factories&#x27;;
+import { keyval, union, serialize } from &#x27;@effector-model/core-experimental&#x27;;
+import { ProductData } from &#x27;../types&#x27;;
+import { pizzaModel } from &#x27;./products/pizza&#x27;;
+import { drinkModel } from &#x27;./products/drink&#x27;;
+import { coffeeModel } from &#x27;./products/coffee&#x27;;
+import { cocktailModel } from &#x27;./products/cocktail&#x27;;
+import { sauceModel } from &#x27;./products/sauce&#x27;;
+import { burgerModel } from &#x27;./products/burger&#x27;;
+import { twisterModel } from &#x27;./products/twister&#x27;;
+import { bucketModel } from &#x27;./products/bucket&#x27;;
+import { snackModel } from &#x27;./products/snack&#x27;;
+
+export const productUnion = union({
+  pizza: pizzaModel,
+  drink: drinkModel,
+  coffee: coffeeModel,
+  cocktail: cocktailModel,
+  sauce: sauceModel,
+  burger: burgerModel,
+  twister: twisterModel,
+  bucket: bucketModel,
+  snack: snackModel,
+});
+
+import { Store } from &#x27;effector&#x27;;
+
+export type ProductInstance =
+  (typeof productUnion.models)[keyof typeof productUnion.models][&#x27;_InstanceType&#x27;];
+
+export type PizzaInstance = (typeof productUnion.models.pizza)[&#x27;_InstanceType&#x27;];
+export type DrinkInstance = (typeof productUnion.models.drink)[&#x27;_InstanceType&#x27;];
+export type CoffeeInstance =
+  (typeof productUnion.models.coffee)[&#x27;_InstanceType&#x27;];
+export type CocktailInstance =
+  (typeof productUnion.models.cocktail)[&#x27;_InstanceType&#x27;];
+export type SauceInstance = (typeof productUnion.models.sauce)[&#x27;_InstanceType&#x27;];
+export type BurgerInstance =
+  (typeof productUnion.models.burger)[&#x27;_InstanceType&#x27;];
+export type TwisterInstance =
+  (typeof productUnion.models.twister)[&#x27;_InstanceType&#x27;];
+export type BucketInstance =
+  (typeof productUnion.models.bucket)[&#x27;_InstanceType&#x27;];
+export type SnackInstance = (typeof productUnion.models.snack)[&#x27;_InstanceType&#x27;];
+
+export interface ProductState {
+  product?: {
+    $price?: number;
+    $quantity?: number;
+    $isDeleted?: boolean;
+    $name?: string;
+    $restaurantId?: string;
+  };
+}
+
+import { EventCallable } from &#x27;effector&#x27;;
+
+interface CommonProductFacet {
+  $price: Store&lt;number&gt;;
+  $quantity: Store&lt;number&gt;;
+  $isDeleted: Store&lt;boolean&gt;;
+  $restaurantId: Store&lt;string&gt;;
+  $name: Store&lt;string&gt;;
+  increment: EventCallable&lt;void&gt;;
+  decrement: EventCallable&lt;void&gt;;
+}
+
+export interface CartItem {
+  id: string;
+  variant: string;
+  input: ProductData;
+  state: Record&lt;string, unknown&gt;;
+  isDeleted?: boolean;
+}
+
+const createCartModelImpl = () =&gt; {
+  const cartModel = keyval({
+    model: productUnion,
+  });
+
+  const receiptModel = keyval({
+    model: productUnion,
+  });
+
+  const cartApi = cartModel.getItem(createEvent&lt;{ id: string }&gt;());
+
+  const $totalPrice = cartModel.$state.map((state) =&gt; {
+    return Object.values(state).reduce((sum: number, item: any) =&gt; {
+      const price = (item as any)?.facets?.product?.$price || 0;
+      const quantity = item?.facets?.product?.$quantity || 0;
+      const isDeleted = item?.facets?.product?.$isDeleted || false;
+
+      if (isDeleted) return sum;
+      return sum + price * quantity;
+    }, 0);
+  });
+
+  const $receiptTotalPrice = receiptModel.$state.map((state) =&gt; {
+    return Object.values(state).reduce((sum: number, item: any) =&gt; {
+      const price = (item as any)?.facets?.product?.$price || 0;
+      const quantity = item?.facets?.product?.$quantity || 0;
+      const isDeleted = item?.facets?.product?.$isDeleted || false;
+
+      if (isDeleted) return sum;
+      return sum + price * quantity;
+    }, 0);
+  });
+
+  const copyCartToReceipt = createEvent&lt;{
+    restaurantId?: string;
+  } | void&gt;();
+
+  const copyToReceiptFx = createEffect((items: CartItem[]) =&gt; {
+    items.forEach((item) =&gt; receiptModel.add(item));
+  });
+
+  sample({
+    clock: copyCartToReceipt,
+    target: receiptModel.reset,
+  });
+
+  sample({
+    clock: copyCartToReceipt,
+    source: {
+      instances: (cartModel as any).$instances as Store&lt;
+        Record&lt;string, unknown&gt;
+      &gt;,
+      variants: cartModel.$activeVariants,
+    },
+    fn: (
+      {
+        instances,
+        variants,
+      }: {
+        instances: Record&lt;string, unknown&gt;;
+        variants: Record&lt;string, string | null&gt;;
+      },
+      payload,
+    ) =&gt; {
+      const restaurantId =
+        typeof payload === &#x27;object&#x27; ? payload?.restaurantId : undefined;
+
+      return Object.entries(instances)
+        .filter(([_, instance]) =&gt; {
+          if (!restaurantId) return true;
+          const inst = instance as ProductInstance;
+          const product = inst.facets.product as unknown as CommonProductFacet;
+          const rId = product.$restaurantId.getState();
+          return rId === restaurantId;
+        })
+        .map(([id, instance]) =&gt; {
+          const inst = instance as ProductInstance;
+          const snapshot = serialize(inst) as {
+            activeVariant: string;
+            extra: unknown;
+            input: unknown;
+            facets: Record&lt;string, unknown&gt;;
+          };
+          const variant =
+            variants[id] ||
+            (inst as unknown as { _variant: string })._variant ||
+            snapshot.activeVariant;
+          const input = (snapshot.extra || snapshot.input) as ProductData;
+
+          return {
+            id,
+            variant,
+            input,
+            state: snapshot.facets,
+            isDeleted:
+              (snapshot.facets as ProductState).product?.$isDeleted || false,
+          };
+        })
+        .filter((item) =&gt; !item.isDeleted)
+        .map(({ id, variant, input, state }) =&gt; ({
+          id,
+          variant,
+          input,
+          state,
+        }));
+    },
+    target: copyToReceiptFx,
+  });
+
+  const $cartByRestaurant = (cartModel as any).$instances.map(
+    (instances: Record&lt;string, unknown&gt;) =&gt; {
+      const grouped: Record&lt;
+        string,
+        { items: any[]; total: number; count: number }
+      &gt; = {};
+
+      Object.values(instances).forEach((instance) =&gt; {
+        const inst = instance as ProductInstance;
+        const snapshot = serialize(inst) as {
+          facets: Record&lt;string, unknown&gt;;
+        };
+        const state = snapshot.facets as ProductState;
+
+        // Skip deleted items
+        if (state.product?.$isDeleted) return;
+
+        // Get Restaurant ID
+        const rId = state.product?.$restaurantId;
+        if (!rId) return;
+
+        if (!grouped[rId]) grouped[rId] = { items: [], total: 0, count: 0 };
+
+        const price = state.product?.$price || 0;
+        const quantity = state.product?.$quantity || 0;
+        const itemTotal = price * quantity;
+
+        grouped[rId].items.push({
+          ...snapshot,
+          name: state.product?.$name || &#x27;Unknown&#x27;,
+        });
+        grouped[rId].total += itemTotal;
+        grouped[rId].count += quantity;
+      });
+
+      return grouped;
+    },
+  );
+
+  const $globalCartStats = $cartByRestaurant.map(
+    (grouped: Record&lt;string, { total: number; count: number }&gt;) =&gt; {
+      const total = Object.values(grouped).reduce(
+        (acc: number, g) =&gt; acc + g.total,
+        0,
+      );
+      const count = Object.values(grouped).reduce(
+        (acc: number, g) =&gt; acc + g.count,
+        0,
+      );
+      const cartsCount = Object.keys(grouped).length;
+      return { total, count, cartsCount };
+    },
+  );
+
+  return {
+    cartModel,
+    receiptModel,
+    cartApi,
+    $totalPrice,
+    $receiptTotalPrice,
+    copyCartToReceipt,
+    $cartByRestaurant,
+    $globalCartStats,
+  };
+};
+
+export const createCartModel = createFactory(createCartModelImpl);
+
+export type CartInstance = ReturnType&lt;typeof createCartModelImpl&gt;;
+</textarea><pre id="annotations" style="display:none">[{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:88,&quot;character&quot;:53,&quot;text&quot;:&quot;item&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:89,&quot;character&quot;:12,&quot;text&quot;:&quot;price&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:89,&quot;character&quot;:21,&quot;text&quot;:&quot;item&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:89,&quot;character&quot;:35,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:89,&quot;character&quot;:43,&quot;text&quot;:&quot;product&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:89,&quot;character&quot;:52,&quot;text&quot;:&quot;$price&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:90,&quot;character&quot;:12,&quot;text&quot;:&quot;quantity&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:90,&quot;character&quot;:23,&quot;text&quot;:&quot;item&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:90,&quot;character&quot;:29,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:90,&quot;character&quot;:37,&quot;text&quot;:&quot;product&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:90,&quot;character&quot;:46,&quot;text&quot;:&quot;$quantity&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:91,&quot;character&quot;:12,&quot;text&quot;:&quot;isDeleted&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:91,&quot;character&quot;:24,&quot;text&quot;:&quot;item&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:91,&quot;character&quot;:30,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:91,&quot;character&quot;:38,&quot;text&quot;:&quot;product&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:91,&quot;character&quot;:47,&quot;text&quot;:&quot;$isDeleted&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:93,&quot;character&quot;:10,&quot;text&quot;:&quot;isDeleted&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:94,&quot;character&quot;:19,&quot;text&quot;:&quot;price&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:94,&quot;character&quot;:27,&quot;text&quot;:&quot;quantity&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:99,&quot;character&quot;:53,&quot;text&quot;:&quot;item&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:100,&quot;character&quot;:12,&quot;text&quot;:&quot;price&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:100,&quot;character&quot;:21,&quot;text&quot;:&quot;item&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:100,&quot;character&quot;:35,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:100,&quot;character&quot;:43,&quot;text&quot;:&quot;product&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:100,&quot;character&quot;:52,&quot;text&quot;:&quot;$price&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:101,&quot;character&quot;:12,&quot;text&quot;:&quot;quantity&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:101,&quot;character&quot;:23,&quot;text&quot;:&quot;item&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:101,&quot;character&quot;:29,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:101,&quot;character&quot;:37,&quot;text&quot;:&quot;product&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:101,&quot;character&quot;:46,&quot;text&quot;:&quot;$quantity&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:102,&quot;character&quot;:12,&quot;text&quot;:&quot;isDeleted&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:102,&quot;character&quot;:24,&quot;text&quot;:&quot;item&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:102,&quot;character&quot;:30,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:102,&quot;character&quot;:38,&quot;text&quot;:&quot;product&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:102,&quot;character&quot;:47,&quot;text&quot;:&quot;$isDeleted&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:104,&quot;character&quot;:10,&quot;text&quot;:&quot;isDeleted&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:105,&quot;character&quot;:19,&quot;text&quot;:&quot;price&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:105,&quot;character&quot;:27,&quot;text&quot;:&quot;quantity&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:125,&quot;character&quot;:36,&quot;text&quot;:&quot;$instances&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:185,&quot;character&quot;:8,&quot;text&quot;:&quot;$cartByRestaurant&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:185,&quot;character&quot;:47,&quot;text&quot;:&quot;$instances&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:185,&quot;character&quot;:58,&quot;text&quot;:&quot;map&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:224,&quot;character&quot;:8,&quot;text&quot;:&quot;$globalCartStats&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:224,&quot;character&quot;:27,&quot;text&quot;:&quot;$cartByRestaurant&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:224,&quot;character&quot;:45,&quot;text&quot;:&quot;map&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:246,&quot;character&quot;:4,&quot;text&quot;:&quot;$cartByRestaurant&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/models/cart.ts&quot;,&quot;line&quot;:247,&quot;character&quot;:4,&quot;text&quot;:&quot;$globalCartStats&quot;,&quot;kind&quot;:1}]</pre></div>
+    <p class="footer-text">TypeScript Coverage Report generated by <a href="https://github.com/plantain-00/type-coverage">type-coverage</a> and <a href="https://github.com/alexcanessa/typescript-coverage-report">typescript-coverage-report</a> at Sun, 18 Jan 2026 05:15:02 GMT</p>
+    </body>
+  </html>
+  

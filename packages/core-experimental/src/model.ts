@@ -7,7 +7,15 @@ export type InferInput<I> = {
     ? StoreWritable<T>
     : I[K] extends ArrayDef<infer T>
       ? StoreWritable<T[]>
-      : StoreWritable<any>;
+      : StoreWritable<unknown>;
+};
+
+export type InferConfigInput<I> = {
+  [K in keyof I]?: I[K] extends StoreDef<infer T>
+    ? T | Store<T>
+    : I[K] extends ArrayDef<infer T>
+      ? T[] | Store<T[]>
+      : unknown;
 };
 
 export type InferFacets<F> = {
@@ -19,43 +27,70 @@ export interface Model<Input, Facets, Variants> {
     input?: Input;
     extra?: Input;
     facets?: Facets;
-    traits?: any[];
+    traits?: unknown[];
     variant?: Variants;
-    impl?: any;
-    fn?: any;
-    init?: (data: any) => any;
+    impl?:
+      | Record<
+          string,
+          (
+            input: InferInput<Input>,
+            facets: InferFacets<Facets>,
+          ) => Record<string, unknown>
+        >
+      | ((
+          input: InferInput<Input>,
+          facets: InferFacets<Facets>,
+        ) => Record<string, unknown>);
+    fn?: (
+      input: InferInput<Input>,
+      facets: InferFacets<Facets>,
+    ) => Record<string, unknown>;
+    init?: (data: unknown) => unknown;
   };
-  init: (data: any) => any;
+  init: (data: unknown) => unknown;
   _InstanceType: {
     input: InferInput<Input>;
     facets: InferFacets<Facets>;
     activeVariant: Store<string | null>;
+    [key: string]: unknown;
   };
 }
 
 export function model<
-  Input extends Record<string, any>,
-  Facets extends Record<string, any>,
-  Variants extends { source: any; cases: Record<string, any> },
+  Input extends Record<string, unknown>,
+  Facets extends Record<string, unknown>,
+  Variants extends {
+    source: any;
+    cases: Record<string, any>;
+  },
 >(config: {
   input?: Input;
   extra?: Input;
   facets?: Facets;
-  traits?: any[];
+  traits?: unknown[];
   variant?: Variants;
   impl?:
     | Record<
         string,
-        (input: InferInput<Input>, facets: InferFacets<Facets>) => any
+        (
+          input: InferInput<Input>,
+          facets: InferFacets<Facets>,
+        ) => void | Record<string, unknown>
       >
-    | ((input: InferInput<Input>, facets: InferFacets<Facets>) => any);
-  fn?: (input: InferInput<Input>, facets: InferFacets<Facets>) => any;
-  init?: (data: any) => any;
+    | ((
+        input: InferInput<Input>,
+        facets: InferFacets<Facets>,
+      ) => void | Record<string, unknown>);
+  fn?: (
+    input: InferInput<Input>,
+    facets: InferFacets<Facets>,
+  ) => void | Record<string, unknown>;
+  init?: (data: unknown) => unknown;
 }): Model<Input, Facets, Variants> {
   return {
     config,
-    init: config.init || ((() => ({})) as any),
-  } as any;
+    init: config.init || (() => ({})),
+  } as unknown as Model<Input, Facets, Variants>;
 }
 
 export function implement<S extends Record<string, any>>(

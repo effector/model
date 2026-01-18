@@ -20,7 +20,7 @@ export const AppView = () => {
   const params = useUnit(appInstance.input.$params) as any;
 
   return (
-    <div className="min-h-screen font-sans text-[#333] flex items-center justify-center p-8 bg-gray-50">
+    <>
       {/* Framed mini-app with adjustable "smartphone case" border */}
       <div
         className="relative rounded-[40px] shadow-2xl transition-all duration-300"
@@ -48,6 +48,6 @@ export const AppView = () => {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };

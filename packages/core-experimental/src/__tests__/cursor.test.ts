@@ -11,6 +11,7 @@ describe('Cursor', () => {
       $id: define.store('default'),
       $value: define.store(0),
     },
+    // type-coverage:ignore-next-line
     fn: ({ $id, $value }: any) => ({ $id, $value }),
   });
 
@@ -53,7 +54,9 @@ describe('Cursor', () => {
 
   it('should filter items', async () => {
     const { list, scope } = await setup();
+    // type-coverage:ignore-next-line
     const cursor = createCursor(list).filter((item: any) =>
+      // type-coverage:ignore-next-line
       item.$value.map((v: number) => v > 20),
     );
 
@@ -76,7 +79,9 @@ describe('Cursor', () => {
 
   it('should remove items via cursor', async () => {
     const { list, scope } = await setup();
+    // type-coverage:ignore-next-line
     const cursor = createCursor(list).filter((item: any) =>
+      // type-coverage:ignore-next-line
       item.$value.map((v: number) => v > 20),
     );
 
@@ -92,7 +97,9 @@ describe('Cursor', () => {
 
   it('should update items via cursor', async () => {
     const { list, scope } = await setup();
+    // type-coverage:ignore-next-line
     const cursor = createCursor(list).filter((item: any) =>
+      // type-coverage:ignore-next-line
       item.$value.map((v: number) => v < 20),
     ); // Item 1
 
@@ -118,19 +125,23 @@ describe('Cursor', () => {
     const { list, scope } = await setup();
     const root = createCursor(list);
 
+    // type-coverage:ignore-next-line
     const $values = root.map((item: any) => item.$value);
     expect(scope.getState($values)).toEqual([10, 20, 30, 40]);
   });
 
   it('should support aggregation', async () => {
     const { list, scope } = await setup();
+    // type-coverage:ignore-next-line
     const cursor = createCursor(list).filter((item: any) =>
+      // type-coverage:ignore-next-line
       item.$value.map((v: number) => v > 20),
     );
 
     expect(scope.getState(cursor.$size)).toBe(2);
     expect(scope.getState(cursor.$isEmpty)).toBe(false);
 
+    // type-coverage:ignore-next-line
     const empty = cursor.filter((_: any) => false);
     expect(scope.getState(empty.$isEmpty)).toBe(true);
   });
@@ -139,17 +150,23 @@ describe('Cursor', () => {
     const { list, scope } = await setup();
     const cursor = createCursor(list);
 
+    // type-coverage:ignore-next-line
     const $hasBig = cursor.some((item: any) =>
+      // type-coverage:ignore-next-line
       item.$value.map((v: number) => v > 35),
     );
     expect(scope.getState($hasBig)).toBe(true);
 
+    // type-coverage:ignore-next-line
     const $allPositive = cursor.every((item: any) =>
+      // type-coverage:ignore-next-line
       item.$value.map((v: number) => v > 0),
     );
     expect(scope.getState($allPositive)).toBe(true);
 
+    // type-coverage:ignore-next-line
     const $allBig = cursor.every((item: any) =>
+      // type-coverage:ignore-next-line
       item.$value.map((v: number) => v > 35),
     );
     expect(scope.getState($allBig)).toBe(false);
@@ -159,10 +176,14 @@ describe('Cursor', () => {
     const { list, scope } = await setup();
     const root = createCursor(list);
 
+    // type-coverage:ignore-next-line
     const c1 = root.filter((item: any) =>
+      // type-coverage:ignore-next-line
       item.$value.map((v: number) => v < 25),
     ); // 1, 2
+    // type-coverage:ignore-next-line
     const c2 = root.filter((item: any) =>
+      // type-coverage:ignore-next-line
       item.$value.map((v: number) => v > 15),
     ); // 2, 3, 4
 
@@ -191,6 +212,7 @@ describe('Cursor', () => {
     // We need to watch that event? No, we trigger that event.
     // But how do we pass the function? forEach(fn) returns EventCallable<void>
     // So:
+    // type-coverage:ignore-next-line
     const process = cursor.forEach((item: any) => {
       // item is a proxy. We can read state?
       // In test, maybe just callback with ID?
@@ -216,6 +238,7 @@ describe('Cursor', () => {
     });
 
     // Sort descending by value
+    // type-coverage:ignore-next-line
     const sorted = createCursor(list).sort((a: any, b: any) => {
       return b.$value - a.$value;
     });
@@ -228,6 +251,7 @@ describe('Cursor', () => {
     // 1(10), 2(20), 3(30), 4(40)
 
     const result = createCursor(list)
+      // type-coverage:ignore-next-line
       .filter((item: any) => item.$value.map((v: number) => v >= 20)) // 2, 3, 4
       .take(2); // 2, 3
 
@@ -236,7 +260,9 @@ describe('Cursor', () => {
 
   it('should be reactive to additions', async () => {
     const { list, scope } = await setup();
+    // type-coverage:ignore-next-line
     const cursor = createCursor(list).filter((item: any) =>
+      // type-coverage:ignore-next-line
       item.$value.map((v: number) => v > 50),
     );
 

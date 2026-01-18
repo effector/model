@@ -11,7 +11,7 @@ export type EventDef<T> = {
 
 export type ArrayDef<T> = {
   type: 'array';
-  item: any;
+  item: unknown;
   __type?: T[];
 };
 
@@ -28,7 +28,7 @@ export const define = {
   event: <T extends unknown>(): EventDef<T> => ({
     type: 'event',
   }),
-  array: <T extends unknown>(item: any): ArrayDef<T> => ({
+  array: <T extends unknown>(item: unknown): ArrayDef<T> => ({
     type: 'array',
     item,
   }),
@@ -39,11 +39,11 @@ export const ref = {
   tag: (name: string): RefDef => ({ type: 'ref', kind: 'tag', name }),
 };
 
-export function isRef(value: any): value is RefDef {
+export function isRef(value: unknown): value is RefDef {
   return (
-    value &&
+    !!value &&
     typeof value === 'object' &&
     'type' in value &&
-    value.type === 'ref'
+    (value as { type: unknown }).type === 'ref'
   );
 }

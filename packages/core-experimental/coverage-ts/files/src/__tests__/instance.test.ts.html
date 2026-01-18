@@ -1,0 +1,390 @@
+
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <title>instance.test.ts</title>
+      <link href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css" type="text/css" rel="stylesheet">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/mode/javascript/javascript.min.js" type="text/javascript" charset="utf-8"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.css" type="text/css" rel="stylesheet">
+<script src="../../../assets/source-file.js" type="text/javascript" charset="utf-8"></script>
+<link href="../../../assets/source-file.css" type="text/css" rel="stylesheet">
+    </head>
+    <body>
+    <div style="margin-top:3em" class="ui container"><h1 class="ui header"><a href="../../../index.html">TypeScript coverage report</a></h1><table style="margin-top:2em" class="ui celled table"><thead class=""><tr class=""><th class="">Filename</th><th class="">Percent</th><th class="">Threshold</th><th class="">Total</th><th class="">Covered</th><th class="">Uncovered</th></tr></thead><tbody class=""><tr class="positive"><td class="">src/__tests__/instance.test.ts</td><td class="">99.86%</td><td class="">80%</td><td class="">696</td><td class="">695</td><td class="">1</td></tr></tbody></table><textarea id="editor" readonly="" style="margin-top:3em">import { describe, it, expect, vi } from &#x27;vitest&#x27;;
+import {
+  createStore,
+  allSettled,
+  fork,
+  createEvent,
+  sample,
+  is,
+  EventCallable,
+} from &#x27;effector&#x27;;
+import { model } from &#x27;../model&#x27;;
+import { define } from &#x27;../define&#x27;;
+import { facet } from &#x27;../facet&#x27;;
+import { create } from &#x27;../instance&#x27;;
+
+describe(&#x27;instance&#x27;, () =&gt; {
+  describe(&#x27;Inputs&#x27;, () =&gt; {
+    it(&#x27;should process inputs&#x27;, async () =&gt; {
+      const testModel = model({
+        input: {
+          $val: define.store(0),
+          raw: define.store(0),
+        },
+        // type-coverage:ignore-next-line
+        fn: (input: any) =&gt; ({ input }),
+      });
+
+      const scope = fork();
+      const instance = create(testModel, {
+        input: {
+          $val: createStore(10),
+          raw: 20,
+        },
+      });
+
+      expect(is.store(instance.input.$val)).toBe(true);
+      expect(scope.getState(instance.input.$val)).toBe(10);
+      expect(is.store(instance.input.raw)).toBe(true);
+      expect(scope.getState(instance.input.raw)).toBe(20);
+    });
+
+    it(&#x27;should process static value inputs&#x27;, async () =&gt; {
+      const testModel = model({
+        input: { $val: define.store(0) },
+        fn: ({ $val }: any) =&gt; ({ $val }),
+      });
+
+      const scope = fork();
+      const instance = create(testModel, {
+        input: { $val: 10 },
+      });
+
+      expect(is.store(instance.input.$val)).toBe(true);
+      expect(scope.getState(instance.input.$val)).toBe(10);
+    });
+
+    it(&#x27;should ignore extra inputs&#x27;, () =&gt; {
+      const testModel = model({
+        input: { $val: define.store(0) },
+        // type-coverage:ignore-next-line
+        fn: ({ $val }: any) =&gt; ({ $val }),
+      });
+
+      const scope = fork();
+      const $val = createStore(10);
+
+      // Pass extra field &#x27;extra&#x27;
+      const instance = create(testModel, {
+        // type-coverage:ignore-next-line
+        input: {
+          $val,
+          extra: createStore(99),
+        } as any,
+      });
+
+      expect(is.store(instance.input.$val)).toBe(true);
+      expect(scope.getState(instance.input.$val)).toBe(10);
+      // type-coverage:ignore-next-line
+      expect((instance.input as any).extra).toBeUndefined();
+    });
+  });
+
+  describe(&#x27;Scope Isolation&#x27;, () =&gt; {
+    it(&#x27;should maintain independent state for multiple instances&#x27;, async () =&gt; {
+      const testModel = model({
+        input: { $val: define.store(0) },
+        // type-coverage:ignore-next-line
+        fn: ({ $val }: any) =&gt; {
+          // type-coverage:ignore-next-line
+          const $doubled = $val.map((x: number) =&gt; x * 2);
+          return { $doubled };
+        },
+      });
+
+      const scope = fork();
+      const $input1 = createStore(10);
+      const $input2 = createStore(20);
+
+      const instance1 = create(testModel, { input: { $val: $input1 } });
+      const instance2 = create(testModel, { input: { $val: $input2 } });
+
+      expect(scope.getState(instance1.$doubled)).toBe(20);
+      expect(scope.getState(instance2.$doubled)).toBe(40);
+
+      await allSettled($input1, { scope, params: 100 });
+      expect(scope.getState(instance1.$doubled)).toBe(200);
+      expect(scope.getState(instance2.$doubled)).toBe(40); // Unchanged
+    });
+  });
+
+  describe(&#x27;Variants&#x27;, () =&gt; {
+    it(&#x27;should switch variants based on source&#x27;, async () =&gt; {
+      const testModel = model({
+        input: { $s: define.store(&#x27;a&#x27;) },
+        variant: {
+          // type-coverage:ignore-next-line
+          source: (i: any) =&gt; i.$s,
+          cases: {
+            A: (s: string) =&gt; s === &#x27;a&#x27;,
+            B: (s: string) =&gt; s === &#x27;b&#x27;,
+          },
+        },
+      });
+
+      const $s = createStore(&#x27;a&#x27;);
+      const instance = create(testModel, { input: { $s } });
+      const scope = fork();
+
+      expect(scope.getState(instance.activeVariant)).toBe(&#x27;A&#x27;);
+
+      await allSettled($s, { scope, params: &#x27;b&#x27; });
+      expect(scope.getState(instance.activeVariant)).toBe(&#x27;B&#x27;);
+
+      await allSettled($s, { scope, params: &#x27;c&#x27; });
+      expect(scope.getState(instance.activeVariant)).toBe(null);
+    });
+
+    it(&#x27;should trigger enter and leave events correctly&#x27;, async () =&gt; {
+      const testModel = model({
+        input: { $score: define.store(0) },
+        variant: {
+          // type-coverage:ignore-next-line
+          source: ({ $score }: { $score: any }) =&gt; $score,
+          cases: {
+            positive: (s: number) =&gt; s &gt; 0,
+            negative: (s: number) =&gt; s &lt; 0,
+            zero: (s: number) =&gt; s === 0,
+          },
+        },
+      });
+
+      const $score = createStore(0);
+      const instance = create(testModel, { input: { $score } });
+      const scope = fork();
+
+      const enterPositive = vi.fn();
+      const leavePositive = vi.fn();
+      const enterNegative = vi.fn();
+      const leaveNegative = vi.fn();
+
+      // Helper to watch events
+      // type-coverage:ignore-next-line
+      const watch = (event: EventCallable&lt;void&gt;, fn: any) =&gt; {
+        const watcher = createEvent();
+        watcher.watch(fn);
+        sample({ clock: event, target: watcher });
+      };
+
+      watch(
+        instance.variant.positive.enter as EventCallable&lt;void&gt;,
+        enterPositive,
+      );
+      watch(
+        instance.variant.positive.leave as EventCallable&lt;void&gt;,
+        leavePositive,
+      );
+      watch(
+        instance.variant.negative.enter as EventCallable&lt;void&gt;,
+        enterNegative,
+      );
+      watch(
+        instance.variant.negative.leave as EventCallable&lt;void&gt;,
+        leaveNegative,
+      );
+
+      // Initial state: 0 (zero)
+      expect(scope.getState(instance.activeVariant)).toBe(&#x27;zero&#x27;);
+      expect(enterPositive).not.toHaveBeenCalled();
+
+      // Switch to positive
+      await allSettled($score, { scope, params: 10 });
+      expect(scope.getState(instance.activeVariant)).toBe(&#x27;positive&#x27;);
+      expect(enterPositive).toHaveBeenCalledTimes(1);
+      expect(leavePositive).not.toHaveBeenCalled();
+
+      // Switch to negative
+      await allSettled($score, { scope, params: -10 });
+      expect(scope.getState(instance.activeVariant)).toBe(&#x27;negative&#x27;);
+      expect(leavePositive).toHaveBeenCalledTimes(1); // Crucial check!
+      expect(enterNegative).toHaveBeenCalledTimes(1);
+
+      // Switch to zero
+      await allSettled($score, { scope, params: 0 });
+      expect(scope.getState(instance.activeVariant)).toBe(&#x27;zero&#x27;);
+      expect(leaveNegative).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe(&#x27;Facets&#x27;, () =&gt; {
+    it(&#x27;should use base implementation if no variant matches&#x27;, async () =&gt; {
+      const f = facet({ $val: define.store(0) });
+      const testModel = model({
+        input: { $s: define.store(&#x27;a&#x27;) },
+        facets: { f },
+        variant: {
+          // type-coverage:ignore-next-line
+          source: (i: any) =&gt; i.$s,
+          cases: { A: (s: string) =&gt; s === &#x27;a&#x27; },
+        },
+        fn: () =&gt; ({
+          f: { $val: createStore(999) }, // Base implementation
+        }),
+        impl: {
+          A: () =&gt; ({
+            f: { $val: define.store(1) },
+          }),
+        },
+      });
+
+      const $s = createStore(&#x27;b&#x27;); // No match
+      const instance = create(testModel, { input: { $s } });
+      const scope = fork();
+
+      expect(scope.getState(instance.facets.f.$val)).toBe(999);
+
+      await allSettled($s, { scope, params: &#x27;a&#x27; });
+      expect(scope.getState(instance.facets.f.$val)).toBe(1);
+    });
+
+    it(&#x27;should multiplex facets based on active variant&#x27;, async () =&gt; {
+      const f = facet({
+        $val: define.store(0),
+        evt: define.event&lt;string&gt;(),
+      });
+
+      const implEventA = createEvent&lt;string&gt;();
+      const implEventB = createEvent&lt;string&gt;();
+
+      const testModel = model({
+        input: { $s: define.store(&#x27;a&#x27;) },
+        facets: { f },
+        variant: {
+          // type-coverage:ignore-next-line
+          source: (i: any) =&gt; i.$s,
+          cases: {
+            A: (s: string) =&gt; s === &#x27;a&#x27;,
+            B: (s: string) =&gt; s === &#x27;b&#x27;,
+          },
+        },
+        impl: {
+          A: () =&gt; ({
+            f: {
+              $val: define.store(10),
+              evt: implEventA,
+            },
+          }),
+          B: () =&gt; ({
+            f: {
+              $val: define.store(20),
+              evt: implEventB,
+            },
+          }),
+        },
+      });
+
+      const $s = createStore(&#x27;a&#x27;);
+      const instance = create(testModel, { input: { $s } });
+      const scope = fork();
+
+      // Link global events to stores for testing
+      const $lastA = createStore(&#x27;&#x27;).on(implEventA, (_, p) =&gt; p);
+      const $lastB = createStore(&#x27;&#x27;).on(implEventB, (_, p) =&gt; p);
+
+      // 1. Check Store Multiplexing (Active: A)
+      expect(scope.getState(instance.facets.f.$val)).toBe(10);
+
+      // Switch to B
+      await allSettled($s, { scope, params: &#x27;b&#x27; });
+      expect(scope.getState(instance.facets.f.$val)).toBe(20);
+
+      // 2. Check Event Multiplexing (Active: B)
+      await allSettled(instance.facets.f.evt, { scope, params: &#x27;helloB&#x27; });
+      expect(scope.getState($lastB)).toBe(&#x27;helloB&#x27;);
+      expect(scope.getState($lastA)).toBe(&#x27;&#x27;);
+
+      // Switch back to A
+      await allSettled($s, { scope, params: &#x27;a&#x27; });
+      await allSettled(instance.facets.f.evt, { scope, params: &#x27;helloA&#x27; });
+      expect(scope.getState($lastA)).toBe(&#x27;helloA&#x27;);
+      expect(scope.getState($lastB)).toBe(&#x27;helloB&#x27;); // Unchanged
+    });
+  });
+
+  describe(&#x27;Lifecycle&#x27;, () =&gt; {
+    it(&#x27;should clean up resources on destroy&#x27;, async () =&gt; {
+      const testModel = model({
+        input: { $s: define.store(0) },
+        variant: {
+          // type-coverage:ignore-next-line
+          source: (i: any) =&gt; i.$s,
+          cases: { A: (s: number) =&gt; s === 1 },
+        },
+      });
+      const $s = createStore(0);
+      const instance = create(testModel, { input: { $s } });
+      const scope = fork();
+
+      // Verify activeVariant updates
+      await allSettled($s, { scope, params: 1 });
+      expect(scope.getState(instance.activeVariant)).toBe(&#x27;A&#x27;);
+
+      // Destroy
+      instance.destroy();
+
+      // Update input
+      await allSettled($s, { scope, params: 0 });
+
+      // After destroy, the graph is disconnected.
+    });
+
+    it(&#x27;should allow idempotent destroy&#x27;, () =&gt; {
+      const testModel = model({ input: {} });
+      const instance = create(testModel, { input: {} });
+
+      instance.destroy();
+      expect(() =&gt; instance.destroy()).not.toThrow();
+    });
+
+    it(&#x27;should destroy nested instances created via model fn&#x27;, async () =&gt; {
+      const child = model({
+        input: { $v: define.store(0) },
+        // type-coverage:ignore-next-line
+        fn: ({ $v }: any) =&gt; {
+          // type-coverage:ignore-next-line
+          const $derived = $v.map((x: number) =&gt; x);
+          return { $derived };
+        },
+      });
+
+      const parent = model({
+        input: { $v: define.store(0) },
+        // type-coverage:ignore-next-line
+        fn: ({ $v }: any) =&gt; {
+          const c = create(child, { input: { $v } });
+          return { c };
+        },
+      });
+
+      const $v = createStore(1);
+      const instance = create(parent, { input: { $v } });
+      const scope = fork();
+
+      // Verify child works
+      expect(scope.getState(instance.c.$derived)).toBe(1);
+
+      instance.destroy();
+
+      // After destroy, updates should stop
+      await allSettled($v, { scope, params: 2 });
+    });
+  });
+});
+</textarea><pre id="annotations" style="display:none">[{&quot;file&quot;:&quot;src/__tests__/instance.test.ts&quot;,&quot;line&quot;:44,&quot;character&quot;:15,&quot;text&quot;:&quot;$val&quot;,&quot;kind&quot;:1}]</pre></div>
+    <p class="footer-text">TypeScript Coverage Report generated by <a href="https://github.com/plantain-00/type-coverage">type-coverage</a> and <a href="https://github.com/alexcanessa/typescript-coverage-report">typescript-coverage-report</a> at Sun, 18 Jan 2026 04:50:29 GMT</p>
+    </body>
+  </html>
+  

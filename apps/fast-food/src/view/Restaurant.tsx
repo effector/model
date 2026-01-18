@@ -1,9 +1,14 @@
 import { useUnit } from 'effector-react';
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { createCursor } from '@effector-model/core-experimental';
 import { useApp } from './AppContext';
-import { RESTAURANTS, getRestaurantTheme } from '../data/restaurants';
+import {
+  RESTAURANTS,
+  getRestaurantTheme,
+  RestaurantData,
+} from '../data/restaurants';
 import { MainButton } from './components/Common';
+import { ProductData } from '../types';
+import { ProductInstance } from '../models/cart';
 
 import dodoPizzas from '../data/dodo/pizzas.json';
 import dodoDrinks from '../data/dodo/drinks.json';
@@ -20,21 +25,25 @@ import kfcDrinks from '../data/kfc/drinks.json';
 import kfcSauces from '../data/kfc/sauces.json';
 
 const DODO_CATEGORIES = [
-  { id: 'dodo_pizza', title: 'Пицца', items: dodoPizzas },
-  { id: 'dodo_snack', title: 'Закуски', items: dodoSnacks },
-  { id: 'dodo_coffee', title: 'Кофе', items: dodoCoffee },
-  { id: 'dodo_drinks', title: 'Напитки', items: dodoDrinks },
-  { id: 'dodo_cocktails', title: 'Коктейли', items: dodoCocktails },
-  { id: 'dodo_sauces', title: 'Соусы', items: dodoSauces },
+  { id: 'dodo_pizza', title: 'Пицца', items: dodoPizzas as ProductData[] },
+  { id: 'dodo_snack', title: 'Закуски', items: dodoSnacks as ProductData[] },
+  { id: 'dodo_coffee', title: 'Кофе', items: dodoCoffee as ProductData[] },
+  { id: 'dodo_drinks', title: 'Напитки', items: dodoDrinks as ProductData[] },
+  {
+    id: 'dodo_cocktails',
+    title: 'Коктейли',
+    items: dodoCocktails as ProductData[],
+  },
+  { id: 'dodo_sauces', title: 'Соусы', items: dodoSauces as ProductData[] },
 ];
 
 const KFC_CATEGORIES = [
-  { id: 'kfc_burger', title: 'Бургеры', items: kfcBurgers },
-  { id: 'kfc_twister', title: 'Твистеры', items: kfcTwisters },
-  { id: 'kfc_bucket', title: 'Баскеты', items: kfcBuckets },
-  { id: 'kfc_snack', title: 'Снэки', items: kfcSnacks },
-  { id: 'kfc_drinks', title: 'Напитки', items: kfcDrinks },
-  { id: 'kfc_sauces', title: 'Соусы', items: kfcSauces },
+  { id: 'kfc_burger', title: 'Бургеры', items: kfcBurgers as ProductData[] },
+  { id: 'kfc_twister', title: 'Твистеры', items: kfcTwisters as ProductData[] },
+  { id: 'kfc_bucket', title: 'Баскеты', items: kfcBuckets as ProductData[] },
+  { id: 'kfc_snack', title: 'Снэки', items: kfcSnacks as ProductData[] },
+  { id: 'kfc_drinks', title: 'Напитки', items: kfcDrinks as ProductData[] },
+  { id: 'kfc_sauces', title: 'Соусы', items: kfcSauces as ProductData[] },
 ];
 
 interface RestaurantProps {
@@ -57,7 +66,7 @@ export const Restaurant = ({ id, variant }: RestaurantProps) => {
   return <RestaurantMenu restaurant={restaurant} />;
 };
 
-const RestaurantCard = ({ restaurant }: { restaurant: any }) => {
+const RestaurantCard = ({ restaurant }: { restaurant: RestaurantData }) => {
   const { events } = useApp();
   const select = useUnit(events.selectRestaurant);
 
@@ -110,33 +119,17 @@ const RestaurantCard = ({ restaurant }: { restaurant: any }) => {
   );
 };
 
-const RestaurantMenu = ({ restaurant }: { restaurant: any }) => {
-  const { events, cartModel } = useApp();
+const RestaurantMenu = ({ restaurant }: { restaurant: RestaurantData }) => {
+  const { events, stores } = useApp();
   const open = useUnit(events.openProduct);
   const toCart = useUnit(events.openCart);
   const back = useUnit(events.menuBack);
 
-  const cartView = useMemo(() => {
-    return createCursor(cartModel).filter((item: any) =>
-      item.facets.product.$restaurantId.map(
-        (id: string) => id === restaurant.id,
-      ),
-    );
-  }, [restaurant.id, cartModel]);
-
-  const $itemTotals = useMemo(() => {
-    return cartView.map((item: any) => {
-      const product = item.facets.product;
-      const price = product?.$price || 0;
-      const quantity = product?.$quantity || 0;
-      const isDeleted = product?.$isDeleted || false;
-
-      return isDeleted ? 0 : price * quantity;
-    });
-  }, [cartView]);
-
-  const itemTotals = useUnit($itemTotals);
-  const total = itemTotals.reduce((a, b) => a + b, 0);
+  const cartStats = useUnit(stores.$cartByRestaurant) as Record<
+    string,
+    { total: number }
+  >;
+  const total = cartStats[restaurant.id]?.total || 0;
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
@@ -289,13 +282,13 @@ const RestaurantMenu = ({ restaurant }: { restaurant: any }) => {
             <div key={cat.id} id={cat.id} className="scroll-mt-[120px]">
               <h2 className="text-2xl font-bold pt-4 pb-4">{cat.title}</h2>
               <div className="grid grid-cols-2 gap-3">
-                {cat.items.map((item: any, idx: number) => (
+                {cat.items.map((item: ProductData, idx: number) => (
                   <ProductCard
                     key={item.name}
                     item={item}
                     index={idx}
                     category={cat.id}
-                    onAdd={() => open({ mode: 'new', data: item })}
+                    onAdd={() => open(item)}
                   />
                 ))}
               </div>
@@ -317,7 +310,17 @@ const RestaurantMenu = ({ restaurant }: { restaurant: any }) => {
   );
 };
 
-const ProductCard = ({ item, onAdd, index, category }: any) => {
+const ProductCard = ({
+  item,
+  onAdd,
+  index,
+  category,
+}: {
+  item: ProductData;
+  onAdd: () => void;
+  index: number;
+  category: string;
+}) => {
   const seed = `${category}-${index}`;
   const bg = `https://picsum.photos/seed/${seed}/500/500`;
 

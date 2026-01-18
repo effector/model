@@ -4,6 +4,7 @@ import {
   sample,
   Event,
   createEffect,
+  Store,
 } from 'effector';
 import { usersList } from './index';
 import { select, match } from '@effector-model/core-experimental';
@@ -69,7 +70,7 @@ const userToPromote = usersList.getItem(promoteUser);
 match({
   source: userToPromote.activeVariant,
   cases: {
-    member: (memberScope: any, trigger: Event<string>) => {
+    member: (memberScope: any, trigger: Event<unknown>) => {
       // Explicitly wire the trigger to the method
       sample({
         clock: trigger,
@@ -89,12 +90,12 @@ export const $currentUserRole = select($currentUser)
   .variant('member')
   .facet('membership')
   .path((facet: any) => facet.$role)
-  .fallback('guest');
+  .fallback('guest') as Store<string>;
 
 export const $currentUserName = select($currentUser)
   .facet('user')
   .path((facet: any) => facet.$nickname)
-  .fallback('');
+  .fallback('') as Store<string>;
 
 // Helper to add users
 export const addGuest = createEvent<string>();

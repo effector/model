@@ -1,6 +1,7 @@
 import { createEvent, sample, createEffect } from 'effector';
 import { createFactory } from '@withease/factories';
 import { keyval, union, serialize } from '@effector-model/core-experimental';
+import { ProductData } from '../types';
 import { pizzaModel } from './products/pizza';
 import { drinkModel } from './products/drink';
 import { coffeeModel } from './products/coffee';
@@ -23,6 +24,56 @@ export const productUnion = union({
   snack: snackModel,
 });
 
+import { Store } from 'effector';
+
+export type ProductInstance =
+  (typeof productUnion.models)[keyof typeof productUnion.models]['_InstanceType'];
+
+export type PizzaInstance = (typeof productUnion.models.pizza)['_InstanceType'];
+export type DrinkInstance = (typeof productUnion.models.drink)['_InstanceType'];
+export type CoffeeInstance =
+  (typeof productUnion.models.coffee)['_InstanceType'];
+export type CocktailInstance =
+  (typeof productUnion.models.cocktail)['_InstanceType'];
+export type SauceInstance = (typeof productUnion.models.sauce)['_InstanceType'];
+export type BurgerInstance =
+  (typeof productUnion.models.burger)['_InstanceType'];
+export type TwisterInstance =
+  (typeof productUnion.models.twister)['_InstanceType'];
+export type BucketInstance =
+  (typeof productUnion.models.bucket)['_InstanceType'];
+export type SnackInstance = (typeof productUnion.models.snack)['_InstanceType'];
+
+export interface ProductState {
+  product?: {
+    $price?: number;
+    $quantity?: number;
+    $isDeleted?: boolean;
+    $name?: string;
+    $restaurantId?: string;
+  };
+}
+
+import { EventCallable } from 'effector';
+
+interface CommonProductFacet {
+  $price: Store<number>;
+  $quantity: Store<number>;
+  $isDeleted: Store<boolean>;
+  $restaurantId: Store<string>;
+  $name: Store<string>;
+  increment: EventCallable<void>;
+  decrement: EventCallable<void>;
+}
+
+export interface CartItem {
+  id: string;
+  variant: string;
+  input: ProductData;
+  state: Record<string, unknown>;
+  isDeleted?: boolean;
+}
+
 const createCartModelImpl = () => {
   const cartModel = keyval({
     model: productUnion,
@@ -36,7 +87,7 @@ const createCartModelImpl = () => {
 
   const $totalPrice = cartModel.$state.map((state) => {
     return Object.values(state).reduce((sum: number, item: any) => {
-      const price = item?.facets?.product?.$price || 0;
+      const price = (item as any)?.facets?.product?.$price || 0;
       const quantity = item?.facets?.product?.$quantity || 0;
       const isDeleted = item?.facets?.product?.$isDeleted || false;
 
@@ -47,7 +98,7 @@ const createCartModelImpl = () => {
 
   const $receiptTotalPrice = receiptModel.$state.map((state) => {
     return Object.values(state).reduce((sum: number, item: any) => {
-      const price = item?.facets?.product?.$price || 0;
+      const price = (item as any)?.facets?.product?.$price || 0;
       const quantity = item?.facets?.product?.$quantity || 0;
       const isDeleted = item?.facets?.product?.$isDeleted || false;
 
@@ -60,7 +111,7 @@ const createCartModelImpl = () => {
     restaurantId?: string;
   } | void>();
 
-  const copyToReceiptFx = createEffect((items: any[]) => {
+  const copyToReceiptFx = createEffect((items: CartItem[]) => {
     items.forEach((item) => receiptModel.add(item));
   });
 
@@ -72,7 +123,9 @@ const createCartModelImpl = () => {
   sample({
     clock: copyCartToReceipt,
     source: {
-      instances: (cartModel as any).$instances,
+      instances: (cartModel as any).$instances as Store<
+        Record<string, unknown>
+      >,
       variants: cartModel.$activeVariants,
     },
     fn: (
@@ -80,7 +133,7 @@ const createCartModelImpl = () => {
         instances,
         variants,
       }: {
-        instances: any;
+        instances: Record<string, unknown>;
         variants: Record<string, string | null>;
       },
       payload,
@@ -89,23 +142,34 @@ const createCartModelImpl = () => {
         typeof payload === 'object' ? payload?.restaurantId : undefined;
 
       return Object.entries(instances)
-        .filter(([_, instance]: [any, any]) => {
+        .filter(([_, instance]) => {
           if (!restaurantId) return true;
-          const rId = instance.facets?.product?.$restaurantId?.getState();
+          const inst = instance as ProductInstance;
+          const product = inst.facets.product as unknown as CommonProductFacet;
+          const rId = product.$restaurantId.getState();
           return rId === restaurantId;
         })
-        .map(([id, instance]: [string, any]) => {
-          const snapshot = serialize(instance);
+        .map(([id, instance]) => {
+          const inst = instance as ProductInstance;
+          const snapshot = serialize(inst) as {
+            activeVariant: string;
+            extra: unknown;
+            input: unknown;
+            facets: Record<string, unknown>;
+          };
           const variant =
-            variants[id] || instance._variant || snapshot.activeVariant;
-          const input = snapshot.extra || snapshot.input;
+            variants[id] ||
+            (inst as unknown as { _variant: string })._variant ||
+            snapshot.activeVariant;
+          const input = (snapshot.extra || snapshot.input) as ProductData;
 
           return {
             id,
             variant,
             input,
             state: snapshot.facets,
-            isDeleted: snapshot.facets?.product?.$isDeleted || false,
+            isDeleted:
+              (snapshot.facets as ProductState).product?.$isDeleted || false,
           };
         })
         .filter((item) => !item.isDeleted)
@@ -120,15 +184,18 @@ const createCartModelImpl = () => {
   });
 
   const $cartByRestaurant = (cartModel as any).$instances.map(
-    (instances: any) => {
+    (instances: Record<string, unknown>) => {
       const grouped: Record<
         string,
         { items: any[]; total: number; count: number }
       > = {};
 
-      Object.values(instances).forEach((instance: any) => {
-        const snapshot = serialize(instance);
-        const state = snapshot.facets;
+      Object.values(instances).forEach((instance) => {
+        const inst = instance as ProductInstance;
+        const snapshot = serialize(inst) as {
+          facets: Record<string, unknown>;
+        };
+        const state = snapshot.facets as ProductState;
 
         // Skip deleted items
         if (state.product?.$isDeleted) return;
@@ -156,13 +223,13 @@ const createCartModelImpl = () => {
   );
 
   const $globalCartStats = $cartByRestaurant.map(
-    (grouped: Record<string, any>) => {
+    (grouped: Record<string, { total: number; count: number }>) => {
       const total = Object.values(grouped).reduce(
-        (acc: number, g: any) => acc + g.total,
+        (acc: number, g) => acc + g.total,
         0,
       );
       const count = Object.values(grouped).reduce(
-        (acc: number, g: any) => acc + g.count,
+        (acc: number, g) => acc + g.count,
         0,
       );
       const cartsCount = Object.keys(grouped).length;

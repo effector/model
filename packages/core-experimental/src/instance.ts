@@ -7,35 +7,53 @@ import {
   Event,
   is,
   clearNode,
-  Unit,
+  StoreWritable,
+  EventCallable,
 } from 'effector';
-import { Model } from './model';
-import { isRef } from './define';
+import { Model, InferConfigInput, InferInput, InferFacets } from './model';
+import { isRef, StoreDef, EventDef, ArrayDef } from './define';
+import { FacetShape, Facet } from './facet';
 
-function createWritableStore<T>(initial: T, config?: any) {
+type WritableStore<T> = StoreWritable<T> & { rehydrate: EventCallable<T> };
+
+function createWritableStore<T>(
+  initial: T,
+  config?: { skipVoid?: boolean },
+): WritableStore<T> {
   const $store = createStore(initial, config);
   const rehydrate = createEvent<T>();
   $store.on(rehydrate, (_, payload) => payload);
-  ($store as any).rehydrate = rehydrate;
-  return $store;
+  ($store as unknown as { rehydrate: EventCallable<T> }).rehydrate = rehydrate;
+  return $store as WritableStore<T>;
 }
 
 export function create<
-  Input extends Record<string, any>,
-  Facets extends Record<string, any>,
-  Variants extends { source: any; cases: Record<string, any> },
+  Input extends Record<string, unknown>,
+  Facets extends Record<string, unknown>,
+  Variants extends {
+    source: unknown;
+    cases: Record<string, (val: any) => boolean>;
+  },
 >(
   modelDef: Model<Input, Facets, Variants>,
-  config: { input?: any; state?: any } = {},
+  config: {
+    input?: InferConfigInput<Input>;
+    state?: Record<string, unknown>;
+  } = {},
 ): Model<Input, Facets, Variants>['_InstanceType'] {
   const { config: modelConfig } = modelDef;
 
   // 1. Process Input -> Extra
-  const input = { ...config.input };
-  const extraStores: Record<string, any> = {};
+  const input = { ...config.input } as Record<string, unknown>;
+  const extraStores: Record<string, unknown> = {};
 
   // Support 'extra' or 'input' definition for metadata
-  const modelExtraDef = (modelConfig.extra || modelConfig.input || {}) as any;
+  const modelExtraDef = (modelConfig.extra ||
+    modelConfig.input ||
+    {}) as Record<
+    string,
+    StoreDef<unknown> | EventDef<unknown> | ArrayDef<unknown>
+  >;
 
   for (const key in modelExtraDef) {
     const val = input[key];
@@ -48,7 +66,7 @@ export function create<
     }
   }
 
-  const reactiveExtra: Record<string, any> = {};
+  const reactiveExtra: Record<string, unknown> = {};
   for (const key in extraStores) {
     const val = extraStores[key];
     if (is.unit(val)) {
@@ -56,32 +74,37 @@ export function create<
     } else if (
       typeof val === 'object' &&
       val !== null &&
-      (val.facets || val.activeVariant)
+      ('facets' in val || 'activeVariant' in val)
     ) {
       reactiveExtra[key] = val;
     } else {
       reactiveExtra[key] = createWritableStore(val, { skipVoid: false });
     }
   }
-
   // 2. Pre-allocate Facets (Thermodynamic Runtime)
-  const preAllocatedFacets: Record<string, any> = {};
+  const preAllocatedFacets: Record<string, Record<string, unknown>> = {};
   const initialState = config.state || {};
 
   if (modelConfig.facets) {
     for (const [facetName, facetDef] of Object.entries(modelConfig.facets)) {
-      const facetShape = (facetDef as any).shape;
-      const facetInstance: Record<string, any> = {};
-      const facetState = initialState[facetName] || {};
+      const facetShape = (facetDef as Facet<FacetShape>).shape;
+      const facetInstance: Record<string, unknown> = {};
+      const facetState =
+        (initialState[facetName] as Record<string, unknown>) || {};
 
       for (const [fieldName, fieldDef] of Object.entries(facetShape)) {
-        let def = fieldDef as any;
+        const def = fieldDef as
+          | StoreDef<unknown>
+          | EventDef<unknown>
+          | ArrayDef<unknown>
+          | Facet<FacetShape>;
 
-        if (def.type === 'store') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((def as any).type === 'store') {
           const initialValue =
             facetState[fieldName] !== undefined
               ? facetState[fieldName]
-              : def.initial;
+              : (def as StoreDef<unknown>).initial;
 
           const $base = createWritableStore(initialValue, { skipVoid: false });
           facetInstance[fieldName] = $base;
@@ -106,19 +129,21 @@ export function create<
     string,
     { enter: Event<void>; leave: Event<void> }
   > = {};
-  const variantImpls: Record<string, any> = {};
+  const variantImpls: Record<string, Record<string, unknown>> = {};
 
   if (modelConfig.variant) {
     const { source, cases } = modelConfig.variant;
 
-    const sourceValue = source(reactiveExtra);
+    const sourceValue = (source as (input: unknown) => unknown)(reactiveExtra);
     const $source = is.store(sourceValue)
       ? sourceValue
       : createStore(sourceValue, { skipVoid: false });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     $activeVariant = $source.map((val: any) => {
       for (const [name, check] of Object.entries(cases)) {
-        if ((check as any)(val)) return name;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((check as (v: any) => boolean)(val)) return name;
       }
       return null;
     });
@@ -158,36 +183,48 @@ export function create<
   }
 
   // 4. Run Implementations
-  let fnResult: any = {};
+  let fnResult: Record<string, unknown> = {};
   if (modelConfig.fn) {
-    fnResult = modelConfig.fn(reactiveExtra, preAllocatedFacets) || {};
+    fnResult =
+      (modelConfig.fn(
+        reactiveExtra as unknown as InferInput<Input>,
+        preAllocatedFacets as unknown as InferFacets<Facets>,
+      ) as Record<string, unknown>) || {};
   }
 
   if (modelConfig.impl) {
     if (typeof modelConfig.impl === 'function') {
-      const implResult = modelConfig.impl(reactiveExtra, preAllocatedFacets);
+      const implResult = modelConfig.impl(
+        reactiveExtra as unknown as InferInput<Input>,
+        preAllocatedFacets as unknown as InferFacets<Facets>,
+      ) as Record<string, unknown>;
       fnResult = { ...fnResult, ...implResult };
     } else {
       for (const [variantName, implFn] of Object.entries(modelConfig.impl)) {
-        variantImpls[variantName] = (implFn as any)(
-          reactiveExtra,
-          preAllocatedFacets,
+        variantImpls[variantName] = implFn(
+          reactiveExtra as unknown as InferInput<Input>,
+          preAllocatedFacets as unknown as InferFacets<Facets>,
         );
       }
     }
   }
 
   // 6. Post-Process Facets
-  const facets: Record<string, any> = {};
+  const facets: Record<string, Record<string, unknown>> = {};
 
   if (modelConfig.facets) {
     for (const [facetName, facetDef] of Object.entries(modelConfig.facets)) {
-      const facetShape = (facetDef as any).shape;
-      const facetInstance: Record<string, any> = {};
+      const facetShape = (facetDef as Facet<FacetShape>).shape;
+      const facetInstance: Record<string, unknown> = {};
       const preAllocated = preAllocatedFacets[facetName];
 
       for (const [fieldName, fieldDef] of Object.entries(facetShape)) {
-        let def = fieldDef as any;
+        const def = fieldDef as
+          | StoreDef<unknown>
+          | EventDef<unknown>
+          | ArrayDef<unknown>
+          | Facet<FacetShape>
+          | any;
 
         if (isRef(def)) {
           if (def.kind === 'tag' && def.name) {
@@ -203,16 +240,18 @@ export function create<
         }
 
         if (def.type === 'store' || def.type === 'array') {
-          const variantsForField: Record<string, Store<any>> = {};
+          const variantsForField: Record<string, Store<unknown>> = {};
 
           for (const [variantName, implResult] of Object.entries(
             variantImpls,
           )) {
+            const implRes = implResult as Record<string, unknown>;
+            const facetRes = implRes[facetName] as Record<string, unknown>;
             const variantFacetImpl =
-              (implResult as any)[facetName]?.impl ||
-              (implResult as any)[facetName];
+              (facetRes?.impl as Record<string, unknown>) || facetRes;
+
             if (variantFacetImpl && variantFacetImpl[fieldName]) {
-              let val = variantFacetImpl[fieldName];
+              let val = variantFacetImpl[fieldName] as any;
               if (val && val.type === 'store') {
                 val = createWritableStore(val.initial, { skipVoid: false });
               }
@@ -220,9 +259,10 @@ export function create<
             }
           }
 
-          let baseStore = (fnResult[facetName]?.impl || fnResult[facetName])?.[
-            fieldName
-          ];
+          const fnResFacet = fnResult[facetName] as Record<string, unknown>;
+          const fnResFacetImpl =
+            (fnResFacet?.impl as Record<string, unknown>) || fnResFacet;
+          let baseStore = fnResFacetImpl?.[fieldName] as any;
 
           if (!baseStore) {
             baseStore = preAllocated[fieldName];
@@ -238,8 +278,8 @@ export function create<
           if (stores.length > 0) {
             facetInstance[fieldName] = combine(
               [$activeVariant, baseStore, ...stores],
-              ([active, base, ...vals]: any[]) => {
-                const idx = names.indexOf(active);
+              ([active, base, ...vals]: unknown[]) => {
+                const idx = names.indexOf(active as string);
                 if (idx !== -1) return vals[idx];
                 return base;
               },
@@ -249,37 +289,43 @@ export function create<
             facetInstance[fieldName] = baseStore;
           }
 
-          if ((baseStore as any).rehydrate) {
+          if ((baseStore as { rehydrate?: unknown }).rehydrate) {
             const rehydrate = createEvent();
-            (facetInstance[fieldName] as any).rehydrate = rehydrate;
+            (
+              facetInstance[fieldName] as { rehydrate: Event<unknown> }
+            ).rehydrate = rehydrate;
             sample({
               clock: rehydrate,
-              target: (baseStore as any).rehydrate,
+              target: (baseStore as { rehydrate: EventCallable<unknown> })
+                .rehydrate,
             });
           }
         } else if (def.type === 'event') {
-          let mainEvent = (fnResult[facetName]?.impl || fnResult[facetName])?.[
-            fieldName
-          ];
+          const fnResFacet = fnResult[facetName] as Record<string, unknown>;
+          const fnResFacetImpl =
+            (fnResFacet?.impl as Record<string, unknown>) || fnResFacet;
+          let mainEvent = fnResFacetImpl?.[fieldName] as Event<unknown>;
 
           if (!mainEvent) {
-            mainEvent = preAllocated[fieldName];
+            mainEvent = preAllocated[fieldName] as Event<unknown>;
           }
 
           for (const [variantName, implResult] of Object.entries(
             variantImpls,
           )) {
+            const implRes = implResult as Record<string, unknown>;
+            const facetRes = implRes[facetName] as Record<string, unknown>;
             const variantFacetImpl =
-              (implResult as any)[facetName]?.impl ||
-              (implResult as any)[facetName];
+              (facetRes?.impl as Record<string, unknown>) || facetRes;
+
             if (variantFacetImpl && variantFacetImpl[fieldName]) {
               const val = variantFacetImpl[fieldName];
               if (is.event(val)) {
                 sample({
                   clock: mainEvent,
                   filter: $activeVariant.map((v) => v === variantName),
-                  target: val as any,
-                } as any);
+                  target: val as EventCallable<unknown>,
+                });
               }
             }
           }
@@ -288,8 +334,8 @@ export function create<
       }
       facets[facetName] = facetInstance;
 
-      if (typeof (facetDef as any)._linker === 'function') {
-        (facetDef as any)._linker(facetInstance);
+      if (typeof (facetDef as Facet<FacetShape>)._linker === 'function') {
+        (facetDef as Facet<FacetShape>)._linker!(facetInstance);
       }
     }
   }
@@ -302,27 +348,32 @@ export function create<
     }
     for (const f of Object.values(facets)) {
       for (const u of Object.values(f)) {
-        if (is.unit(u)) clearNode(u as any);
+        if (is.unit(u)) clearNode(u);
       }
     }
     const inputs = new Set(Object.values(extraStores));
-    if (typeof fnResult.destroy === 'function') {
-      fnResult.destroy();
+    const fnRes = fnResult as unknown as { destroy?: () => void };
+    if (typeof fnRes.destroy === 'function') {
+      fnRes.destroy();
     }
     for (const val of Object.values(fnResult)) {
       if (val && typeof val === 'object') {
         if (is.unit(val) && !inputs.has(val)) {
           clearNode(val);
         }
-        if (typeof (val as any).destroy === 'function') {
-          (val as any).destroy();
+        const obj = val as {
+          destroy?: () => void;
+          facets?: Record<string, { impl?: Record<string, unknown> }>;
+        };
+        if (typeof obj.destroy === 'function') {
+          obj.destroy();
         }
-        if ((val as any).facets) {
-          for (const f of Object.values((val as any).facets)) {
+        if (obj.facets) {
+          for (const f of Object.values(obj.facets)) {
             if (f && typeof f === 'object') {
-              const facetImpl = (f as any).impl || f;
-              for (const u of Object.values(facetImpl as any)) {
-                if (is.unit(u)) clearNode(u as any);
+              const facetImpl = f.impl || f;
+              for (const u of Object.values(facetImpl)) {
+                if (is.unit(u)) clearNode(u);
               }
             }
           }
@@ -331,7 +382,7 @@ export function create<
     }
   };
 
-  const result = {
+  const result: Record<string, unknown> = {
     facets,
     variant: variantEvents,
     activeVariant: $activeVariant,
@@ -340,7 +391,7 @@ export function create<
     __impls: variantImpls,
     __fn: fnResult,
     destroy,
-  } as any;
+  };
 
   for (const [key, value] of Object.entries(fnResult)) {
     if (!(key in result)) result[key] = value;

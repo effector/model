@@ -119,7 +119,9 @@ describe('Tree Models Logic', () => {
       const children = folder.facets.folder.children.getState();
       expect(children).toHaveLength(1);
       expect(children[0]).toBe(file);
-      expect(children[0].facets.node.$name.getState()).toBe('child.txt');
+      expect((children[0] as any).facets.node.$name.getState()).toBe(
+        'child.txt',
+      );
     });
   });
 

@@ -6,7 +6,7 @@ import {
   createEffect,
   sample,
 } from 'effector';
-import { Keyval, LensProxy } from './keyval';
+import { Keyval, LensProxy, InferKeyvalInput } from './keyval';
 
 // --- Unknown code, useless ---
 
@@ -25,7 +25,10 @@ export interface Cursor<M> {
   skip: (n: number) => Cursor<M>;
 
   // Mutation
-  update: EventCallable<{ input?: any; state?: any }>;
+  update: EventCallable<{
+    input?: Partial<InferKeyvalInput<M>>;
+    state?: Record<string, unknown>;
+  }>;
 
   // Processing
   forEach: (fn: (item: LensProxy<M>) => void) => EventCallable<void>;
@@ -61,14 +64,20 @@ function createCursorImpl<M>(
     target: removeFx,
   });
 
-  const update = createEvent<{ input?: any; state?: any }>();
+  const update = createEvent<{
+    input?: Partial<InferKeyvalInput<M>>;
+    state?: Record<string, unknown>;
+  }>();
   const updateFx = createEffect(
     ({
       ids,
       payload,
     }: {
       ids: string[];
-      payload: { input?: any; state?: any };
+      payload: {
+        input?: Partial<InferKeyvalInput<M>>;
+        state?: Record<string, unknown>;
+      };
     }) => {
       ids.forEach((id) => kv.update({ id, ...payload }));
     },
@@ -105,13 +114,13 @@ function createCursorImpl<M>(
       ),
 
     forEach: (fn) => {
-      const trigger = createEvent();
+      const trigger = createEvent<void>();
       const fx = createEffect(
-        ({ ids, state }: { ids: string[]; state: any }) => {
+        ({ ids, state }: { ids: string[]; state: Record<string, unknown> }) => {
           ids.forEach((id) => {
             if (!state[id]) return;
             const proxy = createValueProxy(state[id]);
-            fn(proxy);
+            fn(proxy as LensProxy<M>);
           });
         },
       );
@@ -129,9 +138,9 @@ function createCursorImpl<M>(
           const itemState = state[id];
           if (!itemState) return false;
           const proxy = createSyncProxy(itemState);
-          const result = predicate(proxy as any);
+          const result = predicate(proxy as LensProxy<M>);
           if (result && typeof result === 'object' && 'getState' in result) {
-            return (result as any).getState();
+            return (result as unknown as MockStore<boolean>).getState();
           }
           return result;
         });
@@ -143,9 +152,9 @@ function createCursorImpl<M>(
           const itemState = state[id];
           if (!itemState) return false;
           const proxy = createSyncProxy(itemState);
-          const result = predicate(proxy as any);
+          const result = predicate(proxy as LensProxy<M>);
           if (result && typeof result === 'object' && 'getState' in result) {
-            return (result as any).getState();
+            return (result as unknown as MockStore<boolean>).getState();
           }
           return result;
         });
@@ -165,22 +174,22 @@ function createCursorImpl<M>(
       return createCursorImpl(kv, $intersection);
     },
 
-    map: (fn) => {
+    map: <T>(fn: (item: LensProxy<M>) => T) => {
       return combine($sourceIds, kv.$state, (ids, state) => {
         return ids.map((id) => {
           const itemState = state[id];
           // Graceful handling for missing state (though shouldn't happen if id is in list)
-          if (!itemState) return null as any;
+          if (!itemState) return null as unknown;
 
           const proxy = createValueProxy(itemState);
-          const result = fn(proxy as any);
+          const result = fn(proxy as LensProxy<M>);
 
           if (result && typeof result === 'object' && 'getState' in result) {
-            return (result as any).getState();
+            return (result as unknown as MockStore<unknown>).getState();
           }
           return result;
         });
-      });
+      }) as unknown as Store<T[]>;
     },
     filter: (predicate) => {
       const $filteredIds = combine($sourceIds, kv.$state, (ids, state) => {
@@ -189,10 +198,10 @@ function createCursorImpl<M>(
           if (!itemState) return false;
 
           const proxy = createSyncProxy(itemState);
-          const result = predicate(proxy as any);
+          const result = predicate(proxy as LensProxy<M>);
 
           if (result && typeof result === 'object' && 'getState' in result) {
-            return (result as any).getState();
+            return (result as unknown as MockStore<boolean>).getState();
           }
           return result;
         });
@@ -208,8 +217,8 @@ function createCursorImpl<M>(
           if (!stateA) return 0;
           if (!stateB) return 0;
 
-          const proxyA = createValueProxy(stateA);
-          const proxyB = createValueProxy(stateB);
+          const proxyA = createValueProxy(stateA) as LensProxy<M>;
+          const proxyB = createValueProxy(stateB) as LensProxy<M>;
 
           return comparator(proxyA, proxyB);
         });
@@ -220,7 +229,7 @@ function createCursorImpl<M>(
   return api;
 }
 
-function createValueProxy(target: any): any {
+function createValueProxy(target: object): unknown {
   return new Proxy(target, {
     get: (obj, prop) => {
       const value = Reflect.get(obj, prop);
@@ -238,7 +247,7 @@ function createValueProxy(target: any): any {
   });
 }
 
-function createSyncProxy(target: any): any {
+function createSyncProxy(target: object): unknown {
   return new Proxy(target, {
     get: (obj, prop) => {
       const value = Reflect.get(obj, prop);
@@ -256,11 +265,17 @@ function createSyncProxy(target: any): any {
   });
 }
 
-function createMockStore(value: any) {
+interface MockStore<T> {
+  getState: () => T;
+  map: <R>(fn: (v: T) => R) => MockStore<R>;
+  watch: (fn: (v: T) => void) => () => void;
+}
+
+function createMockStore<T>(value: T): MockStore<T> {
   return {
     getState: () => value,
-    map: (fn: (v: any) => any) => createMockStore(fn(value)),
-    watch: (fn: (v: any) => any) => {
+    map: (fn) => createMockStore(fn(value)),
+    watch: (fn) => {
       fn(value);
       return () => {};
     },

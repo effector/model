@@ -6,8 +6,15 @@ import {
   create,
 } from '@effector-model/core-experimental';
 import { createFactory, invoke } from '@withease/factories';
-import { createStore, createEvent, sample, createEffect } from 'effector';
-import { createCartModel, productUnion } from './cart';
+import {
+  createStore,
+  createEvent,
+  sample,
+  createEffect,
+  Store,
+} from 'effector';
+import { ProductData } from '../types';
+import { createCartModel, productUnion, CartItem } from './cart';
 
 // --- Types ---
 export type ScreenName =
@@ -27,6 +34,15 @@ export interface ProductScreenParams {
 
 export interface MenuScreenParams {
   restaurantId: string;
+}
+
+export interface AppParams {
+  restaurantId?: string;
+  returnToRestaurantId?: string;
+  mode?: 'preview' | 'ingredients';
+  draftId?: string;
+  returnTo?: ScreenName;
+  editId?: string;
 }
 
 const createAppImpl = () => {
@@ -55,7 +71,7 @@ const createAppImpl = () => {
       restaurantId,
     }: {
       items: string[];
-      instances: any;
+      instances: Record<string, unknown>;
       restaurantId: string;
     }) => {
       items.forEach((id) => {
@@ -63,7 +79,7 @@ const createAppImpl = () => {
           cartModel.remove(id);
           return;
         }
-        const instance = instances[id];
+        const instance = instances[id] as any; // keeping internal cast for now, will fix with Cart types
         const rId = instance?.facets?.product?.$restaurantId?.getState();
 
         if (rId === restaurantId) {
@@ -75,7 +91,7 @@ const createAppImpl = () => {
 
   // --- Public Events (Controller) ---
   const selectRestaurant = createEvent<string>();
-  const openProduct = createEvent<any>();
+  const openProduct = createEvent<ProductData>();
   const openCart = createEvent<{ restaurantId?: string } | void>();
   const openGlobalCart = createEvent();
   const globalCartBack = createEvent();
@@ -89,14 +105,14 @@ const createAppImpl = () => {
   const finishOrder = createEvent();
 
   // --- Internal Logic Events ---
-  const updateState = createEvent<{ screen: ScreenName; params: any }>();
+  const updateState = createEvent<{ screen: ScreenName; params: AppParams }>();
   const updateStateWithDraft = createEvent<{
     screen: ScreenName;
-    params: any;
-    draft: any;
+    params: AppParams;
+    draft: CartItem;
   }>();
   const commitDraft = createEvent<{
-    item: any;
+    item: CartItem;
     editId?: string;
     returnTo: ScreenName;
     restaurantId?: string;
@@ -106,23 +122,23 @@ const createAppImpl = () => {
   const appModel = model({
     input: {
       $screen: define.store<ScreenName>('restaurants'),
-      $params: define.store<any>({}),
+      $params: define.store<AppParams>({}),
       $activeScreen: define.store<ScreenName>('restaurants'),
-      $context: define.store<any>({}),
+      $context: define.store<unknown>({}),
     },
     variant: {
       source: (input: any) => input.$screen,
       cases: {
-        restaurants: (s: any) => s === 'restaurants',
-        menu: (s: any) => s === 'menu',
-        product: (s: any) => s === 'product',
-        cart: (s: any) => s === 'cart',
-        congrats: (s: any) => s === 'congrats',
-        globalCart: (s: any) => s === 'globalCart',
+        restaurants: (s: ScreenName) => s === 'restaurants',
+        menu: (s: ScreenName) => s === 'menu',
+        product: (s: ScreenName) => s === 'product',
+        cart: (s: ScreenName) => s === 'cart',
+        congrats: (s: ScreenName) => s === 'congrats',
+        globalCart: (s: ScreenName) => s === 'globalCart',
       },
     },
     impl: {
-      restaurants: (input: any) => {
+      restaurants: (input) => {
         sample({
           clock: selectRestaurant,
           fn: (id) => ({
@@ -138,7 +154,7 @@ const createAppImpl = () => {
           target: updateState,
         });
       },
-      globalCart: (input: any) => {
+      globalCart: (input) => {
         sample({
           clock: globalCartBack,
           fn: () => ({ screen: 'restaurants' as const, params: {} }),
@@ -147,19 +163,26 @@ const createAppImpl = () => {
 
         sample({
           clock: openCart,
-          fn: (payload: any) => ({
+          fn: (payload) => ({
             screen: 'cart' as const,
             params: { returnToRestaurantId: payload?.restaurantId },
           }),
           target: updateState,
         });
       },
-      menu: (input: any) => {
+      menu: (input) => {
         sample({
           clock: openProduct,
           source: input.$params,
-          fn: (params: any, payload: any) => {
-            const data = payload.data || payload;
+          fn: (
+            params,
+            payload,
+          ): {
+            screen: ScreenName;
+            params: AppParams;
+            draft: CartItem;
+          } => {
+            const data = payload;
             const model = (productUnion.models as any)[data.type];
             const state = model && model.init ? model.init(data) : {};
             return {
@@ -174,7 +197,7 @@ const createAppImpl = () => {
                 id: 'draft',
                 variant: data.type,
                 input: data,
-                state: state,
+                state: state as Record<string, unknown>,
               },
             };
           },
@@ -184,7 +207,7 @@ const createAppImpl = () => {
         sample({
           clock: openCart,
           source: input.$params,
-          fn: (params: any, payload: any) => ({
+          fn: (params, payload) => ({
             screen: 'cart' as const,
             params: {
               returnToRestaurantId:
@@ -200,13 +223,15 @@ const createAppImpl = () => {
           target: updateState,
         });
       },
-      product: (input: any) => {
+      product: (input) => {
         sample({
           clock: toggleProductMode,
           source: input.$params,
-          fn: (params: any) => ({
+          fn: (params) => ({
             ...params,
-            mode: params.mode === 'preview' ? 'ingredients' : 'preview',
+            mode: (params.mode === 'preview' ? 'ingredients' : 'preview') as
+              | 'preview'
+              | 'ingredients',
           }),
           target: input.$params,
         });
@@ -215,36 +240,55 @@ const createAppImpl = () => {
           clock: addToCart,
           source: {
             params: input.$params,
-            draft: (draftModel as any).$instances,
+            draft: (draftModel as any).$instances as Store<
+              Record<string, unknown>
+            >,
           },
-          fn: ({ params, draft }: any) => {
-            const instance = draft[params.draftId];
-            if (!instance) return null;
-
-            const snapshot = serialize(instance);
+          filter: ({
+            params,
+            draft,
+          }: {
+            params: AppParams;
+            draft: Record<string, unknown>;
+          }) => !!params.draftId && !!draft[params.draftId],
+          fn: ({
+            params,
+            draft,
+          }: {
+            params: AppParams;
+            draft: Record<string, unknown>;
+          }): {
+            item: CartItem;
+            editId?: string;
+            returnTo: ScreenName;
+            restaurantId?: string;
+          } => {
+            const instance = draft[params.draftId!];
+            const snapshot = serialize(instance) as any;
             console.log('[app] Serialized draft for cart:', snapshot);
 
             return {
               item: {
                 id: params.editId || crypto.randomUUID(),
-                variant: instance._variant || snapshot.activeVariant,
-                input: snapshot.extra || snapshot.input,
-                state: snapshot.facets,
+                variant:
+                  ((instance as any)._variant as string) ||
+                  (snapshot.activeVariant as string),
+                input: (snapshot.extra || snapshot.input) as ProductData,
+                state: snapshot.facets as Record<string, unknown>,
               },
               editId: params.editId,
-              returnTo: params.returnTo,
+              returnTo: params.returnTo!,
               restaurantId: params.restaurantId,
             };
           },
-          filter: (payload: any): payload is any => !!payload,
           target: commitDraft,
-        } as any);
+        });
 
         sample({
           clock: closeProduct,
           source: input.$params,
-          fn: (params: any) => ({
-            screen: params.returnTo,
+          fn: (params) => ({
+            screen: params.returnTo!,
             params: { restaurantId: params.restaurantId },
           }),
           target: updateState,
@@ -254,11 +298,11 @@ const createAppImpl = () => {
           item: draftModel.getItem('draft'),
         };
       },
-      cart: (input: any) => {
+      cart: (input) => {
         sample({
           clock: cartBack,
           source: input.$params,
-          fn: (params: any) => ({
+          fn: (params) => ({
             screen: 'menu' as const,
             params: { restaurantId: params.returnToRestaurantId },
           }),
@@ -268,14 +312,27 @@ const createAppImpl = () => {
         sample({
           clock: editItem,
           source: {
-            cart: (cartModel as any).$instances,
+            cart: (cartModel as any).$instances as Store<
+              Record<string, unknown>
+            >,
             params: input.$params,
           },
-          fn: ({ cart, params }: any, id: string) => {
+          filter: ({ cart }: { cart: Record<string, unknown> }, id: string) =>
+            !!cart[id],
+          fn: (
+            {
+              cart,
+              params,
+            }: { cart: Record<string, unknown>; params: AppParams },
+            id: string,
+          ): {
+            screen: ScreenName;
+            params: AppParams;
+            draft: CartItem;
+          } => {
             console.log('[app] editItem triggered for', id);
             const item = cart[id];
-            if (!item) throw new Error('Item not found');
-            const snapshot = serialize(item);
+            const snapshot = serialize(item) as any;
 
             return {
               screen: 'product' as const,
@@ -288,9 +345,11 @@ const createAppImpl = () => {
               },
               draft: {
                 id: 'draft',
-                variant: item._variant || snapshot.activeVariant,
-                input: snapshot.extra || snapshot.input,
-                state: snapshot.facets,
+                variant:
+                  ((item as any)._variant as string) ||
+                  (snapshot.activeVariant as string),
+                input: (snapshot.extra || snapshot.input) as ProductData,
+                state: snapshot.facets as Record<string, unknown>,
               },
             };
           },
@@ -300,7 +359,7 @@ const createAppImpl = () => {
         sample({
           clock: checkout,
           source: input.$params,
-          fn: (params: any) => ({
+          fn: (params) => ({
             restaurantId: params.returnToRestaurantId,
           }),
           target: copyCartToReceipt,
@@ -310,13 +369,23 @@ const createAppImpl = () => {
           clock: checkout,
           source: {
             items: cartModel.$items,
-            instances: (cartModel as any).$instances,
+            instances: (cartModel as any).$instances as Store<
+              Record<string, unknown>
+            >,
             params: input.$params,
           },
-          fn: ({ items, instances, params }: any) => ({
+          fn: ({
             items,
             instances,
-            restaurantId: params.returnToRestaurantId,
+            params,
+          }: {
+            items: string[];
+            instances: Record<string, unknown>;
+            params: AppParams;
+          }) => ({
+            items,
+            instances,
+            restaurantId: params.returnToRestaurantId!, // Ensure string
           }),
           target: clearRestaurantCartFx,
         });
@@ -327,7 +396,7 @@ const createAppImpl = () => {
           target: updateState,
         });
       },
-      congrats: (input: any) => {
+      congrats: (input) => {
         sample({
           clock: finishOrder,
           fn: () => ({ screen: 'restaurants' as const, params: {} }),
@@ -338,7 +407,7 @@ const createAppImpl = () => {
   });
 
   // --- Initialize Singleton Instance ---
-  const appInstance: any = create(appModel);
+  const appInstance = create(appModel);
 
   // --- Wiring (Using Instance) ---
 
@@ -362,8 +431,8 @@ const createAppImpl = () => {
 
   sample({
     clock: commitDraft,
-    fn: ({ item, editId, restaurantId }: any) => {
-      const nextState = { ...item.state };
+    fn: ({ item, editId, restaurantId }) => {
+      const nextState = { ...(item.state as any) };
       if (!nextState.product) nextState.product = {};
       nextState.product.$restaurantId = restaurantId;
 
@@ -380,8 +449,8 @@ const createAppImpl = () => {
 
   sample({
     clock: commitDraft,
-    fn: ({ returnTo, restaurantId }: any) => {
-      const params: any = {};
+    fn: ({ returnTo, restaurantId }) => {
+      const params: AppParams = {};
       if (returnTo === 'cart') {
         params.returnToRestaurantId = restaurantId;
       } else {

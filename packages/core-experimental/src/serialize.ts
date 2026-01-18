@@ -1,6 +1,6 @@
 import { is } from 'effector';
 
-export function serialize(instance: any): any {
+export function serialize(instance: unknown): unknown {
   if (is.store(instance)) {
     return instance.getState();
   }
@@ -8,7 +8,7 @@ export function serialize(instance: any): any {
     return instance.map(serialize);
   }
   if (instance && typeof instance === 'object') {
-    const res: any = {};
+    const res: Record<string, unknown> = {};
     for (const [key, val] of Object.entries(instance)) {
       if (typeof val === 'function') continue;
       if (key.startsWith('__')) continue;

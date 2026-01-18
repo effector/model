@@ -1,0 +1,196 @@
+
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <title>model.test.ts</title>
+      <link href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css" type="text/css" rel="stylesheet">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/mode/javascript/javascript.min.js" type="text/javascript" charset="utf-8"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.css" type="text/css" rel="stylesheet">
+<script src="../../../../assets/source-file.js" type="text/javascript" charset="utf-8"></script>
+<link href="../../../../assets/source-file.css" type="text/css" rel="stylesheet">
+    </head>
+    <body>
+    <div style="margin-top:3em" class="ui container"><h1 class="ui header"><a href="../../../../index.html">TypeScript coverage report</a></h1><table style="margin-top:2em" class="ui celled table"><thead class=""><tr class=""><th class="">Filename</th><th class="">Percent</th><th class="">Threshold</th><th class="">Total</th><th class="">Covered</th><th class="">Uncovered</th></tr></thead><tbody class=""><tr class="positive"><td class="">src/tree/__tests__/model.test.ts</td><td class="">85.97%</td><td class="">80%</td><td class="">335</td><td class="">288</td><td class="">47</td></tr></tbody></table><textarea id="editor" readonly="" style="margin-top:3em">import { describe, it, expect } from &#x27;vitest&#x27;;
+import { createStore } from &#x27;effector&#x27;;
+import { create } from &#x27;@effector-model/core-experimental&#x27;;
+import { fileModel, folderModel } from &#x27;../model&#x27;;
+
+// Helper to find node by ID in the tree (DFS)
+const findNode = (root: any, id: string): any =&gt; {
+  const rootId = root.input.id.getState();
+  if (rootId === id) return root;
+
+  if (root.facets.folder) {
+    const children = root.facets.folder.children.getState();
+    for (const child of children) {
+      const found = findNode(child, id);
+      if (found) return found;
+    }
+  }
+  return null;
+};
+
+// Helper to calculate trace (array of instances from root to target)
+const getTrace = (root: any, id: string, acc: any[] = []): any[] | null =&gt; {
+  const rootId = root.input.id.getState();
+  const currentTrace = [...acc, root];
+
+  if (rootId === id) return currentTrace;
+
+  if (root.facets.folder) {
+    const children = root.facets.folder.children.getState();
+    for (const child of children) {
+      const result = getTrace(child, id, currentTrace);
+      if (result) return result;
+    }
+  }
+  return null;
+};
+
+describe(&#x27;Tree Models Logic&#x27;, () =&gt; {
+  describe(&#x27;fileModel&#x27;, () =&gt; {
+    it(&#x27;should initialize with provided name and handle renaming&#x27;, () =&gt; {
+      const name = createStore(&#x27;initial.txt&#x27;);
+      const id = createStore(&#x27;file-1&#x27;);
+      const $selectedId = createStore&lt;string | null&gt;(null);
+
+      const instance = create(fileModel, {
+        input: { name, id, $selectedId },
+      });
+
+      expect(instance.facets.node.$name.getState()).toBe(&#x27;initial.txt&#x27;);
+
+      instance.facets.node.rename(&#x27;renamed.txt&#x27;);
+      expect(instance.facets.node.$name.getState()).toBe(&#x27;renamed.txt&#x27;);
+    });
+
+    it(&#x27;should handle selection&#x27;, () =&gt; {
+      const name = createStore(&#x27;test.txt&#x27;);
+      const id = createStore(&#x27;file-1&#x27;);
+      const $selectedId = createStore&lt;string | null&gt;(null);
+
+      const instance = create(fileModel, {
+        input: { name, id, $selectedId },
+      });
+
+      expect(instance.facets.node.$isSelected.getState()).toBe(false);
+      expect(instance.facets.visual.$backgroundColor.getState()).toBe(
+        &#x27;transparent&#x27;,
+      );
+
+      instance.facets.node.select();
+      expect($selectedId.getState()).toBe(&#x27;file-1&#x27;);
+      expect(instance.facets.node.$isSelected.getState()).toBe(true);
+      expect(instance.facets.visual.$backgroundColor.getState()).toBe(
+        &#x27;#e0e7ff&#x27;,
+      );
+    });
+  });
+
+  describe(&#x27;folderModel&#x27;, () =&gt; {
+    it(&#x27;should initialize with provided name and handle toggling&#x27;, () =&gt; {
+      const name = createStore(&#x27;src&#x27;);
+      const id = createStore(&#x27;folder-1&#x27;);
+      const $selectedId = createStore&lt;string | null&gt;(null);
+      const children: any[] = [];
+
+      const instance = create(folderModel, {
+        input: { name, id, $selectedId, children },
+      });
+
+      expect(instance.facets.node.$name.getState()).toBe(&#x27;src&#x27;);
+      expect(instance.facets.folder.$isOpen.getState()).toBe(true);
+
+      instance.facets.folder.toggle();
+      expect(instance.facets.folder.$isOpen.getState()).toBe(false);
+
+      instance.facets.folder.toggle();
+      expect(instance.facets.folder.$isOpen.getState()).toBe(true);
+    });
+
+    it(&#x27;should handle recursive children&#x27;, () =&gt; {
+      const $selectedId = createStore&lt;string | null&gt;(null);
+
+      const file = create(fileModel, {
+        input: {
+          name: createStore(&#x27;child.txt&#x27;),
+          id: createStore(&#x27;file-child&#x27;),
+          $selectedId,
+        },
+      });
+
+      const folder = create(folderModel, {
+        input: {
+          name: createStore(&#x27;parent&#x27;),
+          id: createStore(&#x27;folder-parent&#x27;),
+          $selectedId,
+          children: [file],
+        },
+      });
+
+      const children = folder.facets.folder.children.getState();
+      expect(children).toHaveLength(1);
+      expect(children[0]).toBe(file);
+      expect((children[0] as any).facets.node.$name.getState()).toBe(
+        &#x27;child.txt&#x27;,
+      );
+    });
+  });
+
+  describe(&#x27;Tree Utilities (Business Logic)&#x27;, () =&gt; {
+    const $selectedId = createStore&lt;string | null&gt;(&#x27;root&#x27;);
+    const file1 = create(fileModel, {
+      input: {
+        name: createStore(&#x27;app.tsx&#x27;),
+        id: createStore(&#x27;node-1&#x27;),
+        $selectedId,
+      },
+    });
+    const file2 = create(fileModel, {
+      input: {
+        name: createStore(&#x27;utils.ts&#x27;),
+        id: createStore(&#x27;node-2&#x27;),
+        $selectedId,
+      },
+    });
+    const srcFolder = create(folderModel, {
+      input: {
+        name: createStore(&#x27;src&#x27;),
+        id: createStore(&#x27;node-3&#x27;),
+        $selectedId,
+        children: [file1, file2],
+      },
+    });
+    const rootFolder = create(folderModel, {
+      input: {
+        name: createStore(&#x27;project&#x27;),
+        id: createStore(&#x27;root&#x27;),
+        $selectedId,
+        children: [srcFolder],
+      },
+    });
+
+    it(&#x27;findNode should find nodes by ID&#x27;, () =&gt; {
+      expect(findNode(rootFolder, &#x27;root&#x27;)).toBe(rootFolder);
+      expect(findNode(rootFolder, &#x27;node-3&#x27;)).toBe(srcFolder);
+      expect(findNode(rootFolder, &#x27;node-1&#x27;)).toBe(file1);
+      expect(findNode(rootFolder, &#x27;non-existent&#x27;)).toBe(null);
+    });
+
+    it(&#x27;getTrace should calculate path to node&#x27;, () =&gt; {
+      const trace = getTrace(rootFolder, &#x27;node-1&#x27;);
+      expect(trace).toHaveLength(3);
+      expect(trace![0]).toBe(rootFolder);
+      expect(trace![1]).toBe(srcFolder);
+      expect(trace![2]).toBe(file1);
+
+      expect(getTrace(rootFolder, &#x27;non-existent&#x27;)).toBe(null);
+    });
+  });
+});
+</textarea><pre id="annotations" style="display:none">[{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:6,&quot;character&quot;:18,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:7,&quot;character&quot;:8,&quot;text&quot;:&quot;rootId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:7,&quot;character&quot;:17,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:7,&quot;character&quot;:22,&quot;text&quot;:&quot;input&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:7,&quot;character&quot;:28,&quot;text&quot;:&quot;id&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:7,&quot;character&quot;:31,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:8,&quot;character&quot;:6,&quot;text&quot;:&quot;rootId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:8,&quot;character&quot;:28,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:10,&quot;character&quot;:6,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:10,&quot;character&quot;:11,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:10,&quot;character&quot;:18,&quot;text&quot;:&quot;folder&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:11,&quot;character&quot;:10,&quot;text&quot;:&quot;children&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:11,&quot;character&quot;:21,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:11,&quot;character&quot;:26,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:11,&quot;character&quot;:33,&quot;text&quot;:&quot;folder&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:11,&quot;character&quot;:40,&quot;text&quot;:&quot;children&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:11,&quot;character&quot;:49,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:12,&quot;character&quot;:15,&quot;text&quot;:&quot;child&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:13,&quot;character&quot;:12,&quot;text&quot;:&quot;found&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:13,&quot;character&quot;:29,&quot;text&quot;:&quot;child&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:14,&quot;character&quot;:10,&quot;text&quot;:&quot;found&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:14,&quot;character&quot;:24,&quot;text&quot;:&quot;found&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:12,&quot;character&quot;:24,&quot;text&quot;:&quot;children&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:21,&quot;character&quot;:18,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:22,&quot;character&quot;:8,&quot;text&quot;:&quot;rootId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:22,&quot;character&quot;:17,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:22,&quot;character&quot;:22,&quot;text&quot;:&quot;input&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:22,&quot;character&quot;:28,&quot;text&quot;:&quot;id&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:22,&quot;character&quot;:31,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:23,&quot;character&quot;:32,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:25,&quot;character&quot;:6,&quot;text&quot;:&quot;rootId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:27,&quot;character&quot;:6,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:27,&quot;character&quot;:11,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:27,&quot;character&quot;:18,&quot;text&quot;:&quot;folder&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:28,&quot;character&quot;:10,&quot;text&quot;:&quot;children&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:28,&quot;character&quot;:21,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:28,&quot;character&quot;:26,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:28,&quot;character&quot;:33,&quot;text&quot;:&quot;folder&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:28,&quot;character&quot;:40,&quot;text&quot;:&quot;children&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:28,&quot;character&quot;:49,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:29,&quot;character&quot;:15,&quot;text&quot;:&quot;child&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:30,&quot;character&quot;:30,&quot;text&quot;:&quot;child&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:29,&quot;character&quot;:24,&quot;text&quot;:&quot;children&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:121,&quot;character&quot;:34,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:121,&quot;character&quot;:41,&quot;text&quot;:&quot;node&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:121,&quot;character&quot;:46,&quot;text&quot;:&quot;$name&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/model.test.ts&quot;,&quot;line&quot;:121,&quot;character&quot;:52,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1}]</pre></div>
+    <p class="footer-text">TypeScript Coverage Report generated by <a href="https://github.com/plantain-00/type-coverage">type-coverage</a> and <a href="https://github.com/alexcanessa/typescript-coverage-report">typescript-coverage-report</a> at Sun, 18 Jan 2026 04:55:48 GMT</p>
+    </body>
+  </html>
+  

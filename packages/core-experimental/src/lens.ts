@@ -10,36 +10,38 @@ import {
 
 export type Lens = {
   __type: 'lens';
-  source: Store<Record<string, any>>; // The map of instances ($instances)
-  state: Store<Record<string, any>>; // The map of instance states ($state)
+  source: Store<Record<string, unknown>>; // The map of instances ($instances)
+  state: Store<Record<string, unknown>>; // The map of instance states ($state)
   id: Store<string | null>;
   path: string[];
-  fallbackValue?: any;
+  fallbackValue?: unknown;
   variantName?: string;
   facetName?: string;
 };
 
-export function isLens(val: any): val is Lens {
+export function isLens(val: unknown): val is Lens {
   if (!val || typeof val !== 'object') return false;
   return (
-    val.__type === 'lens' ||
-    (is.store(val.source) && is.store(val.id) && Array.isArray(val.path))
+    (val as { __type: unknown }).__type === 'lens' ||
+    (is.store((val as Lens).source) &&
+      is.store((val as Lens).id) &&
+      Array.isArray((val as Lens).path))
   );
 }
 
-export function select(source: Lens | Store<any>) {
+export function select(source: Lens | Store<unknown>) {
   let currentLens: Lens;
 
   if (isLens(source)) {
     currentLens = {
       __type: 'lens',
-      source: (source as any).source,
-      state: (source as any).state,
-      id: (source as any).id,
-      path: [...((source as any).path || [])],
-      fallbackValue: (source as any).fallbackValue,
-      variantName: (source as any).variantName,
-      facetName: (source as any).facetName,
+      source: source.source,
+      state: source.state,
+      id: source.id,
+      path: [...(source.path || [])],
+      fallbackValue: source.fallbackValue,
+      variantName: source.variantName,
+      facetName: source.facetName,
     };
   } else {
     throw new Error('select() source must be a Lens (from getItem)');
@@ -54,10 +56,10 @@ export function select(source: Lens | Store<any>) {
       nextPath.push('facets', name);
       return select({ ...currentLens, path: nextPath, facetName: name });
     },
-    path: (fn: (scope: any) => any) => {
+    path: (fn: (scope: Record<string, unknown>) => unknown) => {
       const nextPath = [...currentLens.path];
-      const proxyHandler = {
-        get: (_: any, prop: string | symbol) => {
+      const proxyHandler: ProxyHandler<object> = {
+        get: (_: object, prop: string | symbol) => {
           if (typeof prop === 'string') {
             nextPath.push(prop);
             return new Proxy({}, proxyHandler);
@@ -66,17 +68,17 @@ export function select(source: Lens | Store<any>) {
         },
       };
       const proxy = new Proxy({}, proxyHandler);
-      fn(proxy);
+      fn(proxy as Record<string, unknown>);
       return select({ ...currentLens, path: nextPath });
     },
-    fallback: (val: any) => {
+    fallback: (val: unknown) => {
       return toStore({ ...currentLens, fallbackValue: val });
     },
   };
   return builder;
 }
 
-function toStore(lens: Lens): Store<any> {
+function toStore(lens: Lens): Store<unknown> {
   // Use $state for reactive updates
   if (lens.state) {
     return combine(
@@ -85,26 +87,16 @@ function toStore(lens: Lens): Store<any> {
       (state, id) => {
         if (!id || !state[id]) return lens.fallbackValue;
 
-        let value = state[id];
-
-        // Union variant check (requires checking _variant in state? or instance?)
-        // State doesn't have _variant usually, it's a property on instance.
-        // But we can assume if path resolution fails, it returns fallback.
-        // Or we can check if 'variant' property exists in state?
-        // traverseAndBind skips 'variant' property?
-        // Let's assume for now we just resolve path.
+        let value: unknown = state[id];
 
         for (const key of lens.path) {
-          if (value && typeof value === 'object' && key in value) {
-            value = value[key];
+          if (
+            value &&
+            typeof value === 'object' &&
+            key in (value as Record<string, unknown>)
+          ) {
+            value = (value as Record<string, unknown>)[key];
           } else {
-            // Try to be smart about nested structures in state
-            // State mirrors instance structure.
-            // If instance had { input: { $val: ... } }, state has { input: { $val: value } }
-            // Path ['input', '$val'] works.
-            // But what about __fn?
-            // traverseAndBind flattens? No, it recurses.
-            // So structure is preserved.
             return lens.fallbackValue;
           }
         }

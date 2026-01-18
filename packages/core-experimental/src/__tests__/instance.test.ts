@@ -21,6 +21,7 @@ describe('instance', () => {
           $val: define.store(0),
           raw: define.store(0),
         },
+        // type-coverage:ignore-next-line
         fn: (input: any) => ({ input }),
       });
 
@@ -56,6 +57,7 @@ describe('instance', () => {
     it('should ignore extra inputs', () => {
       const testModel = model({
         input: { $val: define.store(0) },
+        // type-coverage:ignore-next-line
         fn: ({ $val }: any) => ({ $val }),
       });
 
@@ -64,6 +66,7 @@ describe('instance', () => {
 
       // Pass extra field 'extra'
       const instance = create(testModel, {
+        // type-coverage:ignore-next-line
         input: {
           $val,
           extra: createStore(99),
@@ -72,6 +75,7 @@ describe('instance', () => {
 
       expect(is.store(instance.input.$val)).toBe(true);
       expect(scope.getState(instance.input.$val)).toBe(10);
+      // type-coverage:ignore-next-line
       expect((instance.input as any).extra).toBeUndefined();
     });
   });
@@ -80,7 +84,9 @@ describe('instance', () => {
     it('should maintain independent state for multiple instances', async () => {
       const testModel = model({
         input: { $val: define.store(0) },
+        // type-coverage:ignore-next-line
         fn: ({ $val }: any) => {
+          // type-coverage:ignore-next-line
           const $doubled = $val.map((x: number) => x * 2);
           return { $doubled };
         },
@@ -107,6 +113,7 @@ describe('instance', () => {
       const testModel = model({
         input: { $s: define.store('a') },
         variant: {
+          // type-coverage:ignore-next-line
           source: (i: any) => i.$s,
           cases: {
             A: (s: string) => s === 'a',
@@ -132,6 +139,7 @@ describe('instance', () => {
       const testModel = model({
         input: { $score: define.store(0) },
         variant: {
+          // type-coverage:ignore-next-line
           source: ({ $score }: { $score: any }) => $score,
           cases: {
             positive: (s: number) => s > 0,
@@ -151,6 +159,7 @@ describe('instance', () => {
       const leaveNegative = vi.fn();
 
       // Helper to watch events
+      // type-coverage:ignore-next-line
       const watch = (event: EventCallable<void>, fn: any) => {
         const watcher = createEvent();
         watcher.watch(fn);
@@ -204,6 +213,7 @@ describe('instance', () => {
         input: { $s: define.store('a') },
         facets: { f },
         variant: {
+          // type-coverage:ignore-next-line
           source: (i: any) => i.$s,
           cases: { A: (s: string) => s === 'a' },
         },
@@ -240,6 +250,7 @@ describe('instance', () => {
         input: { $s: define.store('a') },
         facets: { f },
         variant: {
+          // type-coverage:ignore-next-line
           source: (i: any) => i.$s,
           cases: {
             A: (s: string) => s === 'a',
@@ -295,6 +306,7 @@ describe('instance', () => {
       const testModel = model({
         input: { $s: define.store(0) },
         variant: {
+          // type-coverage:ignore-next-line
           source: (i: any) => i.$s,
           cases: { A: (s: number) => s === 1 },
         },
@@ -327,7 +339,9 @@ describe('instance', () => {
     it('should destroy nested instances created via model fn', async () => {
       const child = model({
         input: { $v: define.store(0) },
+        // type-coverage:ignore-next-line
         fn: ({ $v }: any) => {
+          // type-coverage:ignore-next-line
           const $derived = $v.map((x: number) => x);
           return { $derived };
         },
@@ -335,6 +349,7 @@ describe('instance', () => {
 
       const parent = model({
         input: { $v: define.store(0) },
+        // type-coverage:ignore-next-line
         fn: ({ $v }: any) => {
           const c = create(child, { input: { $v } });
           return { c };

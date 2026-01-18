@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useUnit } from 'effector-react';
+import { EventCallable } from 'effector';
 import {
   PlusIcon,
   MinusIcon,
@@ -7,31 +8,54 @@ import {
   TrashIcon,
 } from '@heroicons/react/24/outline';
 import { useLens } from '../hooks';
-import { Match } from './ProductView';
+import { Match, ProductViewMode } from './ProductView';
 import { useApp } from '../AppContext';
+import { ProductInstance } from '../../models/cart';
 
-export const CartItem = ({ id, model }: { id: string; model?: any }) => {
+export const CartItem = ({
+  id,
+  model,
+}: {
+  id: string;
+  model?: {
+    getItem: (id: string) => ProductInstance;
+    remove: EventCallable<string>;
+  };
+}) => {
   const { cartModel, events, appInstance } = useApp();
-  const activeModel = model || cartModel;
+  const activeModel = (model || cartModel) as unknown as {
+    getItem: (id: string) => ProductInstance;
+    remove: EventCallable<string>;
+  };
 
   const item = useMemo(() => activeModel.getItem(id), [id, activeModel]);
-  const isDeleted = useLens((item as any).facets.product.$isDeleted, false);
-  const name = useLens((item as any).facets.product.$name, 'Loading...');
-  const price = useLens((item as any).facets.product.$price, 0);
-  const quantity = useLens((item as any).facets.product.$quantity, 1);
+  const isDeleted = useLens(item.facets.product.$isDeleted, false);
+  const name = useLens(item.facets.product.$name, 'Loading...');
+  const price = useLens(item.facets.product.$price, 0);
+  const quantity = useLens(item.facets.product.$quantity, 1);
 
-  const { restore, increment, decrement, remove } = useUnit({
-    restore: (item as any).facets.product.restore,
-    increment: (item as any).facets.product.increment,
-    decrement: (item as any).facets.product.decrement,
+  const units = useUnit({
+    restore: item.facets.product.restore,
+    increment: item.facets.product.increment,
+    decrement: item.facets.product.decrement,
     remove: activeModel.remove,
-  }) as any;
+  });
+
+  const { restore, increment, decrement, remove } = units as {
+    restore: () => void;
+    increment: () => void;
+    decrement: () => void;
+    remove: (id: string) => void;
+  };
 
   const openEdit = useUnit(events.editItem);
   const screen = useUnit(appInstance.input.$screen);
   const isCheckout = (screen as any) === 'congrats';
 
-  const cases = {
+  const cases: Record<
+    string,
+    React.ComponentType<{ item: ProductInstance; mode: ProductViewMode }>
+  > = {
     pizza: () => null,
     drink: () => null,
     coffee: () => null,
@@ -63,7 +87,7 @@ export const CartItem = ({ id, model }: { id: string; model?: any }) => {
             {name}
           </div>
           <div className="text-xs text-gray-500 leading-tight">
-            <Match model={item} cases={cases as any} mode="cart" />
+            <Match model={item} cases={cases} mode="cart" />
           </div>
         </div>
       </div>

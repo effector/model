@@ -1,0 +1,136 @@
+
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <title>match.ts</title>
+      <link href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css" type="text/css" rel="stylesheet">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/mode/javascript/javascript.min.js" type="text/javascript" charset="utf-8"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.css" type="text/css" rel="stylesheet">
+<script src="../../assets/source-file.js" type="text/javascript" charset="utf-8"></script>
+<link href="../../assets/source-file.css" type="text/css" rel="stylesheet">
+    </head>
+    <body>
+    <div style="margin-top:3em" class="ui container"><h1 class="ui header"><a href="../../index.html">TypeScript coverage report</a></h1><table style="margin-top:2em" class="ui celled table"><thead class=""><tr class=""><th class="">Filename</th><th class="">Percent</th><th class="">Threshold</th><th class="">Total</th><th class="">Covered</th><th class="">Uncovered</th></tr></thead><tbody class=""><tr class="positive"><td class="">src/match.ts</td><td class="">100.00%</td><td class="">80%</td><td class="">145</td><td class="">145</td><td class="">0</td></tr></tbody></table><textarea id="editor" readonly="" style="margin-top:3em">import { sample, createEvent, is, Store, Event } from &#x27;effector&#x27;;
+import { createItemProxy, LensProxy, Union } from &#x27;./keyval&#x27;;
+import { Model } from &#x27;./model&#x27;;
+
+export type MatchConfig = {
+  source: unknown;
+  cases: Record&lt;
+    string,
+    (scope: LensProxy&lt;unknown&gt;, trigger: Event&lt;unknown&gt;) =&gt; void
+  &gt;;
+};
+
+interface InternalSource {
+  _sourceEvent: Event&lt;unknown&gt;;
+  _instances: Store&lt;Record&lt;string, unknown&gt;&gt;;
+  _activeVariants: Store&lt;Record&lt;string, string | null&gt;&gt;;
+  _state: Store&lt;Record&lt;string, unknown&gt;&gt;;
+  _modelDef:
+    | Model&lt;Record&lt;string, unknown&gt;, Record&lt;string, unknown&gt;, any&gt;
+    | Union&lt;any&gt;;
+}
+
+function isInternalSource(source: unknown): source is InternalSource {
+  return (
+    !!source &amp;&amp;
+    typeof source === &#x27;object&#x27; &amp;&amp;
+    &#x27;_sourceEvent&#x27; in source &amp;&amp;
+    &#x27;_instances&#x27; in source &amp;&amp;
+    &#x27;_activeVariants&#x27; in source &amp;&amp;
+    &#x27;_state&#x27; in source &amp;&amp;
+    &#x27;_modelDef&#x27; in source
+  );
+}
+
+export function match(config: MatchConfig) {
+  const source = config.source;
+
+  // Case 1: Control Flow (Event-based proxy)
+  if (isInternalSource(source)) {
+    const { _sourceEvent, _instances, _activeVariants, _state, _modelDef } =
+      source;
+
+    for (const [variantName, handler] of Object.entries(config.cases)) {
+      const variantTrigger = createEvent&lt;unknown&gt;();
+
+      sample({
+        clock: _sourceEvent,
+        source: {
+          instances: _instances,
+          activeVariants: _activeVariants,
+        },
+        filter: (
+          {
+            instances,
+            activeVariants,
+          }: {
+            instances: Record&lt;string, unknown&gt;;
+            activeVariants: Record&lt;string, string | null&gt;;
+          },
+          payload: unknown,
+        ) =&gt; {
+          let id = payload;
+          if (
+            typeof payload === &#x27;object&#x27; &amp;&amp;
+            payload !== null &amp;&amp;
+            &#x27;id&#x27; in payload
+          ) {
+            id = (payload as { id: unknown }).id;
+          }
+          const instance = instances[id as string];
+          if (!instance) return false;
+
+          const activeVariant = activeVariants[id as string];
+          const currentVariant =
+            activeVariant !== undefined
+              ? activeVariant
+              : (instance as { _variant: string })._variant;
+
+          return currentVariant === variantName;
+        },
+        fn: (
+          { instances }: { instances: Record&lt;string, unknown&gt; },
+          payload: unknown,
+        ) =&gt; {
+          let id = payload;
+          if (
+            typeof payload === &#x27;object&#x27; &amp;&amp;
+            payload !== null &amp;&amp;
+            &#x27;id&#x27; in payload
+          ) {
+            id = (payload as { id: unknown }).id;
+          }
+          return id;
+        },
+        target: variantTrigger,
+      });
+
+      const proxy = createItemProxy(
+        _instances,
+        _state,
+        variantTrigger,
+        _modelDef,
+        _activeVariants,
+      );
+      handler(proxy as LensProxy&lt;unknown&gt;, variantTrigger);
+    }
+  }
+  // Case 2: Reactive Matching (Store or Lens)
+  else if (
+    is.store(source) ||
+    (source &amp;&amp;
+      typeof source === &#x27;object&#x27; &amp;&amp;
+      &#x27;__type&#x27; in source &amp;&amp;
+      (source as { __type: unknown }).__type === &#x27;lens&#x27;)
+  ) {
+    // Handled via lenses mostly
+  }
+}
+</textarea><pre id="annotations" style="display:none">[]</pre></div>
+    <p class="footer-text">TypeScript Coverage Report generated by <a href="https://github.com/plantain-00/type-coverage">type-coverage</a> and <a href="https://github.com/alexcanessa/typescript-coverage-report">typescript-coverage-report</a> at Sun, 18 Jan 2026 04:50:29 GMT</p>
+    </body>
+  </html>
+  

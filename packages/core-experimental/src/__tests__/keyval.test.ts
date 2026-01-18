@@ -16,6 +16,7 @@ import { select } from '../lens';
 describe('keyval', () => {
   const m = model({
     input: { $id: define.store('default') },
+    // type-coverage:ignore-next-line
     fn: ({ $id }: any) => ({ $id }),
   });
 
@@ -112,6 +113,7 @@ describe('keyval', () => {
     expect(p2.id).toBe($currentId);
 
     const $val = select(p2)
+      // type-coverage:ignore-next-line
       .path((x: any) => x.$id)
       .fallback('missing');
 
@@ -130,8 +132,10 @@ describe('keyval', () => {
     expect(p3.__type).toBeUndefined(); // It's a proxy
 
     // Check properties on Event Proxy
-    expect(p3.activeVariant._sourceEvent).toBe(evt);
-    expect(is.store(p3.activeVariant._instances)).toBe(true);
+    // type-coverage:ignore-next-line
+    expect((p3.activeVariant as any)._sourceEvent).toBe(evt);
+    // type-coverage:ignore-next-line
+    expect(is.store((p3.activeVariant as any)._instances)).toBe(true);
 
     // Check caching
     expect(list.getItem('1')).toBe(p1);
@@ -230,6 +234,7 @@ describe('keyval', () => {
   it('should validate missing inputs', async () => {
     const mRequired = model({
       input: { $id: define.store<string>() }, // No default
+      // type-coverage:ignore-next-line
       fn: ({ $id }: any) => ({ $id }),
     });
     const list = keyval({ model: mRequired });
@@ -241,6 +246,7 @@ describe('keyval', () => {
       scope,
       params: {
         id: '1',
+        // type-coverage:ignore-next-line
         input: {} as any, // Missing $id
       },
     });

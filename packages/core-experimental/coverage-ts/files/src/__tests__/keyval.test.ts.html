@@ -1,0 +1,276 @@
+
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <title>keyval.test.ts</title>
+      <link href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css" type="text/css" rel="stylesheet">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/mode/javascript/javascript.min.js" type="text/javascript" charset="utf-8"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.css" type="text/css" rel="stylesheet">
+<script src="../../../assets/source-file.js" type="text/javascript" charset="utf-8"></script>
+<link href="../../../assets/source-file.css" type="text/css" rel="stylesheet">
+    </head>
+    <body>
+    <div style="margin-top:3em" class="ui container"><h1 class="ui header"><a href="../../../index.html">TypeScript coverage report</a></h1><table style="margin-top:2em" class="ui celled table"><thead class=""><tr class=""><th class="">Filename</th><th class="">Percent</th><th class="">Threshold</th><th class="">Total</th><th class="">Covered</th><th class="">Uncovered</th></tr></thead><tbody class=""><tr class="positive"><td class="">src/__tests__/keyval.test.ts</td><td class="">100.00%</td><td class="">80%</td><td class="">487</td><td class="">487</td><td class="">0</td></tr></tbody></table><textarea id="editor" readonly="" style="margin-top:3em">import { describe, it, expect, vi } from &#x27;vitest&#x27;;
+import {
+  createStore,
+  allSettled,
+  fork,
+  createEvent,
+  sample,
+  is,
+} from &#x27;effector&#x27;;
+import { model } from &#x27;../model&#x27;;
+import { define } from &#x27;../define&#x27;;
+import { keyval, union } from &#x27;../keyval&#x27;;
+import { facet } from &#x27;../facet&#x27;;
+import { select } from &#x27;../lens&#x27;;
+
+describe(&#x27;keyval&#x27;, () =&gt; {
+  const m = model({
+    input: { $id: define.store(&#x27;default&#x27;) },
+    // type-coverage:ignore-next-line
+    fn: ({ $id }: any) =&gt; ({ $id }),
+  });
+
+  it(&#x27;should add and remove items&#x27;, async () =&gt; {
+    const list = keyval({ model: m });
+    const scope = fork();
+
+    // Add
+    await allSettled(list.add, {
+      scope,
+      params: {
+        id: &#x27;1&#x27;,
+        input: { $id: createStore(&#x27;1&#x27;) },
+      },
+    });
+
+    expect(scope.getState(list.$items)).toEqual([&#x27;1&#x27;]);
+
+    // Check idempotency (add same id)
+    await allSettled(list.add, {
+      scope,
+      params: {
+        id: &#x27;1&#x27;,
+        input: { $id: createStore(&#x27;2&#x27;) },
+      },
+    });
+    expect(scope.getState(list.$items)).toEqual([&#x27;1&#x27;]); // No duplicate
+
+    // Remove
+    await allSettled(list.remove, { scope, params: &#x27;1&#x27; });
+    expect(scope.getState(list.$items)).toEqual([]);
+
+    // Remove non-existent
+    await allSettled(list.remove, { scope, params: &#x27;99&#x27; });
+    expect(scope.getState(list.$items)).toEqual([]);
+  });
+
+  it(&#x27;should handle union models&#x27;, async () =&gt; {
+    const m1 = model({ input: { $a: define.store(0) } });
+    const m2 = model({ input: { $b: define.store(0) } });
+    const u = union({ a: m1, b: m2 });
+    const list = keyval({ model: u });
+    const scope = fork();
+
+    await allSettled(list.add, {
+      scope,
+      params: {
+        id: &#x27;1&#x27;,
+        variant: &#x27;a&#x27;,
+        input: { $a: createStore(1) },
+      },
+    });
+
+    expect(scope.getState(list.$items)).toEqual([&#x27;1&#x27;]);
+
+    // Test invalid variant
+    const spy = vi.spyOn(console, &#x27;error&#x27;).mockImplementation(() =&gt; {});
+    await allSettled(list.add, {
+      scope,
+      params: {
+        id: &#x27;2&#x27;,
+        variant: &#x27;invalid&#x27;,
+        input: {},
+      },
+    });
+    expect(scope.getState(list.$items)).toEqual([&#x27;1&#x27;]); // Should not add
+    expect(spy).toHaveBeenCalled();
+    spy.mockRestore();
+  });
+
+  it(&#x27;should create proxies via getItem&#x27;, async () =&gt; {
+    const list = keyval({ model: m });
+    const scope = fork();
+    await allSettled(list.add, {
+      scope,
+      params: { id: &#x27;1&#x27;, input: { $id: createStore(&#x27;val1&#x27;) } },
+    });
+    await allSettled(list.add, {
+      scope,
+      params: { id: &#x27;2&#x27;, input: { $id: createStore(&#x27;val2&#x27;) } },
+    });
+
+    // 1. String ID
+    const p1 = list.getItem(&#x27;1&#x27;);
+    expect(p1.__type).toBe(&#x27;lens&#x27;);
+    expect(is.store(p1.id)).toBe(true);
+    expect(scope.getState(p1.id)).toBe(&#x27;1&#x27;);
+    expect(p1.path).toEqual([]);
+
+    // 2. Store ID (Dynamic selection)
+    const $currentId = createStore(&#x27;1&#x27;);
+    const p2 = list.getItem($currentId);
+    expect(p2.__type).toBe(&#x27;lens&#x27;);
+    expect(p2.id).toBe($currentId);
+
+    const $val = select(p2)
+      // type-coverage:ignore-next-line
+      .path((x: any) =&gt; x.$id)
+      .fallback(&#x27;missing&#x27;);
+
+    expect(scope.getState($val)).toBe(&#x27;val1&#x27;);
+
+    await allSettled($currentId, { scope, params: &#x27;2&#x27; });
+    expect(scope.getState($val)).toBe(&#x27;val2&#x27;);
+
+    await allSettled($currentId, { scope, params: &#x27;3&#x27; });
+    expect(scope.getState($val)).toBe(&#x27;missing&#x27;);
+
+    // 3. Event ID (Action routing)
+    const evt = createEvent&lt;string&gt;();
+    const p3 = list.getItem(evt);
+    // Event proxy is NOT a lens, it&#x27;s a proxy for triggering methods
+    expect(p3.__type).toBeUndefined(); // It&#x27;s a proxy
+
+    // Check properties on Event Proxy
+    // type-coverage:ignore-next-line
+    expect((p3.activeVariant as any)._sourceEvent).toBe(evt);
+    // type-coverage:ignore-next-line
+    expect(is.store((p3.activeVariant as any)._instances)).toBe(true);
+
+    // Check caching
+    expect(list.getItem(&#x27;1&#x27;)).toBe(p1);
+    expect(list.getItem($currentId)).toBe(p2);
+    expect(list.getItem(evt)).toBe(p3);
+  });
+
+  it(&#x27;should handle facets and activeVariant in proxies&#x27;, () =&gt; {
+    const list = keyval({ model: m });
+
+    // Store/String Proxy
+    const p1 = list.getItem(&#x27;1&#x27;);
+    expect(p1.activeVariant.__type).toBe(&#x27;lens&#x27;);
+    expect(p1.activeVariant.path).toEqual([&#x27;activeVariant&#x27;]);
+
+    expect(p1.facets.f.field.__type).toBe(&#x27;lens&#x27;);
+    expect(p1.facets.f.field.path).toEqual([&#x27;facets&#x27;, &#x27;f&#x27;, &#x27;field&#x27;]);
+
+    // Event Proxy
+    const evt = createEvent&lt;string&gt;();
+    const p2 = list.getItem(evt);
+    // Accessing facets returns another proxy that eventually returns a Unit
+    const unitProxy = p2.facets.f.method;
+    // This unitProxy is a Unit (Trigger)
+    expect(is.event(unitProxy)).toBe(true);
+  });
+
+  it(&#x27;should clean up on remove&#x27;, async () =&gt; {
+    const onCleanup = vi.fn();
+    const mWithCleanup = model({
+      input: {},
+      fn: () =&gt; ({
+        destroy: onCleanup,
+      }),
+    });
+
+    const list = keyval({ model: mWithCleanup });
+    const scope = fork();
+
+    await allSettled(list.add, {
+      scope,
+      params: { id: &#x27;1&#x27;, input: {} },
+    });
+
+    expect(scope.getState(list.$items)).toEqual([&#x27;1&#x27;]);
+
+    await allSettled(list.remove, { scope, params: &#x27;1&#x27; });
+    expect(scope.getState(list.$items)).toEqual([]);
+    expect(onCleanup).toHaveBeenCalled();
+  });
+
+  it(&#x27;should handle removing item with active lens&#x27;, async () =&gt; {
+    const list = keyval({ model: m });
+    const scope = fork();
+    await allSettled(list.add, {
+      scope,
+      params: { id: &#x27;1&#x27;, input: { $id: createStore(&#x27;1&#x27;) } },
+    });
+
+    const item = list.getItem(&#x27;1&#x27;);
+    // Direct access to lens definition (not value)
+    const lensDef = item.input.$id;
+    expect(lensDef.__type).toBe(&#x27;lens&#x27;);
+
+    // We can&#x27;t easily check &quot;value&quot; of a definition without selecting it or binding it.
+    // But we can check if remove throws.
+    await allSettled(list.remove, { scope, params: &#x27;1&#x27; });
+  });
+
+  it(&#x27;should prevent duplicate add&#x27;, async () =&gt; {
+    const list = keyval({ model: m });
+    const scope = fork();
+
+    await allSettled(list.add, {
+      scope,
+      params: { id: &#x27;1&#x27;, input: { $id: createStore(&#x27;1&#x27;) } },
+    });
+
+    const spy = vi.spyOn(console, &#x27;error&#x27;).mockImplementation(() =&gt; {});
+
+    // Add same ID with different input
+    await allSettled(list.add, {
+      scope,
+      params: { id: &#x27;1&#x27;, input: { $id: createStore(&#x27;2&#x27;) } },
+    });
+
+    // Should still be &#x27;1&#x27; (original)
+    const item = list.getItem(&#x27;1&#x27;);
+    // We need to select to see value
+    // But we can rely on $items list being length 1
+    expect(scope.getState(list.$items)).toHaveLength(1);
+
+    spy.mockRestore();
+  });
+
+  it(&#x27;should validate missing inputs&#x27;, async () =&gt; {
+    const mRequired = model({
+      input: { $id: define.store&lt;string&gt;() }, // No default
+      // type-coverage:ignore-next-line
+      fn: ({ $id }: any) =&gt; ({ $id }),
+    });
+    const list = keyval({ model: mRequired });
+    const scope = fork();
+
+    const spy = vi.spyOn(console, &#x27;error&#x27;).mockImplementation(() =&gt; {});
+
+    await allSettled(list.add, {
+      scope,
+      params: {
+        id: &#x27;1&#x27;,
+        // type-coverage:ignore-next-line
+        input: {} as any, // Missing $id
+      },
+    });
+
+    expect(scope.getState(list.$items)).toEqual([]);
+    expect(spy).toHaveBeenCalled();
+    spy.mockRestore();
+  });
+});
+</textarea><pre id="annotations" style="display:none">[]</pre></div>
+    <p class="footer-text">TypeScript Coverage Report generated by <a href="https://github.com/plantain-00/type-coverage">type-coverage</a> and <a href="https://github.com/alexcanessa/typescript-coverage-report">typescript-coverage-report</a> at Sun, 18 Jan 2026 04:50:29 GMT</p>
+    </body>
+  </html>
+  

@@ -1,0 +1,301 @@
+
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <title>list.ts</title>
+      <link href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css" type="text/css" rel="stylesheet">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/mode/javascript/javascript.min.js" type="text/javascript" charset="utf-8"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.css" type="text/css" rel="stylesheet">
+<script src="../../assets/source-file.js" type="text/javascript" charset="utf-8"></script>
+<link href="../../assets/source-file.css" type="text/css" rel="stylesheet">
+    </head>
+    <body>
+    <div style="margin-top:3em" class="ui container"><h1 class="ui header"><a href="../../index.html">TypeScript coverage report</a></h1><table style="margin-top:2em" class="ui celled table"><thead class=""><tr class=""><th class="">Filename</th><th class="">Percent</th><th class="">Threshold</th><th class="">Total</th><th class="">Covered</th><th class="">Uncovered</th></tr></thead><tbody class=""><tr class="positive"><td class="">src/list.ts</td><td class="">98.14%</td><td class="">80%</td><td class="">539</td><td class="">529</td><td class="">10</td></tr></tbody></table><textarea id="editor" readonly="" style="margin-top:3em">import {
+  Store,
+  combine,
+  EventCallable,
+  createEvent,
+  createEffect,
+  sample,
+} from &#x27;effector&#x27;;
+import { Keyval, LensProxy, InferKeyvalInput } from &#x27;./keyval&#x27;;
+
+// --- Unknown code, useless ---
+
+export interface Cursor&lt;M&gt; {
+  $items: Store&lt;string[]&gt;;
+  filter: (
+    fn: (instance: LensProxy&lt;M&gt;) =&gt; boolean | Store&lt;boolean&gt;,
+  ) =&gt; Cursor&lt;M&gt;;
+  sort: (fn: (a: LensProxy&lt;M&gt;, b: LensProxy&lt;M&gt;) =&gt; number) =&gt; Cursor&lt;M&gt;;
+  remove: EventCallable&lt;void&gt;;
+  map: &lt;T&gt;(fn: (item: LensProxy&lt;M&gt;) =&gt; T) =&gt; Store&lt;T[]&gt;;
+
+  // Pagination
+  slice: (start: number, end?: number) =&gt; Cursor&lt;M&gt;;
+  take: (n: number) =&gt; Cursor&lt;M&gt;;
+  skip: (n: number) =&gt; Cursor&lt;M&gt;;
+
+  // Mutation
+  update: EventCallable&lt;{
+    input?: Partial&lt;InferKeyvalInput&lt;M&gt;&gt;;
+    state?: Record&lt;string, unknown&gt;;
+  }&gt;;
+
+  // Processing
+  forEach: (fn: (item: LensProxy&lt;M&gt;) =&gt; void) =&gt; EventCallable&lt;void&gt;;
+
+  // Aggregation
+  $size: Store&lt;number&gt;;
+  $isEmpty: Store&lt;boolean&gt;;
+  some: (fn: (instance: LensProxy&lt;M&gt;) =&gt; boolean) =&gt; Store&lt;boolean&gt;;
+  every: (fn: (instance: LensProxy&lt;M&gt;) =&gt; boolean) =&gt; Store&lt;boolean&gt;;
+
+  // Set Operations
+  union: (other: Cursor&lt;M&gt;) =&gt; Cursor&lt;M&gt;;
+  intersection: (other: Cursor&lt;M&gt;) =&gt; Cursor&lt;M&gt;;
+}
+
+export function createCursor&lt;M&gt;(kv: Keyval&lt;M&gt;): Cursor&lt;M&gt; {
+  return createCursorImpl(kv, kv.$items);
+}
+
+function createCursorImpl&lt;M&gt;(
+  kv: Keyval&lt;M&gt;,
+  $sourceIds: Store&lt;string[]&gt;,
+): Cursor&lt;M&gt; {
+  const remove = createEvent();
+
+  const removeFx = createEffect((ids: string[]) =&gt; {
+    ids.forEach((id) =&gt; kv.remove(id));
+  });
+
+  sample({
+    clock: remove,
+    source: $sourceIds,
+    target: removeFx,
+  });
+
+  const update = createEvent&lt;{
+    input?: Partial&lt;InferKeyvalInput&lt;M&gt;&gt;;
+    state?: Record&lt;string, unknown&gt;;
+  }&gt;();
+  const updateFx = createEffect(
+    ({
+      ids,
+      payload,
+    }: {
+      ids: string[];
+      payload: {
+        input?: Partial&lt;InferKeyvalInput&lt;M&gt;&gt;;
+        state?: Record&lt;string, unknown&gt;;
+      };
+    }) =&gt; {
+      ids.forEach((id) =&gt; kv.update({ id, ...payload }));
+    },
+  );
+
+  sample({
+    clock: update,
+    source: $sourceIds,
+    fn: (ids, payload) =&gt; ({ ids, payload }),
+    target: updateFx,
+  });
+
+  const api: Cursor&lt;M&gt; = {
+    $items: $sourceIds,
+    remove,
+    update,
+    $size: $sourceIds.map((s) =&gt; s.length),
+    $isEmpty: $sourceIds.map((s) =&gt; s.length === 0),
+
+    slice: (start, end) =&gt;
+      createCursorImpl(
+        kv,
+        $sourceIds.map((ids) =&gt; ids.slice(start, end)),
+      ),
+    take: (n) =&gt;
+      createCursorImpl(
+        kv,
+        $sourceIds.map((ids) =&gt; ids.slice(0, n)),
+      ),
+    skip: (n) =&gt;
+      createCursorImpl(
+        kv,
+        $sourceIds.map((ids) =&gt; ids.slice(n)),
+      ),
+
+    forEach: (fn) =&gt; {
+      const trigger = createEvent&lt;void&gt;();
+      const fx = createEffect(
+        ({ ids, state }: { ids: string[]; state: Record&lt;string, unknown&gt; }) =&gt; {
+          ids.forEach((id) =&gt; {
+            if (!state[id]) return;
+            const proxy = createValueProxy(state[id]);
+            fn(proxy as LensProxy&lt;M&gt;);
+          });
+        },
+      );
+      sample({
+        clock: trigger,
+        source: { ids: $sourceIds, state: kv.$state },
+        target: fx,
+      });
+      return trigger;
+    },
+
+    some: (predicate) =&gt;
+      combine($sourceIds, kv.$state, (ids, state) =&gt; {
+        return ids.some((id) =&gt; {
+          const itemState = state[id];
+          if (!itemState) return false;
+          const proxy = createSyncProxy(itemState);
+          const result = predicate(proxy as LensProxy&lt;M&gt;);
+          if (result &amp;&amp; typeof result === &#x27;object&#x27; &amp;&amp; &#x27;getState&#x27; in result) {
+            return (result as unknown as MockStore&lt;boolean&gt;).getState();
+          }
+          return result;
+        });
+      }),
+
+    every: (predicate) =&gt;
+      combine($sourceIds, kv.$state, (ids, state) =&gt; {
+        return ids.every((id) =&gt; {
+          const itemState = state[id];
+          if (!itemState) return false;
+          const proxy = createSyncProxy(itemState);
+          const result = predicate(proxy as LensProxy&lt;M&gt;);
+          if (result &amp;&amp; typeof result === &#x27;object&#x27; &amp;&amp; &#x27;getState&#x27; in result) {
+            return (result as unknown as MockStore&lt;boolean&gt;).getState();
+          }
+          return result;
+        });
+      }),
+
+    union: (other) =&gt; {
+      const $union = combine($sourceIds, other.$items, (a, b) =&gt; {
+        return Array.from(new Set([...a, ...b]));
+      });
+      return createCursorImpl(kv, $union);
+    },
+
+    intersection: (other) =&gt; {
+      const $intersection = combine($sourceIds, other.$items, (a, b) =&gt; {
+        return a.filter((x) =&gt; b.includes(x));
+      });
+      return createCursorImpl(kv, $intersection);
+    },
+
+    map: &lt;T&gt;(fn: (item: LensProxy&lt;M&gt;) =&gt; T) =&gt; {
+      return combine($sourceIds, kv.$state, (ids, state) =&gt; {
+        return ids.map((id) =&gt; {
+          const itemState = state[id];
+          // Graceful handling for missing state (though shouldn&#x27;t happen if id is in list)
+          if (!itemState) return null as unknown;
+
+          const proxy = createValueProxy(itemState);
+          const result = fn(proxy as LensProxy&lt;M&gt;);
+
+          if (result &amp;&amp; typeof result === &#x27;object&#x27; &amp;&amp; &#x27;getState&#x27; in result) {
+            return (result as unknown as MockStore&lt;unknown&gt;).getState();
+          }
+          return result;
+        });
+      }) as unknown as Store&lt;T[]&gt;;
+    },
+    filter: (predicate) =&gt; {
+      const $filteredIds = combine($sourceIds, kv.$state, (ids, state) =&gt; {
+        return ids.filter((id) =&gt; {
+          const itemState = state[id];
+          if (!itemState) return false;
+
+          const proxy = createSyncProxy(itemState);
+          const result = predicate(proxy as LensProxy&lt;M&gt;);
+
+          if (result &amp;&amp; typeof result === &#x27;object&#x27; &amp;&amp; &#x27;getState&#x27; in result) {
+            return (result as unknown as MockStore&lt;boolean&gt;).getState();
+          }
+          return result;
+        });
+      });
+
+      return createCursorImpl(kv, $filteredIds);
+    },
+    sort: (comparator) =&gt; {
+      const $sortedIds = combine($sourceIds, kv.$state, (ids, state) =&gt; {
+        return [...ids].sort((aId, bId) =&gt; {
+          const stateA = state[aId];
+          const stateB = state[bId];
+          if (!stateA) return 0;
+          if (!stateB) return 0;
+
+          const proxyA = createValueProxy(stateA) as LensProxy&lt;M&gt;;
+          const proxyB = createValueProxy(stateB) as LensProxy&lt;M&gt;;
+
+          return comparator(proxyA, proxyB);
+        });
+      });
+      return createCursorImpl(kv, $sortedIds);
+    },
+  };
+  return api;
+}
+
+function createValueProxy(target: object): unknown {
+  return new Proxy(target, {
+    get: (obj, prop) =&gt; {
+      const value = Reflect.get(obj, prop);
+
+      if (
+        value !== null &amp;&amp;
+        typeof value === &#x27;object&#x27; &amp;&amp;
+        !Array.isArray(value)
+      ) {
+        return createValueProxy(value);
+      }
+
+      return value;
+    },
+  });
+}
+
+function createSyncProxy(target: object): unknown {
+  return new Proxy(target, {
+    get: (obj, prop) =&gt; {
+      const value = Reflect.get(obj, prop);
+
+      if (
+        value !== null &amp;&amp;
+        typeof value === &#x27;object&#x27; &amp;&amp;
+        !Array.isArray(value)
+      ) {
+        return createSyncProxy(value);
+      }
+
+      return createMockStore(value);
+    },
+  });
+}
+
+interface MockStore&lt;T&gt; {
+  getState: () =&gt; T;
+  map: &lt;R&gt;(fn: (v: T) =&gt; R) =&gt; MockStore&lt;R&gt;;
+  watch: (fn: (v: T) =&gt; void) =&gt; () =&gt; void;
+}
+
+function createMockStore&lt;T&gt;(value: T): MockStore&lt;T&gt; {
+  return {
+    getState: () =&gt; value,
+    map: (fn) =&gt; createMockStore(fn(value)),
+    watch: (fn) =&gt; {
+      fn(value);
+      return () =&gt; {};
+    },
+  };
+}
+</textarea><pre id="annotations" style="display:none">[{&quot;file&quot;:&quot;src/list.ts&quot;,&quot;line&quot;:234,&quot;character&quot;:12,&quot;text&quot;:&quot;value&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/list.ts&quot;,&quot;line&quot;:237,&quot;character&quot;:8,&quot;text&quot;:&quot;value&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/list.ts&quot;,&quot;line&quot;:238,&quot;character&quot;:15,&quot;text&quot;:&quot;value&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/list.ts&quot;,&quot;line&quot;:239,&quot;character&quot;:23,&quot;text&quot;:&quot;value&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/list.ts&quot;,&quot;line&quot;:244,&quot;character&quot;:13,&quot;text&quot;:&quot;value&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/list.ts&quot;,&quot;line&quot;:252,&quot;character&quot;:12,&quot;text&quot;:&quot;value&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/list.ts&quot;,&quot;line&quot;:255,&quot;character&quot;:8,&quot;text&quot;:&quot;value&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/list.ts&quot;,&quot;line&quot;:256,&quot;character&quot;:15,&quot;text&quot;:&quot;value&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/list.ts&quot;,&quot;line&quot;:257,&quot;character&quot;:23,&quot;text&quot;:&quot;value&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/list.ts&quot;,&quot;line&quot;:262,&quot;character&quot;:29,&quot;text&quot;:&quot;value&quot;,&quot;kind&quot;:1}]</pre></div>
+    <p class="footer-text">TypeScript Coverage Report generated by <a href="https://github.com/plantain-00/type-coverage">type-coverage</a> and <a href="https://github.com/alexcanessa/typescript-coverage-report">typescript-coverage-report</a> at Sun, 18 Jan 2026 04:50:29 GMT</p>
+    </body>
+  </html>
+  

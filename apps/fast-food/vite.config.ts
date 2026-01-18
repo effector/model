@@ -4,9 +4,6 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 // import { babel } from '@rollup/plugin-babel';
 
 export default defineConfig({
-  esbuild: {
-    loader: 'tsx',
-  },
   cacheDir: '../../../node_modules/.vite/fast-food',
   plugins: [
     tsconfigPaths(),

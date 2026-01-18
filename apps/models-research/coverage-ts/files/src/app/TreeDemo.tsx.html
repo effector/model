@@ -1,0 +1,206 @@
+
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <title>TreeDemo.tsx</title>
+      <link href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css" type="text/css" rel="stylesheet">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/mode/javascript/javascript.min.js" type="text/javascript" charset="utf-8"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.css" type="text/css" rel="stylesheet">
+<script src="../../../assets/source-file.js" type="text/javascript" charset="utf-8"></script>
+<link href="../../../assets/source-file.css" type="text/css" rel="stylesheet">
+    </head>
+    <body>
+    <div style="margin-top:3em" class="ui container"><h1 class="ui header"><a href="../../../index.html">TypeScript coverage report</a></h1><table style="margin-top:2em" class="ui celled table"><thead class=""><tr class=""><th class="">Filename</th><th class="">Percent</th><th class="">Threshold</th><th class="">Total</th><th class="">Covered</th><th class="">Uncovered</th></tr></thead><tbody class=""><tr class="negative"><td class="">src/app/TreeDemo.tsx</td><td class="">71.28%</td><td class="">80%</td><td class="">296</td><td class="">211</td><td class="">85</td></tr></tbody></table><textarea id="editor" readonly="" style="margin-top:3em">import { create } from &#x27;@effector-model/core-experimental&#x27;;
+import { createStore, createEvent, sample } from &#x27;effector&#x27;;
+import { useUnit } from &#x27;effector-react&#x27;;
+import { fileModel, folderModel } from &#x27;../tree/model&#x27;;
+import { RecursiveTreeView } from &#x27;../tree/view&#x27;;
+
+// Global state for selection
+const $selectedId = createStore&lt;string | null&gt;(&#x27;root-node&#x27;);
+const selectInstance = createEvent&lt;string&gt;();
+
+// Actually, in the model we pass $selectedId as input.
+// We need to generate unique IDs for each node.
+
+let idCounter = 0;
+const nextId = () =&gt; `node-${++idCounter}`;
+
+const createInput = (name: string) =&gt; ({
+  name: createStore(name),
+  id: createStore(nextId()),
+  $selectedId,
+});
+
+const createRecursiveInput = (name: string, children: any[]) =&gt; ({
+  name: createStore(name),
+  id: createStore(nextId()),
+  $selectedId,
+  children,
+});
+
+/**
+ * Tree Demo Component
+ */
+export function TreeDemo() {
+  // 1. Create leaf files
+  const file1 = create(fileModel, { input: createInput(&#x27;app.tsx&#x27;) });
+  const file2 = create(fileModel, { input: createInput(&#x27;utils.ts&#x27;) });
+  const file3 = create(fileModel, { input: createInput(&#x27;package.json&#x27;) });
+  const file4 = create(fileModel, { input: createInput(&#x27;README.md&#x27;) });
+
+  // 2. Create sub-folder
+  const srcFolder = create(folderModel, {
+    input: createRecursiveInput(&#x27;src&#x27;, [file1, file2]),
+  });
+
+  // 3. Create root folder
+  const rootFolder = create(folderModel, {
+    input: {
+      name: createStore(&#x27;project-root&#x27;),
+      id: createStore(&#x27;root-node&#x27;),
+      $selectedId,
+      children: [srcFolder, file3, file4],
+    },
+  });
+
+  return (
+    &lt;div className=&quot;bg-white p-6 rounded-xl shadow-md border border-gray-100 max-w-2xl&quot;&gt;
+      &lt;h2 className=&quot;text-xl font-semibold mb-6 text-gray-800&quot;&gt;
+        Recursive Tree Demo
+      &lt;/h2&gt;
+
+      &lt;div className=&quot;mb-8 bg-gray-50 rounded-lg border border-gray-200 overflow-hidden&quot;&gt;
+        &lt;div className=&quot;p-2 bg-gray-100 border-b border-gray-200 text-xs text-gray-500 font-mono&quot;&gt;
+          &lt;Breadcrumbs selectedId={$selectedId} root={rootFolder} /&gt;
+        &lt;/div&gt;
+        &lt;div className=&quot;p-4&quot;&gt;
+          &lt;RecursiveTreeView instance={rootFolder} /&gt;
+        &lt;/div&gt;
+        &lt;div className=&quot;p-2 bg-gray-100 border-t border-gray-200 text-xs text-gray-600&quot;&gt;
+          &lt;DetailsView selectedId={$selectedId} root={rootFolder} /&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div className=&quot;text-sm text-gray-500 space-y-2&quot;&gt;
+        &lt;p&gt;
+          &lt;strong&gt;Features demonstrated:&lt;/strong&gt;
+        &lt;/p&gt;
+        &lt;ul className=&quot;list-disc ml-5 space-y-1&quot;&gt;
+          &lt;li&gt;
+            &lt;strong&gt;Recursion (`ref.self`):&lt;/strong&gt; Folders contain an array of
+            other node instances.
+          &lt;/li&gt;
+          &lt;li&gt;
+            &lt;strong&gt;State Isolation:&lt;/strong&gt; Each folder has its own `$isOpen`
+            store.
+          &lt;/li&gt;
+          &lt;li&gt;
+            &lt;strong&gt;Internal Dependencies (`ref.tag`):&lt;/strong&gt; Visual
+            background changes based on selection.
+          &lt;/li&gt;
+          &lt;li&gt;
+            &lt;strong&gt;Advanced Interaction:&lt;/strong&gt; Double-click to rename.
+            Single selection logic.
+          &lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+// Helper to find node by ID in the tree (DFS)
+const findNode = (root: any, id: string): any =&gt; {
+  const rootId = root.input.id.getState();
+  if (rootId === id) return root;
+
+  if (root.facets.folder) {
+    const children = root.input.children; // Assuming static array for this demo
+    // In real app, children might be a store, so .getState()
+    const childrenArray = Array.isArray(children)
+      ? children
+      : children.getState
+        ? children.getState()
+        : [];
+
+    for (const child of childrenArray) {
+      const found = findNode(child, id);
+      if (found) return found;
+    }
+  }
+  return null;
+};
+
+// Helper to calculate trace (array of instances from root to target)
+const getTrace = (root: any, id: string, acc: any[] = []): any[] | null =&gt; {
+  const rootId = root.input.id.getState();
+  const currentTrace = [...acc, root];
+
+  if (rootId === id) return currentTrace;
+
+  if (root.facets.folder) {
+    const children = root.input.children;
+    const childrenArray = Array.isArray(children)
+      ? children
+      : children.getState
+        ? children.getState()
+        : [];
+
+    for (const child of childrenArray) {
+      const result = getTrace(child, id, currentTrace);
+      if (result) return result;
+    }
+  }
+  return null;
+};
+
+function Breadcrumbs({ selectedId, root }: { selectedId: any; root: any }) {
+  const id = useUnit(selectedId);
+  if (!id) return &lt;span&gt;/&lt;/span&gt;;
+
+  const trace = getTrace(root, id as unknown as string);
+  if (!trace) return &lt;span&gt;/&lt;/span&gt;;
+
+  return (
+    &lt;div className=&quot;flex items-center gap-1&quot;&gt;
+      {trace.map((node, i) =&gt; (
+        &lt;span key={i} className=&quot;flex items-center gap-1&quot;&gt;
+          {i &gt; 0 &amp;&amp; &lt;span&gt; {&#x27;&gt;&#x27;} &lt;/span&gt;}
+          &lt;BreadcrumbItem node={node} /&gt;
+        &lt;/span&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}
+
+function BreadcrumbItem({ node }: { node: any }) {
+  const name = useUnit(node.facets.node.$name);
+  return &lt;span&gt;{name as any}&lt;/span&gt;;
+}
+
+function DetailsView({ selectedId, root }: { selectedId: any; root: any }) {
+  const id = useUnit(selectedId);
+  if (!id) return &lt;span&gt;No selection&lt;/span&gt;;
+
+  const node = findNode(root, id as unknown as string);
+  if (!node) return &lt;span&gt;Unknown&lt;/span&gt;;
+
+  return &lt;NodeDetails node={node} /&gt;;
+}
+
+function NodeDetails({ node }: { node: any }) {
+  const name = useUnit(node.facets.node.$name);
+  const type = node.facets.folder ? &#x27;Folder&#x27; : &#x27;File&#x27;;
+
+  return (
+    &lt;span&gt;
+      Selected: &lt;strong&gt;{name as any}&lt;/strong&gt; ({type})
+    &lt;/span&gt;
+  );
+}
+</textarea><pre id="annotations" style="display:none">[{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:100,&quot;character&quot;:18,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:101,&quot;character&quot;:8,&quot;text&quot;:&quot;rootId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:101,&quot;character&quot;:17,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:101,&quot;character&quot;:22,&quot;text&quot;:&quot;input&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:101,&quot;character&quot;:28,&quot;text&quot;:&quot;id&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:101,&quot;character&quot;:31,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:102,&quot;character&quot;:6,&quot;text&quot;:&quot;rootId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:102,&quot;character&quot;:28,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:104,&quot;character&quot;:6,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:104,&quot;character&quot;:11,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:104,&quot;character&quot;:18,&quot;text&quot;:&quot;folder&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:105,&quot;character&quot;:10,&quot;text&quot;:&quot;children&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:105,&quot;character&quot;:21,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:105,&quot;character&quot;:26,&quot;text&quot;:&quot;input&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:105,&quot;character&quot;:32,&quot;text&quot;:&quot;children&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:107,&quot;character&quot;:10,&quot;text&quot;:&quot;childrenArray&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:107,&quot;character&quot;:40,&quot;text&quot;:&quot;children&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:109,&quot;character&quot;:8,&quot;text&quot;:&quot;children&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:109,&quot;character&quot;:17,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:110,&quot;character&quot;:10,&quot;text&quot;:&quot;children&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:110,&quot;character&quot;:19,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:113,&quot;character&quot;:15,&quot;text&quot;:&quot;child&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:114,&quot;character&quot;:12,&quot;text&quot;:&quot;found&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:114,&quot;character&quot;:29,&quot;text&quot;:&quot;child&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:115,&quot;character&quot;:10,&quot;text&quot;:&quot;found&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:115,&quot;character&quot;:24,&quot;text&quot;:&quot;found&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:113,&quot;character&quot;:24,&quot;text&quot;:&quot;childrenArray&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:122,&quot;character&quot;:18,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:123,&quot;character&quot;:8,&quot;text&quot;:&quot;rootId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:123,&quot;character&quot;:17,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:123,&quot;character&quot;:22,&quot;text&quot;:&quot;input&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:123,&quot;character&quot;:28,&quot;text&quot;:&quot;id&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:123,&quot;character&quot;:31,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:124,&quot;character&quot;:32,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:126,&quot;character&quot;:6,&quot;text&quot;:&quot;rootId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:128,&quot;character&quot;:6,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:128,&quot;character&quot;:11,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:128,&quot;character&quot;:18,&quot;text&quot;:&quot;folder&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:129,&quot;character&quot;:10,&quot;text&quot;:&quot;children&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:129,&quot;character&quot;:21,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:129,&quot;character&quot;:26,&quot;text&quot;:&quot;input&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:129,&quot;character&quot;:32,&quot;text&quot;:&quot;children&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:130,&quot;character&quot;:10,&quot;text&quot;:&quot;childrenArray&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:130,&quot;character&quot;:40,&quot;text&quot;:&quot;children&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:132,&quot;character&quot;:8,&quot;text&quot;:&quot;children&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:132,&quot;character&quot;:17,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:133,&quot;character&quot;:10,&quot;text&quot;:&quot;children&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:133,&quot;character&quot;:19,&quot;text&quot;:&quot;getState&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:136,&quot;character&quot;:15,&quot;text&quot;:&quot;child&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:137,&quot;character&quot;:30,&quot;text&quot;:&quot;child&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:136,&quot;character&quot;:24,&quot;text&quot;:&quot;childrenArray&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:144,&quot;character&quot;:23,&quot;text&quot;:&quot;selectedId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:144,&quot;character&quot;:35,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:144,&quot;character&quot;:45,&quot;text&quot;:&quot;selectedId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:144,&quot;character&quot;:62,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:145,&quot;character&quot;:21,&quot;text&quot;:&quot;selectedId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:148,&quot;character&quot;:25,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:153,&quot;character&quot;:18,&quot;text&quot;:&quot;node&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:156,&quot;character&quot;:26,&quot;text&quot;:&quot;node&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:156,&quot;character&quot;:32,&quot;text&quot;:&quot;node&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:163,&quot;character&quot;:26,&quot;text&quot;:&quot;node&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:163,&quot;character&quot;:36,&quot;text&quot;:&quot;node&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:164,&quot;character&quot;:23,&quot;text&quot;:&quot;node&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:164,&quot;character&quot;:28,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:164,&quot;character&quot;:35,&quot;text&quot;:&quot;node&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:164,&quot;character&quot;:40,&quot;text&quot;:&quot;$name&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:168,&quot;character&quot;:23,&quot;text&quot;:&quot;selectedId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:168,&quot;character&quot;:35,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:168,&quot;character&quot;:45,&quot;text&quot;:&quot;selectedId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:168,&quot;character&quot;:62,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:169,&quot;character&quot;:21,&quot;text&quot;:&quot;selectedId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:172,&quot;character&quot;:8,&quot;text&quot;:&quot;node&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:172,&quot;character&quot;:24,&quot;text&quot;:&quot;root&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:173,&quot;character&quot;:7,&quot;text&quot;:&quot;node&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:175,&quot;character&quot;:22,&quot;text&quot;:&quot;node&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:175,&quot;character&quot;:28,&quot;text&quot;:&quot;node&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:178,&quot;character&quot;:23,&quot;text&quot;:&quot;node&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:178,&quot;character&quot;:33,&quot;text&quot;:&quot;node&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:179,&quot;character&quot;:23,&quot;text&quot;:&quot;node&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:179,&quot;character&quot;:28,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:179,&quot;character&quot;:35,&quot;text&quot;:&quot;node&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:179,&quot;character&quot;:40,&quot;text&quot;:&quot;$name&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:180,&quot;character&quot;:15,&quot;text&quot;:&quot;node&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:180,&quot;character&quot;:20,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/TreeDemo.tsx&quot;,&quot;line&quot;:180,&quot;character&quot;:27,&quot;text&quot;:&quot;folder&quot;,&quot;kind&quot;:1}]</pre></div>
+    <p class="footer-text">TypeScript Coverage Report generated by <a href="https://github.com/plantain-00/type-coverage">type-coverage</a> and <a href="https://github.com/alexcanessa/typescript-coverage-report">typescript-coverage-report</a> at Sun, 18 Jan 2026 04:55:48 GMT</p>
+    </body>
+  </html>
+  

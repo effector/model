@@ -1,0 +1,153 @@
+
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <title>drinks.json</title>
+      <link href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css" type="text/css" rel="stylesheet">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/mode/javascript/javascript.min.js" type="text/javascript" charset="utf-8"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.css" type="text/css" rel="stylesheet">
+<script src="../../../../assets/source-file.js" type="text/javascript" charset="utf-8"></script>
+<link href="../../../../assets/source-file.css" type="text/css" rel="stylesheet">
+    </head>
+    <body>
+    <div style="margin-top:3em" class="ui container"><h1 class="ui header"><a href="../../../../index.html">TypeScript coverage report</a></h1><table style="margin-top:2em" class="ui celled table"><thead class=""><tr class=""><th class="">Filename</th><th class="">Percent</th><th class="">Threshold</th><th class="">Total</th><th class="">Covered</th><th class="">Uncovered</th></tr></thead><tbody class=""><tr class="positive"><td class="">src/data/kfc/drinks.json</td><td class="">100.00%</td><td class="">80%</td><td class="">0</td><td class="">0</td><td class="">0</td></tr></tbody></table><textarea id="editor" readonly="" style="margin-top:3em">[
+  {
+    &quot;type&quot;: &quot;drink&quot;,
+    &quot;name&quot;: &quot;Добрый Кола&quot;,
+    &quot;description&quot;: &quot;Классический вкус колы&quot;,
+    &quot;basePrice&quot;: 99,
+    &quot;nutritionalInfo&quot;: {
+      &quot;calories&quot;: 42,
+      &quot;weight&quot;: 500
+    },
+    &quot;sizes&quot;: [
+      {
+        &quot;id&quot;: &quot;0.5&quot;,
+        &quot;label&quot;: &quot;0.5 л&quot;,
+        &quot;price&quot;: 0
+      },
+      {
+        &quot;id&quot;: &quot;0.8&quot;,
+        &quot;label&quot;: &quot;0.8 л&quot;,
+        &quot;price&quot;: 50
+      }
+    ],
+    &quot;defaultSize&quot;: &quot;0.5&quot;,
+    &quot;composition&quot;: &quot;Вода очищенная, сахар, краситель сахарный колер IV, регулятор кислотности ортофосфорная кислота, кофеин, натуральные ароматизаторы.&quot;
+  },
+  {
+    &quot;type&quot;: &quot;drink&quot;,
+    &quot;name&quot;: &quot;Добрый Апельсин&quot;,
+    &quot;description&quot;: &quot;Газированный напиток со вкусом апельсина&quot;,
+    &quot;basePrice&quot;: 99,
+    &quot;nutritionalInfo&quot;: {
+      &quot;calories&quot;: 30,
+      &quot;weight&quot;: 500
+    },
+    &quot;sizes&quot;: [
+      {
+        &quot;id&quot;: &quot;0.5&quot;,
+        &quot;label&quot;: &quot;0.5 л&quot;,
+        &quot;price&quot;: 0
+      },
+      {
+        &quot;id&quot;: &quot;0.8&quot;,
+        &quot;label&quot;: &quot;0.8 л&quot;,
+        &quot;price&quot;: 50
+      }
+    ],
+    &quot;defaultSize&quot;: &quot;0.5&quot;,
+    &quot;composition&quot;: &quot;Вода очищенная, сахар, сок апельсиновый концентрированный, регулятор кислотности лимонная кислота, натуральные ароматизаторы, антиокислитель аскорбиновая кислота.&quot;
+  },
+  {
+    &quot;type&quot;: &quot;drink&quot;,
+    &quot;name&quot;: &quot;Липтон Зеленый Чай&quot;,
+    &quot;description&quot;: &quot;Холодный чай&quot;,
+    &quot;basePrice&quot;: 99,
+    &quot;nutritionalInfo&quot;: {
+      &quot;calories&quot;: 30,
+      &quot;weight&quot;: 500
+    },
+    &quot;sizes&quot;: [
+      {
+        &quot;id&quot;: &quot;0.5&quot;,
+        &quot;label&quot;: &quot;0.5 л&quot;,
+        &quot;price&quot;: 0
+      },
+      {
+        &quot;id&quot;: &quot;0.8&quot;,
+        &quot;label&quot;: &quot;0.8 л&quot;,
+        &quot;price&quot;: 50
+      }
+    ],
+    &quot;defaultSize&quot;: &quot;0.5&quot;,
+    &quot;composition&quot;: &quot;Вода, сахар, экстракт зеленого чая, регуляторы кислотности (лимонная кислота, цитрат натрия), антиокислитель аскорбиновая кислота, ароматизатор.&quot;
+  },
+  {
+    &quot;type&quot;: &quot;drink&quot;,
+    &quot;name&quot;: &quot;Вода негазированная&quot;,
+    &quot;description&quot;: &quot;Чистая питьевая вода&quot;,
+    &quot;basePrice&quot;: 69,
+    &quot;nutritionalInfo&quot;: {
+      &quot;calories&quot;: 0,
+      &quot;weight&quot;: 500
+    },
+    &quot;sizes&quot;: [
+      {
+        &quot;id&quot;: &quot;0.5&quot;,
+        &quot;label&quot;: &quot;0.5 л&quot;,
+        &quot;price&quot;: 0
+      }
+    ],
+    &quot;defaultSize&quot;: &quot;0.5&quot;,
+    &quot;composition&quot;: &quot;Вода питьевая очищенная негазированная.&quot;
+  },
+  {
+    &quot;type&quot;: &quot;drink&quot;,
+    &quot;name&quot;: &quot;Милкшейк Клубнично-Сливочный&quot;,
+    &quot;description&quot;: &quot;Густой молочный коктейль с натуральным клубничным пюре.&quot;,
+    &quot;basePrice&quot;: 129,
+    &quot;nutritionalInfo&quot;: {
+      &quot;calories&quot;: 350,
+      &quot;weight&quot;: 300
+    },
+    &quot;sizes&quot;: [
+      {
+        &quot;id&quot;: &quot;0.3&quot;,
+        &quot;label&quot;: &quot;0.3 л&quot;,
+        &quot;price&quot;: 0
+      },
+      {
+        &quot;id&quot;: &quot;0.5&quot;,
+        &quot;label&quot;: &quot;0.5 л&quot;,
+        &quot;price&quot;: 60
+      }
+    ],
+    &quot;defaultSize&quot;: &quot;0.3&quot;,
+    &quot;composition&quot;: &quot;Смесь молочная для мороженого (молоко нормализованное, сахар, сливки, сухое обезжиренное молоко), наполнитель клубничный.&quot;
+  },
+  {
+    &quot;type&quot;: &quot;drink&quot;,
+    &quot;name&quot;: &quot;Лимонад Маракуйя-Манго&quot;,
+    &quot;description&quot;: &quot;Освежающий тропический лимонад со льдом.&quot;,
+    &quot;basePrice&quot;: 119,
+    &quot;nutritionalInfo&quot;: {
+      &quot;calories&quot;: 180,
+      &quot;weight&quot;: 400
+    },
+    &quot;sizes&quot;: [
+      {
+        &quot;id&quot;: &quot;0.4&quot;,
+        &quot;label&quot;: &quot;0.4 л&quot;,
+        &quot;price&quot;: 0
+      }
+    ],
+    &quot;defaultSize&quot;: &quot;0.4&quot;,
+    &quot;composition&quot;: &quot;Вода газированная, сироп Маракуйя-Манго (сахар, вода, концентрированный сок маракуйи, пюре манго), лед пищевой.&quot;
+  }
+]</textarea><pre id="annotations" style="display:none">[]</pre></div>
+    <p class="footer-text">TypeScript Coverage Report generated by <a href="https://github.com/plantain-00/type-coverage">type-coverage</a> and <a href="https://github.com/alexcanessa/typescript-coverage-report">typescript-coverage-report</a> at Sun, 18 Jan 2026 05:15:02 GMT</p>
+    </body>
+  </html>
+  

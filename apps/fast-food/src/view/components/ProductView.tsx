@@ -1,12 +1,26 @@
 import { useUnit } from 'effector-react';
 import { useLens } from '../hooks';
+import { SizeOption, IngredientOption } from '../../types';
+import {
+  ProductInstance,
+  PizzaInstance,
+  DrinkInstance,
+  CoffeeInstance,
+  CocktailInstance,
+  BurgerInstance,
+  TwisterInstance,
+  BucketInstance,
+  SnackInstance,
+} from '../../models/cart';
+
+export type ProductViewMode = 'full' | 'selectors' | 'ingredients' | 'cart';
 
 const LiquidSelector = ({
   options,
   value,
   onChange,
 }: {
-  options: any[];
+  options: { id: string; label: string }[];
   value: string;
   onChange: (id: string) => void;
 }) => {
@@ -33,8 +47,8 @@ export const ProductView = ({
   item,
   mode = 'full',
 }: {
-  item: any;
-  mode?: 'full' | 'selectors' | 'ingredients' | 'cart';
+  item: ProductInstance;
+  mode?: ProductViewMode;
 }) => {
   return (
     <div className="space-y-8">
@@ -62,12 +76,15 @@ export const Match = ({
   cases,
   mode,
 }: {
-  model: any;
-  cases: Record<string, React.ComponentType<any>>;
-  mode: string;
+  model: ProductInstance;
+  cases: Record<
+    string,
+    React.ComponentType<{ item: ProductInstance; mode: ProductViewMode }>
+  >;
+  mode: ProductViewMode;
 }) => {
-  const variant = useLens(model.activeVariant, null) as any;
-  const Component = cases[variant];
+  const variant = useLens(model.activeVariant, null) as string | null;
+  const Component = variant ? cases[variant] : null;
 
   if (!Component) {
     return (
@@ -78,53 +95,77 @@ export const Match = ({
   }
 
   if (mode === 'cart') {
-    return <CartSummary item={model} variant={variant} />;
+    return <CartSummary item={model} variant={variant!} />;
   }
 
   return <Component item={model} mode={mode} />;
 };
 
-const CartSummary = ({ item, variant }: { item: any; variant: string }) => {
+const CartSummary = ({
+  item,
+  variant,
+}: {
+  item: ProductInstance;
+  variant: string;
+}) => {
   if (variant === 'pizza') {
-    const sizeId = useLens(item.facets.size.$size, '');
-    const doughId = useLens(item.facets.dough.$dough, '');
-    const rawSizes = useLens(item.facets.size.$options, []);
-    const rawDoughs = useLens(item.facets.dough.$options, []);
+    const pizza = item as PizzaInstance;
+    const sizeId = useLens(pizza.facets.size.$size, '');
+    const doughId = useLens(pizza.facets.dough.$dough, '');
+    const rawSizes = useLens<SizeOption[]>(pizza.facets.size.$options, []);
+    const rawDoughs = useLens<{ id: string; label: string }[]>(
+      pizza.facets.dough.$options,
+      [],
+    );
 
     const sizesList = Array.isArray(rawSizes)
       ? rawSizes
       : Object.values(rawSizes || {});
-    const sizeObj = (sizesList as any[]).find((s: any) => s.id === sizeId);
+    const sizeObj = (sizesList as { id: string; label: string }[]).find(
+      (s) => s.id === sizeId,
+    );
     const sizeLabel = sizeObj?.label || '';
 
     const doughsList = Array.isArray(rawDoughs)
       ? rawDoughs
       : Object.values(rawDoughs || {});
-    const doughObj = (doughsList as any[]).find((d: any) => d.id === doughId);
+    const doughObj = (doughsList as { id: string; label: string }[]).find(
+      (d) => d.id === doughId,
+    );
     const doughLabel = doughObj?.label || '';
 
     const selectedExtras = useLens(
-      item.facets.ingredients.$selectedExtras,
-      {},
-    ) as Record<string, boolean>;
+      pizza.facets.ingredients.$selectedExtras,
+      {} as Record<string, boolean>,
+    );
     const removedDefaults = useLens(
-      item.facets.ingredients.$removedDefaults,
-      {},
-    ) as Record<string, boolean>;
-    const rawExtra = useLens(item.input.extraIngredients, []);
-    const rawDefault = useLens(item.input.defaultIngredients, []);
+      pizza.facets.ingredients.$removedDefaults,
+      {} as Record<string, boolean>,
+    );
+    const rawExtra = useLens<IngredientOption[]>(
+      pizza.input.extraIngredients,
+      [],
+    );
+    const rawDefault = useLens<{ id: string; name: string }[]>(
+      pizza.input.defaultIngredients,
+      [],
+    );
 
     const extras = (
-      Array.isArray(rawExtra) ? rawExtra : Object.values(rawExtra || {})
+      (Array.isArray(rawExtra)
+        ? rawExtra
+        : Object.values(rawExtra || {})) as IngredientOption[]
     )
-      .filter((ing: any) => selectedExtras[ing.id])
-      .map((ing: any) => `+ ${ing.name}`);
+      .filter((ing: IngredientOption) => selectedExtras[ing.id])
+      .map((ing: IngredientOption) => `+ ${ing.name}`);
 
     const removed = (
-      Array.isArray(rawDefault) ? rawDefault : Object.values(rawDefault || {})
+      (Array.isArray(rawDefault)
+        ? rawDefault
+        : Object.values(rawDefault || {})) as { id: string; name: string }[]
     )
-      .filter((ing: any) => removedDefaults[ing.id])
-      .map((ing: any) => `- ${ing.name}`);
+      .filter((ing: { id: string; name: string }) => removedDefaults[ing.id])
+      .map((ing: { id: string; name: string }) => `- ${ing.name}`);
 
     const config = [sizeLabel, doughLabel].filter(Boolean).join(', ');
     const mods = [...extras, ...removed].join(', ');
@@ -143,28 +184,39 @@ const CartSummary = ({ item, variant }: { item: any; variant: string }) => {
     variant === 'bucket' ||
     variant === 'snack'
   ) {
-    const sizeId = useLens(item.facets.size.$size, '');
-    const rawSizes = useLens(item.facets.size.$options, []);
+    const sized = item as
+      | CoffeeInstance
+      | DrinkInstance
+      | BucketInstance
+      | SnackInstance;
+    const sizeId = useLens(sized.facets.size.$size, '');
+    const rawSizes = useLens<SizeOption[]>(sized.facets.size.$options, []);
     const sizesList = Array.isArray(rawSizes)
       ? rawSizes
       : Object.values(rawSizes || {});
-    const sizeObj = (sizesList as any[]).find((s: any) => s.id === sizeId);
+    const sizeObj = (sizesList as { id: string; label: string }[]).find(
+      (s) => s.id === sizeId,
+    );
     const sizeLabel = sizeObj?.label || '';
 
     let mods = '';
     if (variant === 'coffee') {
+      const coffee = item as CoffeeInstance;
       const selectedExtras = useLens(
-        item.facets.ingredients.$selectedExtras,
-        {},
-      ) as Record<string, boolean>;
-      const rawAdditions = useLens(item.input.additions, []);
+        coffee.facets.ingredients.$selectedExtras,
+        {} as Record<string, boolean>,
+      );
+      const rawAdditions = useLens<IngredientOption[]>(
+        coffee.input.additions,
+        [],
+      );
       mods = (
-        Array.isArray(rawAdditions)
+        (Array.isArray(rawAdditions)
           ? rawAdditions
-          : Object.values(rawAdditions || {})
+          : Object.values(rawAdditions || {})) as IngredientOption[]
       )
-        .filter((ing: any) => selectedExtras[ing.id])
-        .map((ing: any) => `+ ${ing.name}`)
+        .filter((ing: IngredientOption) => selectedExtras[ing.id])
+        .map((ing: IngredientOption) => `+ ${ing.name}`)
         .join(', ');
     }
 
@@ -181,28 +233,39 @@ const CartSummary = ({ item, variant }: { item: any; variant: string }) => {
   }
 
   if (variant === 'burger' || variant === 'twister') {
+    const burger = item as BurgerInstance | TwisterInstance;
     const selectedExtras = useLens(
-      item.facets.ingredients.$selectedExtras,
-      {},
-    ) as Record<string, boolean>;
+      burger.facets.ingredients.$selectedExtras,
+      {} as Record<string, boolean>,
+    );
     const removedDefaults = useLens(
-      item.facets.ingredients.$removedDefaults,
-      {},
-    ) as Record<string, boolean>;
-    const rawExtra = useLens(item.input.extraIngredients, []);
-    const rawDefault = useLens(item.input.defaultIngredients, []);
+      burger.facets.ingredients.$removedDefaults,
+      {} as Record<string, boolean>,
+    );
+    const rawExtra = useLens<IngredientOption[]>(
+      burger.input.extraIngredients,
+      [],
+    );
+    const rawDefault = useLens<{ id: string; name: string }[]>(
+      burger.input.defaultIngredients,
+      [],
+    );
 
     const extras = (
-      Array.isArray(rawExtra) ? rawExtra : Object.values(rawExtra || {})
+      (Array.isArray(rawExtra)
+        ? rawExtra
+        : Object.values(rawExtra || {})) as IngredientOption[]
     )
-      .filter((ing: any) => selectedExtras[ing.id])
-      .map((ing: any) => `+ ${ing.name}`);
+      .filter((ing: IngredientOption) => selectedExtras[ing.id])
+      .map((ing: IngredientOption) => `+ ${ing.name}`);
 
     const removed = (
-      Array.isArray(rawDefault) ? rawDefault : Object.values(rawDefault || {})
+      (Array.isArray(rawDefault)
+        ? rawDefault
+        : Object.values(rawDefault || {})) as { id: string; name: string }[]
     )
-      .filter((ing: any) => removedDefaults[ing.id])
-      .map((ing: any) => `- ${ing.name}`);
+      .filter((ing: { id: string; name: string }) => removedDefaults[ing.id])
+      .map((ing: { id: string; name: string }) => `- ${ing.name}`);
 
     const mods = [...extras, ...removed].join(', ');
 
@@ -214,18 +277,22 @@ const CartSummary = ({ item, variant }: { item: any; variant: string }) => {
   }
 
   if (variant === 'cocktail') {
+    const cocktail = item as CocktailInstance;
     const selectedExtras = useLens(
-      item.facets.ingredients.$selectedExtras,
-      {},
-    ) as Record<string, boolean>;
-    const rawDecorations = useLens(item.input.decorations, []);
+      cocktail.facets.ingredients.$selectedExtras,
+      {} as Record<string, boolean>,
+    );
+    const rawDecorations = useLens<IngredientOption[]>(
+      cocktail.input.decorations,
+      [],
+    );
     const mods = (
-      Array.isArray(rawDecorations)
+      (Array.isArray(rawDecorations)
         ? rawDecorations
-        : Object.values(rawDecorations || {})
+        : Object.values(rawDecorations || {})) as IngredientOption[]
     )
-      .filter((ing: any) => selectedExtras[ing.id])
-      .map((ing: any) => `+ ${ing.name}`)
+      .filter((ing: IngredientOption) => selectedExtras[ing.id])
+      .map((ing: IngredientOption) => `+ ${ing.name}`)
       .join(', ');
 
     return (
@@ -240,43 +307,50 @@ const CartSummary = ({ item, variant }: { item: any; variant: string }) => {
   return null;
 };
 
-export const PizzaDetails = ({ item, mode }: { item: any; mode: string }) => {
-  const size = useLens(item.facets.size.$size, '');
-  const dough = useLens(item.facets.dough.$dough, '');
-  const rawSizes = useLens(item.facets.size.$options, []);
+export const PizzaDetails = ({
+  item,
+  mode,
+}: {
+  item: ProductInstance;
+  mode: ProductViewMode;
+}) => {
+  const pizza = item as PizzaInstance;
+  const size = useLens(pizza.facets.size.$size, '');
+  const dough = useLens(pizza.facets.dough.$dough, '');
+  const rawSizes = useLens(pizza.facets.size.$options, []);
   const sizes = (
     Array.isArray(rawSizes) ? rawSizes : Object.values(rawSizes || {})
-  ) as any[];
+  ) as { id: string; label: string }[];
 
-  const rawDoughs = useLens(item.facets.dough.$options, []);
+  const rawDoughs = useLens(pizza.facets.dough.$options, []);
   const doughs = (
     Array.isArray(rawDoughs) ? rawDoughs : Object.values(rawDoughs || {})
-  ) as any[];
+  ) as { id: string; label: string }[];
 
   const selectedExtras = useLens(
-    item.facets.ingredients.$selectedExtras,
+    pizza.facets.ingredients.$selectedExtras,
     {} as Record<string, boolean>,
   );
   const removedDefaults = useLens(
-    item.facets.ingredients.$removedDefaults,
+    pizza.facets.ingredients.$removedDefaults,
     {} as Record<string, boolean>,
   );
 
-  const rawExtra = useLens(item.input.extraIngredients, []);
+  const rawExtra = useLens(pizza.input.extraIngredients, []);
   const extraIngredients = (
     Array.isArray(rawExtra) ? rawExtra : Object.values(rawExtra || {})
-  ) as any[];
+  ) as { id: string; name: string; price: number }[];
 
-  const rawDefault = useLens(item.input.defaultIngredients, []);
+  const rawDefault = useLens(pizza.input.defaultIngredients, []);
   const defaultIngredients = (
     Array.isArray(rawDefault) ? rawDefault : Object.values(rawDefault || {})
-  ) as any[];
+  ) as { id: string; name: string }[];
 
   const units = useUnit({
-    toggleExtra: item.facets.ingredients.toggleExtra as any,
-    toggleDefault: item.facets.ingredients.toggleDefault as any,
-    setSize: item.facets.size.setSize as any,
-    setDough: item.facets.dough.setDough as any,
+    toggleExtra: pizza.facets.ingredients.toggleExtra,
+    toggleDefault: pizza.facets.ingredients.toggleDefault,
+    setSize: pizza.facets.size.setSize,
+    setDough: pizza.facets.dough.setDough,
   });
 
   const toggleExtra = units.toggleExtra as (id: string) => void;
@@ -318,7 +392,7 @@ export const PizzaDetails = ({ item, mode }: { item: any; mode: string }) => {
         <div className="space-y-4">
           <h3 className="font-bold text-lg text-gray-800">Добавить по вкусу</h3>
           <div className="grid grid-cols-3 gap-3">
-            {extraIngredients.map((ing: any) => (
+            {extraIngredients.map((ing: IngredientOption) => (
               <button
                 key={ing.id}
                 className={`flex flex-col items-center p-2 rounded-3xl transition-all duration-200 text-center h-full relative group overflow-hidden border-2 ${
@@ -374,7 +448,7 @@ export const PizzaDetails = ({ item, mode }: { item: any; mode: string }) => {
             Убрать ингредиенты
           </h3>
           <div className="flex flex-wrap gap-2">
-            {defaultIngredients.map((ing: any) => (
+            {defaultIngredients.map((ing: { id: string; name: string }) => (
               <button
                 key={ing.id}
                 className={`px-4 py-2 rounded-full border text-sm font-medium transition-all flex items-center gap-2 ${
@@ -409,14 +483,21 @@ export const PizzaDetails = ({ item, mode }: { item: any; mode: string }) => {
   );
 };
 
-export const DrinkDetails = ({ item, mode }: { item: any; mode: string }) => {
-  const size = useLens(item.facets.size.$size, '');
-  const rawSizes = useLens(item.facets.size.$options, []);
+export const DrinkDetails = ({
+  item,
+  mode,
+}: {
+  item: ProductInstance;
+  mode: ProductViewMode;
+}) => {
+  const drink = item as DrinkInstance | BucketInstance | SnackInstance;
+  const size = useLens(drink.facets.size.$size, '');
+  const rawSizes = useLens(drink.facets.size.$options, []);
   const sizes = (
     Array.isArray(rawSizes) ? rawSizes : Object.values(rawSizes || {})
-  ) as any[];
+  ) as { id: string; label: string }[];
   const units = useUnit({
-    setSize: item.facets.size.setSize as any,
+    setSize: drink.facets.size.setSize,
   });
   const setSize = units.setSize as (id: string) => void;
 
@@ -431,25 +512,32 @@ export const DrinkDetails = ({ item, mode }: { item: any; mode: string }) => {
   );
 };
 
-export const CoffeeDetails = ({ item, mode }: { item: any; mode: string }) => {
-  const size = useLens(item.facets.size.$size, '');
-  const rawSizes = useLens(item.facets.size.$options, []);
+export const CoffeeDetails = ({
+  item,
+  mode,
+}: {
+  item: ProductInstance;
+  mode: ProductViewMode;
+}) => {
+  const coffee = item as CoffeeInstance;
+  const size = useLens(coffee.facets.size.$size, '');
+  const rawSizes = useLens(coffee.facets.size.$options, []);
   const sizes = (
     Array.isArray(rawSizes) ? rawSizes : Object.values(rawSizes || {})
-  ) as any[];
-  const rawAdditions = useLens(item.input.additions, []);
+  ) as { id: string; label: string }[];
+  const rawAdditions = useLens(coffee.input.additions, []);
   const additions = (
     Array.isArray(rawAdditions)
       ? rawAdditions
       : Object.values(rawAdditions || {})
-  ) as any[];
+  ) as { id: string; name: string; price: number }[];
   const selectedExtras = useLens(
-    item.facets.ingredients.$selectedExtras,
+    coffee.facets.ingredients.$selectedExtras,
     {} as Record<string, boolean>,
   );
   const units = useUnit({
-    setSize: item.facets.size.setSize as any,
-    toggleExtra: item.facets.ingredients.toggleExtra as any,
+    setSize: coffee.facets.size.setSize,
+    toggleExtra: coffee.facets.ingredients.toggleExtra,
   });
   const setSize = units.setSize as (id: string) => void;
   const toggleExtra = units.toggleExtra as (id: string) => void;
@@ -468,7 +556,7 @@ export const CoffeeDetails = ({ item, mode }: { item: any; mode: string }) => {
         <div className="space-y-4">
           <h3 className="font-bold text-lg text-gray-800">Добавить по вкусу</h3>
           <div className="grid grid-cols-3 gap-3">
-            {additions.map((ing: any) => (
+            {additions.map((ing: IngredientOption) => (
               <button
                 key={ing.id}
                 className={`flex flex-col items-center p-2 rounded-3xl transition-all duration-200 text-center h-full relative group overflow-hidden border-2 ${
@@ -524,21 +612,22 @@ export const CocktailDetails = ({
   item,
   mode,
 }: {
-  item: any;
-  mode: string;
+  item: ProductInstance;
+  mode: ProductViewMode;
 }) => {
+  const cocktail = item as CocktailInstance;
   const selectedExtras = useLens(
-    item.facets.ingredients.$selectedExtras,
+    cocktail.facets.ingredients.$selectedExtras,
     {} as Record<string, boolean>,
   );
-  const rawDecorations = useLens(item.input.decorations, []);
+  const rawDecorations = useLens(cocktail.input.decorations, []);
   const decorations = (
     Array.isArray(rawDecorations)
       ? rawDecorations
       : Object.values(rawDecorations || {})
-  ) as any[];
+  ) as { id: string; name: string; price: number }[];
   const units = useUnit({
-    toggleExtra: item.facets.ingredients.toggleExtra as any,
+    toggleExtra: cocktail.facets.ingredients.toggleExtra,
   });
   const toggleExtra = units.toggleExtra as (id: string) => void;
 
@@ -551,7 +640,7 @@ export const CocktailDetails = ({
         <div className="space-y-4">
           <h3 className="font-bold text-lg text-gray-800">Добавить по вкусу</h3>
           <div className="grid grid-cols-3 gap-3">
-            {decorations.map((ing: any) => (
+            {decorations.map((ing: IngredientOption) => (
               <button
                 key={ing.id}
                 className={`flex flex-col items-center p-2 rounded-3xl transition-all duration-200 text-center h-full relative group overflow-hidden border-2 ${
@@ -603,7 +692,7 @@ export const CocktailDetails = ({
   );
 };
 
-export const SauceDetails = ({ item }: { item: any }) => {
+export const SauceDetails = ({ item }: { item: ProductInstance }) => {
   return (
     <div className="text-gray-400 py-10 text-center italic text-sm">
       Для этого товара нет настроек
@@ -611,29 +700,36 @@ export const SauceDetails = ({ item }: { item: any }) => {
   );
 };
 
-export const BurgerDetails = ({ item, mode }: { item: any; mode: string }) => {
+export const BurgerDetails = ({
+  item,
+  mode,
+}: {
+  item: ProductInstance;
+  mode: ProductViewMode;
+}) => {
+  const burger = item as BurgerInstance | TwisterInstance;
   const selectedExtras = useLens(
-    item.facets.ingredients.$selectedExtras,
+    burger.facets.ingredients.$selectedExtras,
     {} as Record<string, boolean>,
   );
   const removedDefaults = useLens(
-    item.facets.ingredients.$removedDefaults,
+    burger.facets.ingredients.$removedDefaults,
     {} as Record<string, boolean>,
   );
 
-  const rawExtra = useLens(item.input.extraIngredients, []);
+  const rawExtra = useLens(burger.input.extraIngredients, []);
   const extraIngredients = (
     Array.isArray(rawExtra) ? rawExtra : Object.values(rawExtra || {})
-  ) as any[];
+  ) as { id: string; name: string; price: number }[];
 
-  const rawDefault = useLens(item.input.defaultIngredients, []);
+  const rawDefault = useLens(burger.input.defaultIngredients, []);
   const defaultIngredients = (
     Array.isArray(rawDefault) ? rawDefault : Object.values(rawDefault || {})
-  ) as any[];
+  ) as { id: string; name: string }[];
 
   const units = useUnit({
-    toggleExtra: item.facets.ingredients.toggleExtra as any,
-    toggleDefault: item.facets.ingredients.toggleDefault as any,
+    toggleExtra: burger.facets.ingredients.toggleExtra,
+    toggleDefault: burger.facets.ingredients.toggleDefault,
   });
 
   const toggleExtra = units.toggleExtra as (id: string) => void;
@@ -650,7 +746,7 @@ export const BurgerDetails = ({ item, mode }: { item: any; mode: string }) => {
         <div className="space-y-4">
           <h3 className="font-bold text-lg text-gray-800">Добавить по вкусу</h3>
           <div className="grid grid-cols-3 gap-3">
-            {extraIngredients.map((ing: any) => (
+            {extraIngredients.map((ing: IngredientOption) => (
               <button
                 key={ing.id}
                 className={`flex flex-col items-center p-2 rounded-3xl transition-all duration-200 text-center h-full relative group overflow-hidden border-2 ${
@@ -706,7 +802,7 @@ export const BurgerDetails = ({ item, mode }: { item: any; mode: string }) => {
             Убрать ингредиенты
           </h3>
           <div className="flex flex-wrap gap-2">
-            {defaultIngredients.map((ing: any) => (
+            {defaultIngredients.map((ing: { id: string; name: string }) => (
               <button
                 key={ing.id}
                 className={`px-4 py-2 rounded-full border text-sm font-medium transition-all flex items-center gap-2 ${

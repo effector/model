@@ -58,12 +58,14 @@ describe('match', () => {
     match({
       source: item.activeVariant,
       cases: {
+        // type-coverage:ignore-next-line
         A: (scope: any, trg: Event<string>) => {
           sample({
             clock: trg,
             target: watcherA,
           });
         },
+        // type-coverage:ignore-next-line
         B: (scope: any, trg: Event<string>) => {
           sample({
             clock: trg,
@@ -101,6 +103,7 @@ describe('match', () => {
     const mSwitch = model({
       input: { $tag: define.store('A') },
       variant: {
+        // type-coverage:ignore-next-line
         source: (i: any) => i.$tag,
         cases: { A: (t: string) => t === 'A', B: (t: string) => t === 'B' },
       },

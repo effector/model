@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { Store } from 'effector';
 import { usersList } from '../user/index';
 import {
   addGuest,
@@ -29,13 +30,15 @@ function UserItem({
   const { $name, $role, $variant } = useMemo(() => {
     const item = usersList.getItem(id);
     return {
-      $name: selectLens(item.facets.user.$nickname).fallback(''),
+      $name: selectLens(item.facets.user.$nickname).fallback(
+        '',
+      ) as Store<string>,
       $variant: usersList.$activeVariants.map((v) => v[id]),
       $role: selectLens(item)
         .variant('member')
         .facet('membership')
         .path((facet: any) => facet.$role)
-        .fallback('guest'),
+        .fallback('guest') as Store<string>,
     };
   }, [id]);
 
