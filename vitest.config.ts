@@ -29,6 +29,7 @@ export default defineConfig({
       headless: true,
     },
     globals: true,
+    setupFiles: ['./tools/vitest/setup-console.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

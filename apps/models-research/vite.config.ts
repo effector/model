@@ -5,9 +5,6 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 // import { viteSingleFile } from 'vite-plugin-singlefile';
 
 export default defineConfig({
-  esbuild: {
-    loader: 'tsx',
-  },
   cacheDir: '../../../node_modules/.vite/models-research',
   plugins: [tsconfigPaths(), react()],
   build: {

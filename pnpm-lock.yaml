@@ -277,6 +277,9 @@ importers:
       vite:
         specifier: ^4.2.1
         version: 4.5.10(@types/node@20.14.15)(lightningcss@1.30.2)(sugarss@2.0.0)
+      vite-plugin-singlefile:
+        specifier: ^0.13.5
+        version: 0.13.5(rollup@4.55.1)(vite@4.5.10(@types/node@20.14.15)(lightningcss@1.30.2)(sugarss@2.0.0))
 
   apps/food-order:
     dependencies:
@@ -7514,6 +7517,13 @@ packages:
   vfile@3.0.1:
     resolution: {integrity: sha512-y7Y3gH9BsUSdD4KzHsuMaCzRjglXN0W2EcMf0gpvu6+SbsGhMje7xDc8AEoeXy6mIwCKMI6BkjMsRjzQbhMEjQ==}
 
+  vite-plugin-singlefile@0.13.5:
+    resolution: {integrity: sha512-y/aRGh8qHmw2f1IhaI/C6PJAaov47ESYDvUv1am1YHMhpY+19B5k5Odp8P+tgs+zhfvak6QB1ykrALQErEAo7g==}
+    engines: {node: ^14.18.0 || >=16.0.0}
+    peerDependencies:
+      rollup: '>=2.79.0'
+      vite: '>=3.2.0'
+
   vite-plugin-singlefile@2.3.0:
     resolution: {integrity: sha512-DAcHzYypM0CasNLSz/WG0VdKOCxGHErfrjOoyIPiNxTPTGmO6rRD/te93n1YL/s+miXq66ipF1brMBikf99c6A==}
     engines: {node: '>18.0.0'}
@@ -8928,7 +8938,7 @@ snapshots:
       '@changesets/types': 6.0.0
       '@manypkg/get-packages': 1.1.3
       fs-extra: 7.0.1
-      micromatch: 4.0.7
+      micromatch: 4.0.8
 
   '@changesets/errors@0.2.0':
     dependencies:
@@ -8961,7 +8971,7 @@ snapshots:
       '@changesets/types': 6.0.0
       '@manypkg/get-packages': 1.1.3
       is-subdir: 1.2.0
-      micromatch: 4.0.7
+      micromatch: 4.0.8
       spawndamnit: 2.0.0
 
   '@changesets/logger@0.1.0':
@@ -12501,7 +12511,7 @@ snapshots:
       '@nodelib/fs.walk': 1.2.8
       glob-parent: 5.1.2
       merge2: 1.4.1
-      micromatch: 4.0.7
+      micromatch: 4.0.8
 
   fast-glob@3.2.7:
     dependencies:
@@ -12509,7 +12519,7 @@ snapshots:
       '@nodelib/fs.walk': 1.2.8
       glob-parent: 5.1.2
       merge2: 1.4.1
-      micromatch: 4.0.7
+      micromatch: 4.0.8
 
   fast-glob@3.3.2:
     dependencies:
@@ -12517,7 +12527,7 @@ snapshots:
       '@nodelib/fs.walk': 1.2.8
       glob-parent: 5.1.2
       merge2: 1.4.1
-      micromatch: 4.0.7
+      micromatch: 4.0.8
 
   fast-json-stable-stringify@2.1.0: {}
 
@@ -12592,7 +12602,7 @@ snapshots:
 
   find-yarn-workspace-root2@1.2.16:
     dependencies:
-      micromatch: 4.0.7
+      micromatch: 4.0.8
       pkg-dir: 4.2.0
 
   flat-cache@2.0.1:
@@ -13366,7 +13376,7 @@ snapshots:
       '@types/stack-utils': 2.0.1
       chalk: 4.1.2
       graceful-fs: 4.2.11
-      micromatch: 4.0.7
+      micromatch: 4.0.8
       pretty-format: 29.7.0
       slash: 3.0.0
       stack-utils: 2.0.6
@@ -16024,6 +16034,12 @@ snapshots:
       replace-ext: 1.0.0
       unist-util-stringify-position: 1.1.2
       vfile-message: 1.1.1
+
+  vite-plugin-singlefile@0.13.5(rollup@4.55.1)(vite@4.5.10(@types/node@20.14.15)(lightningcss@1.30.2)(sugarss@2.0.0)):
+    dependencies:
+      micromatch: 4.0.8
+      rollup: 4.55.1
+      vite: 4.5.10(@types/node@20.14.15)(lightningcss@1.30.2)(sugarss@2.0.0)
 
   vite-plugin-singlefile@2.3.0(rollup@4.20.0)(vite@5.4.0(@types/node@20.14.15)(lightningcss@1.30.2)):
     dependencies:

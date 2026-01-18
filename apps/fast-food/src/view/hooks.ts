@@ -12,7 +12,19 @@ export function useLens<T>(lens: Lens | Store<T> | T, fallback: T): T {
     if (is.store(lens)) return lens as Store<T>;
 
     // 2. If it's not a lens, wrap fallback in a store
-    if (!isLens(lens)) return createStore(fallback);
+    if (!isLens(lens)) {
+      if (
+        process.env.NODE_ENV !== 'production' &&
+        lens !== null &&
+        typeof lens === 'object'
+      ) {
+        console.error(
+          '[useLens] Received an object that is neither a Lens nor a Store. Did you mean to use useLens(item.facets.something)? Received:',
+          lens,
+        );
+      }
+      return createStore(fallback);
+    }
 
     const l = lens as Lens;
 

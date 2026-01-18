@@ -1,12 +1,4 @@
-import {
-  Store,
-  createStore,
-  combine,
-  is,
-  createEvent,
-  sample,
-  createEffect,
-} from 'effector';
+import { Store, createStore, combine, is } from 'effector';
 
 export type Lens = {
   __type: 'lens';
@@ -44,7 +36,13 @@ export function select(source: Lens | Store<unknown>) {
       facetName: source.facetName,
     };
   } else {
-    throw new Error('select() source must be a Lens (from getItem)');
+    const type = typeof source;
+    const isNull = source === null;
+    throw new Error(
+      `select() source must be a Lens (from getItem). Received: ${
+        isNull ? 'null' : type
+      }`,
+    );
   }
 
   const builder = {
