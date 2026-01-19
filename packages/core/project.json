@@ -49,10 +49,10 @@
       }
     },
     "test": {
-      "executor": "@nrwl/vite:test",
+      "executor": "nx:run-commands",
       "options": {
-        "config": "packages/core/vite.config.mts",
-        "passWithNoTests": true
+        "command": "vitest run --passWithNoTests",
+        "cwd": "packages/core"
       }
     },
     "test_watch": {
@@ -64,9 +64,9 @@
       }
     },
     "typetest": {
-      "executor": "@nrwl/vite:test",
+      "executor": "nx:run-commands",
       "options": {
-        "mode": "typecheck"
+        "command": "tsc --noEmit -p packages/core/tsconfig.json"
       }
     },
     "size": {

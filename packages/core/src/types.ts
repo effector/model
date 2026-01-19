@@ -20,6 +20,7 @@ export type Model<Props, Output, Api, Shape> = {
   // private
   readonly factoryStatePaths: FactoryPathMap;
   // private
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   create: () => any;
   // private
   readonly __lens: Shape;
@@ -42,7 +43,8 @@ export type Model<Props, Output, Api, Shape> = {
                 : Props[K] extends EffectDef<unknown, unknown, unknown>
                   ? Props[K]
                   : Props[K] extends (params: infer V) => infer D
-                    ? EffectDef<V, Awaited<D>, any>
+                    ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      EffectDef<V, Awaited<D>, any>
                     : StoreDef<Props[K]>;
     } & {
       [K in keyof Output]: Output[K] extends Store<infer V>
@@ -66,6 +68,7 @@ export type Instance<Output, Api> = {
   // private
   readonly output: Store<Output>;
   // private
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly keyvalShape: Record<keyof Output, Keyval<any, any, any, any>>;
   readonly props: Output;
   onMount: UnitTargetable<void> | void;
@@ -107,11 +110,15 @@ export type EntityItemDef<T> = {
 };
 
 export type OneOfShapeDef =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | StoreDef<any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | EntityShapeDef<any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | EntityItemDef<any>;
 
 export type InstanceOf<T extends Model<unknown, unknown, unknown, unknown>> =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   T extends Model<any, infer Output, infer Api, any>
     ? Instance<Output, Api>
     : never;
@@ -159,8 +166,10 @@ export type StructShape = {
 /** internal representation of model structure, keyval shape */
 export type StructKeyval = {
   type: 'structKeyval';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getKey: (input: any) => string | number;
   shape: Record<string, StructUnit | StructKeyval>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   defaultItem(): any;
 };
 
@@ -179,7 +188,8 @@ export type ConvertToLensShape<Shape> = {
             ? LensStore<V>
             : Shape[K] extends Event<infer V>
               ? LensEvent<V>
-              : Shape[K] extends Keyval<any, infer V, any, infer ChildShape>
+              : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                Shape[K] extends Keyval<any, infer V, any, infer ChildShape>
                 ? {
                     (key: KeyStore): LensShape<ChildShape>;
                     itemStore(key: KeyStore): Store<V>;
@@ -209,7 +219,8 @@ export type Keyval<Input, Enriched, Api, Shape> = {
   api: {
     [K in keyof Api]: Api[K] extends EventCallable<infer V>
       ? EventCallable<ApiEvent<V>>
-      : Api[K] extends Effect<infer V, any, any>
+      : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        Api[K] extends Effect<infer V, any, any>
         ? EventCallable<ApiEvent<V>>
         : never;
   };
@@ -260,11 +271,13 @@ export type Keyval<Input, Enriched, Api, Shape> = {
       {
         [K in keyof Enriched]:
           | Store<Enriched[K]>
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           | Keyval<any, Enriched[K], any, any>;
       },
       Api
     >
   >;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   cloneOf: Keyval<any, any, any, any> | null;
   getCloneData(): {
     defaultState(): Enriched;
@@ -298,6 +311,7 @@ type BuiltInObject =
   | WeakSet<object>
   | ArrayBuffer
   | DataView
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   | Function
   | Promise<unknown>
   | Generator;
@@ -308,13 +322,15 @@ type BuiltInObject =
  * It's better to see {a: string; b: number}
  * instead of GetCombinedValue<{a: Store<string>; b: Store<number>}>
  * */
-export type Show<A extends any> = A extends BuiltInObject
+export type Show<A> = A extends BuiltInObject
   ? A
   : {
       [K in keyof A]: A[K];
     }; // & {}
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type InputType<T extends Keyval<any, any, any, any>> =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   T extends Keyval<infer Input, any, any, any> ? Input : never;
 
 /** Internal state of keyval */
@@ -322,52 +338,6 @@ export type ListState<Enriched, Output, Api> = {
   items: Enriched[];
   instances: Array<Instance<Output, Api>>;
   keys: Array<string | number>;
-};
-
-type ToPlainShape<Shape> = {
-  [K in {
-    [P in keyof Shape]: Shape[P] extends Store<unknown>
-      ? P
-      : Shape[P] extends StoreDef<unknown>
-        ? P
-        : never;
-  }[keyof Shape]]: Shape[K] extends Store<infer V>
-    ? V
-    : Shape[K] extends StoreDef<infer V>
-      ? V
-      : never;
-};
-
-type ParamsNormalize<
-  T extends {
-    [key: string]:
-      | Store<unknown>
-      | Event<unknown>
-      | Effect<unknown, unknown, unknown>
-      | StoreDef<unknown>
-      | EventDef<unknown>
-      | EffectDef<unknown, unknown, unknown>
-      | unknown;
-  },
-> = {
-  [K in keyof T]: T[K] extends Store<infer V>
-    ? T[K] | V
-    : T[K] extends Event<unknown>
-      ? T[K]
-      : T[K] extends Effect<infer V, infer Res, unknown>
-        ? T[K] | ((params: V) => Res | Promise<Res>)
-        : T[K] extends StoreDef<infer V>
-          ? Store<V> | V
-          : T[K] extends EventDef<infer V>
-            ? Event<V>
-            : T[K] extends EffectDef<infer V, infer Res, infer Err>
-              ? Effect<V, Res, Err> | ((params: V) => Res | Promise<Res>)
-              : T[K] extends (params: infer V) => infer Res
-                ?
-                    | Effect<V, Awaited<Res>, unknown>
-                    | T[K]
-                    | ((params: V) => Awaited<Res> | Promise<Awaited<Res>>)
-                : Store<T[K]> | T[K];
 };
 
 export type KeyvalWithState<Input, Output> = Keyval<

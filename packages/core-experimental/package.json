@@ -1,0 +1,17 @@
+{
+  "name": "@effector-model/core-experimental",
+  "version": "0.0.8",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "peerDependencies": {
+    "effector": "^23.3.0"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "latest",
+    "vitest": "latest"
+  }
+}

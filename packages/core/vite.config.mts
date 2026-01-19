@@ -8,8 +8,9 @@ export default defineConfig({
     reporters: 'default',
     typecheck: { ignoreSourceErrors: true },
     include: [relativePath('./src/__tests__/**/*.test.ts')],
+    pool: 'forks',
   },
-  plugins: [tsconfigPaths()],
+  plugins: [tsconfigPaths() as any],
 });
 
 function relativePath(path: string) {

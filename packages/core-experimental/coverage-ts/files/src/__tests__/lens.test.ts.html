@@ -1,0 +1,225 @@
+<!doctype html>
+<html>
+  <head>
+    <title>lens.test.ts</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.js"
+      type="text/javascript"
+      charset="utf-8"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/mode/javascript/javascript.min.js"
+      type="text/javascript"
+      charset="utf-8"
+    ></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+    <script
+      src="../../../assets/source-file.js"
+      type="text/javascript"
+      charset="utf-8"
+    ></script>
+    <link
+      href="../../../assets/source-file.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div style="margin-top: 3em" class="ui container">
+      <h1 class="ui header">
+        <a href="../../../index.html">TypeScript coverage report</a>
+      </h1>
+      <table style="margin-top: 2em" class="ui celled table">
+        <thead class="">
+          <tr class="">
+            <th class="">Filename</th>
+            <th class="">Percent</th>
+            <th class="">Threshold</th>
+            <th class="">Total</th>
+            <th class="">Covered</th>
+            <th class="">Uncovered</th>
+          </tr>
+        </thead>
+        <tbody class="">
+          <tr class="positive">
+            <td class="">src/__tests__/lens.test.ts</td>
+            <td class="">99.20%</td>
+            <td class="">80%</td>
+            <td class="">251</td>
+            <td class="">249</td>
+            <td class="">2</td>
+          </tr>
+        </tbody>
+      </table>
+      <textarea id="editor" readonly="" style="margin-top: 3em">
+import { describe, it, expect, vi } from &#x27;vitest&#x27;;
+import { createStore, allSettled, fork, createEvent, sample } from &#x27;effector&#x27;;
+import { model } from &#x27;../model&#x27;;
+import { define } from &#x27;../define&#x27;;
+import { keyval } from &#x27;../keyval&#x27;;
+import { facet } from &#x27;../facet&#x27;;
+import { select } from &#x27;../lens&#x27;;
+
+describe(&#x27;lens&#x27;, () =&gt; {
+  const f = facet({ $val: define.store(0) });
+  const m = model({
+    input: { $v: define.store(0) },
+    facets: { f },
+    // type-coverage:ignore-next-line
+    fn: ({ $v }: any) =&gt; ({
+      f: { $val: $v },
+      staticVal: 123,
+      nested: {
+        deep: {
+          val: 456,
+        },
+      },
+    }),
+  });
+  const list = keyval({ model: m });
+
+  it(&#x27;should throw if source is not a lens&#x27;, () =&gt; {
+    expect(() =&gt; select(createStore(null))).toThrow(
+      &#x27;select() source must be a Lens&#x27;,
+    );
+  });
+
+  it(&#x27;should select data from keyval&#x27;, async () =&gt; {
+    const scope = fork();
+
+    // Add item
+    const $v = createStore(10);
+    await allSettled(list.add, {
+      scope,
+      params: { id: &#x27;1&#x27;, input: { $v } },
+    });
+
+    // Select
+    const $selectedId = createStore&lt;string | null&gt;(&#x27;1&#x27;);
+    const item = list.getItem($selectedId);
+
+    // Test builder methods
+    const $val = select(item)
+      .variant(&#x27;ignored&#x27;) // Should return builder
+      .facet(&#x27;f&#x27;)
+      // type-coverage:ignore-next-line
+      .path((x: any) =&gt; x.$val)
+      .fallback(-1);
+
+    expect(scope.getState($val)).toBe(10);
+
+    // Update source store
+    await allSettled($v, { scope, params: 20 });
+    expect(scope.getState($val)).toBe(20);
+
+    // Change ID to missing
+    await allSettled($selectedId, { scope, params: &#x27;2&#x27; });
+    expect(scope.getState($val)).toBe(-1);
+
+    // Change ID back
+    await allSettled($selectedId, { scope, params: &#x27;1&#x27; });
+    expect(scope.getState($val)).toBe(20);
+  });
+
+  it(&#x27;should handle static values and nested paths&#x27;, async () =&gt; {
+    const scope = fork();
+    await allSettled(list.add, {
+      scope,
+      params: { id: &#x27;1&#x27;, input: { $v: createStore(0) } },
+    });
+
+    const item = list.getItem(&#x27;1&#x27;);
+
+    // Static value
+    const $static = select(item)
+      // type-coverage:ignore-next-line
+      .path((x: any) =&gt; x.staticVal)
+      .fallback(0);
+    expect(scope.getState($static)).toBe(123);
+
+    // Nested path
+    const $nested = select(item)
+      // type-coverage:ignore-next-line
+      .path((x: any) =&gt; x.nested.deep.val)
+      .fallback(0);
+    expect(scope.getState($nested)).toBe(456);
+  });
+
+  it(&#x27;should handle missing path gracefully&#x27;, async () =&gt; {
+    const scope = fork();
+    await allSettled(list.add, {
+      scope,
+      params: { id: &#x27;1&#x27;, input: { $v: createStore(0) } },
+    });
+    const item = list.getItem(&#x27;1&#x27;);
+    const $missing = select(item)
+      // type-coverage:ignore-next-line
+      .path((x: any) =&gt; x.nonExistent)
+      .fallback(999);
+    expect(scope.getState($missing)).toBe(999);
+
+    const $missingDeep = select(item)
+      // type-coverage:ignore-next-line
+      .path((x: any) =&gt; x.nested.nonExistent)
+      .fallback(999);
+    expect(scope.getState($missingDeep)).toBe(999);
+  });
+
+  it(&#x27;should support chained lenses&#x27;, async () =&gt; {
+    const scope = fork();
+    await allSettled(list.add, {
+      scope,
+      params: { id: &#x27;1&#x27;, input: { $v: createStore(10) } },
+    });
+
+    const item = list.getItem(&#x27;1&#x27;);
+
+    // Chain: select(item).facet(&#x27;f&#x27;).path(...)
+    const $val = select(item)
+      .facet(&#x27;f&#x27;)
+      // type-coverage:ignore-next-line
+      .path((x: any) =&gt; x.$val)
+      .fallback(0);
+
+    expect(scope.getState($val)).toBe(10);
+  });
+
+  it(&#x27;should be immutable&#x27;, () =&gt; {
+    const item = list.getItem(&#x27;1&#x27;);
+    const b1 = select(item).facet(&#x27;f&#x27;);
+    // type-coverage:ignore-next-line
+    const b2 = b1.path((x: any) =&gt; x.x);
+    // type-coverage:ignore-next-line
+    const b3 = b1.path((x: any) =&gt; x.y);
+
+    // b1 should not be modified by b2 call
+    expect(b2).not.toBe(b1);
+    expect(b3).not.toBe(b1);
+  });
+});
+</textarea
+      >
+      <pre id="annotations" style="display: none">
+[{&quot;file&quot;:&quot;src/__tests__/lens.test.ts&quot;,&quot;line&quot;:15,&quot;character&quot;:11,&quot;text&quot;:&quot;$val&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/__tests__/lens.test.ts&quot;,&quot;line&quot;:15,&quot;character&quot;:17,&quot;text&quot;:&quot;$v&quot;,&quot;kind&quot;:1}]</pre
+      >
+    </div>
+    <p class="footer-text">
+      TypeScript Coverage Report generated by
+      <a href="https://github.com/plantain-00/type-coverage">type-coverage</a>
+      and
+      <a href="https://github.com/alexcanessa/typescript-coverage-report"
+        >typescript-coverage-report</a
+      >
+      at Sun, 18 Jan 2026 04:50:29 GMT
+    </p>
+  </body>
+</html>

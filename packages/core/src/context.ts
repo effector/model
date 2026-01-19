@@ -13,4 +13,5 @@ export function readContext<T>(ctx: StoreContext<T>) {
   return $value;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
 export function setContext<T>(ctx: StoreContext<T>, value: Store<T> | T) {}

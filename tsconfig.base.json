@@ -13,6 +13,9 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@effector-model/core-experimental": [
+        "./packages/core-experimental/index.ts"
+      ],
       "@effector/model": ["./packages/core/index.ts"],
       "@effector/model-react": ["./packages/react/index.ts"]
     }

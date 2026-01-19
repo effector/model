@@ -1,6 +1,6 @@
 import { keyval } from '@effector/model';
 
-import type { Restaurant, Additive } from '../types';
+import type { Additive } from '../types';
 import { restaurants } from '../mocks';
 import { createStore } from 'effector';
 

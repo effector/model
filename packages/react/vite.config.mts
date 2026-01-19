@@ -5,11 +5,20 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
   test: {
+    browser: { enabled: false },
     typecheck: { ignoreSourceErrors: true },
     setupFiles: [relativePath('./src/__tests__/testsSetup.ts')],
     environment: 'happy-dom',
     include: [relativePath('./src/__tests__/**/*.test.tsx')],
+    pool: 'threads',
+    alias: {
+      effector: relativePath('../../node_modules/effector'),
+      'effector-react': relativePath('../../node_modules/effector-react'),
+      react: relativePath('../../node_modules/react'),
+      'react-dom': relativePath('../../node_modules/react-dom'),
+    },
   },
+  // @ts-expect-error - version mismatch
   plugins: [tsconfigPaths()],
 });
 

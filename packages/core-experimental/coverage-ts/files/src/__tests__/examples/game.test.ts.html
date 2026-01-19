@@ -1,0 +1,280 @@
+<!doctype html>
+<html>
+  <head>
+    <title>game.test.ts</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.js"
+      type="text/javascript"
+      charset="utf-8"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/mode/javascript/javascript.min.js"
+      type="text/javascript"
+      charset="utf-8"
+    ></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+    <script
+      src="../../../../assets/source-file.js"
+      type="text/javascript"
+      charset="utf-8"
+    ></script>
+    <link
+      href="../../../../assets/source-file.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div style="margin-top: 3em" class="ui container">
+      <h1 class="ui header">
+        <a href="../../../../index.html">TypeScript coverage report</a>
+      </h1>
+      <table style="margin-top: 2em" class="ui celled table">
+        <thead class="">
+          <tr class="">
+            <th class="">Filename</th>
+            <th class="">Percent</th>
+            <th class="">Threshold</th>
+            <th class="">Total</th>
+            <th class="">Covered</th>
+            <th class="">Uncovered</th>
+          </tr>
+        </thead>
+        <tbody class="">
+          <tr class="positive">
+            <td class="">src/__tests__/examples/game.test.ts</td>
+            <td class="">93.79%</td>
+            <td class="">80%</td>
+            <td class="">338</td>
+            <td class="">317</td>
+            <td class="">21</td>
+          </tr>
+        </tbody>
+      </table>
+      <textarea id="editor" readonly="" style="margin-top: 3em">
+import { describe, it, expect, vi, beforeEach, afterEach } from &#x27;vitest&#x27;;
+import {
+  createStore,
+  allSettled,
+  fork,
+  createEvent,
+  sample,
+  EventCallable,
+  createEffect,
+  scopeBind,
+} from &#x27;effector&#x27;;
+import { model } from &#x27;../../model&#x27;;
+import { define } from &#x27;../../define&#x27;;
+import { facet } from &#x27;../../facet&#x27;;
+import { create } from &#x27;../../instance&#x27;;
+
+// --- Definitions (Copied from apps/models-research) ---
+
+const visualFacet = facet({
+  $color: define.store&lt;string&gt;(),
+});
+
+const gameModel = model({
+  input: {
+    $score: define.store&lt;number&gt;(0),
+  },
+  facets: {
+    visual: visualFacet,
+  },
+  variant: {
+    source: (input: { $score: any }) =&gt; input.$score,
+    cases: {
+      winning: (score: number) =&gt; score &gt; 0,
+      losing: (score: number) =&gt; score &lt; 0,
+      draw: (score: number) =&gt; score === 0,
+    },
+  },
+  impl: {
+    winning: () =&gt; ({
+      visual: { $color: define.store(&#x27;green&#x27;) },
+    }),
+    draw: () =&gt; ({
+      visual: { $color: define.store(&#x27;gray&#x27;) },
+    }),
+    losing: ({ $score }: { $score: any }) =&gt; {
+      const $intensity = $score.map((s: number) =&gt;
+        Math.min(Math.abs(s) * 5, 100),
+      );
+      const $dynamicRed = $intensity.map(
+        (i: number) =&gt; `rgba(255, 0, 0, ${0.3 + i / 140})`,
+      );
+
+      return {
+        visual: {
+          $color: $dynamicRed,
+        },
+        $intensity,
+      };
+    },
+  },
+});
+
+const statsModel = model({
+  input: {
+    game: gameModel,
+  },
+  fn: ({ game }: any) =&gt; {
+    const $totalLosingTime = createStore(0);
+    const start = createEvent();
+    const stop = createEvent();
+
+    const tick = createEvent();
+    const internalTick = createEvent();
+    const $isRunning = createStore(false)
+      .on(start, () =&gt; true)
+      .on(stop, () =&gt; false);
+
+    const tickFx = createEffect(() =&gt; {
+      const trigger = scopeBind(internalTick, { safe: true });
+      setTimeout(trigger, 1000);
+    });
+
+    sample({
+      clock: start,
+      target: tickFx,
+    });
+
+    sample({
+      clock: internalTick,
+      source: $isRunning,
+      filter: (running) =&gt; running,
+      target: tick,
+    });
+
+    sample({
+      clock: tick,
+      target: tickFx,
+    });
+
+    sample({
+      clock: game.variant.losing.enter as EventCallable&lt;void&gt;,
+      target: start,
+    });
+
+    sample({
+      clock: game.variant.losing.leave as EventCallable&lt;void&gt;,
+      target: stop,
+    });
+
+    sample({
+      clock: tick,
+      source: $totalLosingTime,
+      fn: (time: number) =&gt; time + 1,
+      target: $totalLosingTime,
+    });
+
+    return {
+      $totalLosingTime,
+      $isRunning,
+    };
+  },
+});
+
+// --- Tests ---
+
+describe(&#x27;GameModel &amp; StatsModel&#x27;, () =&gt; {
+  beforeEach(() =&gt; {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() =&gt; {
+    vi.useRealTimers();
+  });
+
+  it(&#x27;should switch colors based on score&#x27;, async () =&gt; {
+    const $score = createStore(0);
+    const game = create(gameModel, { input: { $score } });
+
+    const scope = fork();
+
+    expect(scope.getState(game.facets.visual.$color)).toBe(&#x27;gray&#x27;);
+
+    await allSettled($score, { scope, params: 10 });
+    expect(scope.getState(game.facets.visual.$color)).toBe(&#x27;green&#x27;);
+
+    await allSettled($score, { scope, params: -10 });
+    expect(scope.getState(game.facets.visual.$color)).toContain(
+      &#x27;rgba(255, 0, 0,&#x27;,
+    );
+  });
+
+  it(&#x27;should track losing time in statsModel&#x27;, { timeout: 10000 }, async () =&gt; {
+    const $score = createStore(10);
+    const game = create(gameModel, { input: { $score } });
+    const stats = create(statsModel, { input: { game } });
+
+    const scope = fork();
+
+    expect(scope.getState(stats.$isRunning)).toBe(false);
+    expect(scope.getState(stats.$totalLosingTime)).toBe(0);
+
+    await allSettled($score, { scope, params: -10 });
+    expect(scope.getState(stats.$isRunning)).toBe(true);
+
+    // Advance time and wait for effect
+    await vi.advanceTimersByTimeAsync(1100);
+
+    expect(scope.getState(stats.$totalLosingTime)).toBeGreaterThan(0);
+
+    await allSettled($score, { scope, params: 10 });
+    expect(scope.getState(stats.$isRunning)).toBe(false);
+
+    const timeLocked = scope.getState(stats.$totalLosingTime);
+
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(scope.getState(stats.$totalLosingTime)).toBe(timeLocked);
+  });
+
+  it(&#x27;should handle rapid score switching&#x27;, async () =&gt; {
+    const $score = createStore(0);
+    const game = create(gameModel, { input: { $score } });
+    const scope = fork();
+
+    await allSettled($score, { scope, params: 10 });
+    await allSettled($score, { scope, params: -10 });
+    await allSettled($score, { scope, params: 5 });
+
+    expect(scope.getState(game.facets.visual.$color)).toBe(&#x27;green&#x27;);
+  });
+
+  it(&#x27;should handle score = 0 as draw&#x27;, async () =&gt; {
+    const $score = createStore(10);
+    const game = create(gameModel, { input: { $score } });
+    const scope = fork();
+
+    await allSettled($score, { scope, params: 0 });
+    expect(scope.getState(game.facets.visual.$color)).toBe(&#x27;gray&#x27;);
+    expect(scope.getState(game.activeVariant)).toBe(&#x27;draw&#x27;);
+  });
+});
+</textarea
+      >
+      <pre id="annotations" style="display: none">
+[{&quot;file&quot;:&quot;src/__tests__/examples/game.test.ts&quot;,&quot;line&quot;:30,&quot;character&quot;:22,&quot;text&quot;:&quot;$score&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/__tests__/examples/game.test.ts&quot;,&quot;line&quot;:30,&quot;character&quot;:46,&quot;text&quot;:&quot;$score&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/__tests__/examples/game.test.ts&quot;,&quot;line&quot;:44,&quot;character&quot;:15,&quot;text&quot;:&quot;$score&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/__tests__/examples/game.test.ts&quot;,&quot;line&quot;:44,&quot;character&quot;:27,&quot;text&quot;:&quot;$score&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/__tests__/examples/game.test.ts&quot;,&quot;line&quot;:45,&quot;character&quot;:12,&quot;text&quot;:&quot;$intensity&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/__tests__/examples/game.test.ts&quot;,&quot;line&quot;:45,&quot;character&quot;:25,&quot;text&quot;:&quot;$score&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/__tests__/examples/game.test.ts&quot;,&quot;line&quot;:45,&quot;character&quot;:32,&quot;text&quot;:&quot;map&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/__tests__/examples/game.test.ts&quot;,&quot;line&quot;:48,&quot;character&quot;:12,&quot;text&quot;:&quot;$dynamicRed&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/__tests__/examples/game.test.ts&quot;,&quot;line&quot;:48,&quot;character&quot;:26,&quot;text&quot;:&quot;$intensity&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/__tests__/examples/game.test.ts&quot;,&quot;line&quot;:48,&quot;character&quot;:37,&quot;text&quot;:&quot;map&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/__tests__/examples/game.test.ts&quot;,&quot;line&quot;:54,&quot;character&quot;:10,&quot;text&quot;:&quot;$color&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/__tests__/examples/game.test.ts&quot;,&quot;line&quot;:54,&quot;character&quot;:18,&quot;text&quot;:&quot;$dynamicRed&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/__tests__/examples/game.test.ts&quot;,&quot;line&quot;:66,&quot;character&quot;:9,&quot;text&quot;:&quot;game&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/__tests__/examples/game.test.ts&quot;,&quot;line&quot;:100,&quot;character&quot;:13,&quot;text&quot;:&quot;game&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/__tests__/examples/game.test.ts&quot;,&quot;line&quot;:100,&quot;character&quot;:18,&quot;text&quot;:&quot;variant&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/__tests__/examples/game.test.ts&quot;,&quot;line&quot;:100,&quot;character&quot;:26,&quot;text&quot;:&quot;losing&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/__tests__/examples/game.test.ts&quot;,&quot;line&quot;:100,&quot;character&quot;:33,&quot;text&quot;:&quot;enter&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/__tests__/examples/game.test.ts&quot;,&quot;line&quot;:105,&quot;character&quot;:13,&quot;text&quot;:&quot;game&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/__tests__/examples/game.test.ts&quot;,&quot;line&quot;:105,&quot;character&quot;:18,&quot;text&quot;:&quot;variant&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/__tests__/examples/game.test.ts&quot;,&quot;line&quot;:105,&quot;character&quot;:26,&quot;text&quot;:&quot;losing&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/__tests__/examples/game.test.ts&quot;,&quot;line&quot;:105,&quot;character&quot;:33,&quot;text&quot;:&quot;leave&quot;,&quot;kind&quot;:1}]</pre
+      >
+    </div>
+    <p class="footer-text">
+      TypeScript Coverage Report generated by
+      <a href="https://github.com/plantain-00/type-coverage">type-coverage</a>
+      and
+      <a href="https://github.com/alexcanessa/typescript-coverage-report"
+        >typescript-coverage-report</a
+      >
+      at Sun, 18 Jan 2026 04:50:29 GMT
+    </p>
+  </body>
+</html>

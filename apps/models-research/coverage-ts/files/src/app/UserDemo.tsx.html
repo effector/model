@@ -1,0 +1,332 @@
+<!doctype html>
+<html>
+  <head>
+    <title>UserDemo.tsx</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.js"
+      type="text/javascript"
+      charset="utf-8"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/mode/javascript/javascript.min.js"
+      type="text/javascript"
+      charset="utf-8"
+    ></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+    <script
+      src="../../../assets/source-file.js"
+      type="text/javascript"
+      charset="utf-8"
+    ></script>
+    <link
+      href="../../../assets/source-file.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div style="margin-top: 3em" class="ui container">
+      <h1 class="ui header">
+        <a href="../../../index.html">TypeScript coverage report</a>
+      </h1>
+      <table style="margin-top: 2em" class="ui celled table">
+        <thead class="">
+          <tr class="">
+            <th class="">Filename</th>
+            <th class="">Percent</th>
+            <th class="">Threshold</th>
+            <th class="">Total</th>
+            <th class="">Covered</th>
+            <th class="">Uncovered</th>
+          </tr>
+        </thead>
+        <tbody class="">
+          <tr class="positive">
+            <td class="">src/app/UserDemo.tsx</td>
+            <td class="">99.10%</td>
+            <td class="">80%</td>
+            <td class="">332</td>
+            <td class="">329</td>
+            <td class="">3</td>
+          </tr>
+        </tbody>
+      </table>
+      <textarea id="editor" readonly="" style="margin-top: 3em">
+import { useUnit } from &#x27;effector-react&#x27;;
+import { Store } from &#x27;effector&#x27;;
+import { usersList } from &#x27;../user/index&#x27;;
+import {
+  addGuest,
+  addMember,
+  kickUser,
+  promoteUser,
+  selectUser,
+  $selectedUserId,
+  $currentUserRole,
+  $currentUserName,
+} from &#x27;../user/logic&#x27;;
+import { useState, useMemo } from &#x27;react&#x27;;
+import { select as selectLens } from &#x27;@effector-model/core-experimental&#x27;;
+
+function UserItem({
+  id,
+  selectedId,
+  onSelect,
+  onPromote,
+  onKick,
+}: {
+  id: string;
+  selectedId: string | null;
+  onSelect: (id: string) =&gt; void;
+  onPromote: (id: string) =&gt; void;
+  onKick: (id: string) =&gt; void;
+}) {
+  const { $name, $role, $variant } = useMemo(() =&gt; {
+    const item = usersList.getItem(id);
+    return {
+      $name: selectLens(item.facets.user.$nickname).fallback(
+        &#x27;&#x27;,
+      ) as Store&lt;string&gt;,
+      $variant: usersList.$activeVariants.map((v) =&gt; v[id]),
+      $role: selectLens(item)
+        .variant(&#x27;member&#x27;)
+        .facet(&#x27;membership&#x27;)
+        .path((facet: any) =&gt; facet.$role)
+        .fallback(&#x27;guest&#x27;) as Store&lt;string&gt;,
+    };
+  }, [id]);
+
+  const [name, role, variant] = useUnit([$name, $role, $variant]);
+  const isSelected = id === selectedId;
+  const isAdmin = role === &#x27;admin&#x27;;
+  // Fallback to checking role if variant is not yet consistent
+  const isMember = variant === &#x27;member&#x27; || role === &#x27;user&#x27; || role === &#x27;admin&#x27;;
+  const isGuest = !isMember &amp;&amp; !isAdmin;
+
+  const containerClass = useMemo(() =&gt; {
+    const base =
+      &#x27;group flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all border&#x27;;
+    const selection = isSelected
+      ? &#x27;bg-indigo-50 border-indigo-100 ring-1 ring-indigo-200 shadow-sm&#x27;
+      : &#x27;hover:bg-gray-50 border-transparent hover:border-gray-200&#x27;;
+
+    if (isAdmin) return `${base} ${selection} ring-purple-200 bg-purple-50/30`;
+    return `${base} ${selection}`;
+  }, [isSelected, isAdmin, isGuest]);
+
+  const avatar = useMemo(() =&gt; {
+    if (isAdmin) return &#x27;😎&#x27;;
+    if (isMember) return &#x27;🙂&#x27;;
+    return &#x27;👋&#x27;;
+  }, [isAdmin, isMember]);
+
+  return (
+    &lt;div onClick={() =&gt; onSelect(id)} className={containerClass}&gt;
+      &lt;div className=&quot;flex items-center gap-3 truncate max-w-[140px]&quot;&gt;
+        &lt;span className=&quot;text-2xl&quot;&gt;{avatar}&lt;/span&gt;
+        &lt;div className=&quot;flex flex-col truncate&quot;&gt;
+          &lt;span
+            className={`text-sm font-medium truncate ${
+              isAdmin
+                ? &#x27;text-purple-900 font-bold&#x27;
+                : isMember
+                  ? &#x27;text-gray-900&#x27;
+                  : &#x27;text-gray-600&#x27;
+            }`}
+          &gt;
+            {name || &#x27;No Name&#x27;}
+          &lt;/span&gt;
+          &lt;span className=&quot;text-xs text-gray-400 truncate&quot;&gt;{id}&lt;/span&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div className=&quot;opacity-0 group-hover:opacity-100 transition-opacity flex gap-1&quot;&gt;
+        {isMember &amp;&amp; (
+          &lt;button
+            onClick={(e) =&gt; {
+              e.stopPropagation();
+              onPromote(id);
+            }}
+            title={isAdmin ? &#x27;Demote&#x27; : &#x27;Promote&#x27;}
+            className={`p-1.5 rounded transition-colors ${
+              isAdmin
+                ? &#x27;hover:bg-orange-100 text-gray-400 hover:text-orange-600&#x27;
+                : &#x27;hover:bg-green-100 text-gray-400 hover:text-green-600&#x27;
+            }`}
+          &gt;
+            {isAdmin ? &#x27;↓&#x27; : &#x27;↑&#x27;}
+          &lt;/button&gt;
+        )}
+        {!isAdmin &amp;&amp; (
+          &lt;button
+            onClick={(e) =&gt; {
+              e.stopPropagation();
+              onKick(id);
+            }}
+            title=&quot;Kick&quot;
+            className=&quot;p-1.5 rounded hover:bg-red-100 text-gray-400 hover:text-red-600 transition-colors&quot;
+          &gt;
+            ×
+          &lt;/button&gt;
+        )}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+export function UserDemo() {
+  const [items, selectedId, role, currentUserName] = useUnit([
+    usersList.$items,
+    $selectedUserId,
+    $currentUserRole,
+    $currentUserName,
+  ]);
+  const [kick, promote, select] = useUnit([kickUser, promoteUser, selectUser]);
+  const [addG, addM] = useUnit([addGuest, addMember]);
+
+  const [name, setName] = useState(&#x27;John&#x27;);
+  const [userType, setUserType] = useState(&#x27;guest&#x27;);
+
+  const handleAdd = () =&gt; {
+    if (userType === &#x27;guest&#x27;) {
+      addG(name);
+    } else if (userType === &#x27;member_user&#x27;) {
+      addM({ name, role: &#x27;user&#x27; });
+    } else if (userType === &#x27;member_admin&#x27;) {
+      addM({ name, role: &#x27;admin&#x27; });
+    }
+  };
+
+  return (
+    &lt;div className=&quot;bg-white p-6 rounded-xl shadow-md border border-gray-100&quot;&gt;
+      &lt;h2 className=&quot;text-xl font-semibold mb-6 text-gray-800&quot;&gt;
+        User Model Demo
+      &lt;/h2&gt;
+
+      &lt;div className=&quot;grid grid-cols-1 sm:grid-cols-3 gap-8&quot;&gt;
+        {/* Left Column: Form + Info */}
+        &lt;div className=&quot;sm:col-span-2 space-y-8&quot;&gt;
+          {/* Form */}
+          &lt;div className=&quot;flex flex-wrap gap-3 bg-gray-50 p-4 rounded-lg&quot;&gt;
+            &lt;input
+              value={name}
+              onChange={(e) =&gt; setName(e.target.value)}
+              placeholder=&quot;Name&quot;
+              className=&quot;px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none flex-grow sm:flex-grow-0&quot;
+            /&gt;
+            &lt;select
+              value={userType}
+              onChange={(e) =&gt; setUserType(e.target.value)}
+              className=&quot;px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white cursor-pointer&quot;
+            &gt;
+              &lt;option value=&quot;guest&quot;&gt;Guest&lt;/option&gt;
+              &lt;option value=&quot;member_user&quot;&gt;Member (User)&lt;/option&gt;
+              &lt;option value=&quot;member_admin&quot;&gt;Member (Admin)&lt;/option&gt;
+            &lt;/select&gt;
+            &lt;button
+              onClick={handleAdd}
+              className=&quot;px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors shadow-sm text-sm font-medium&quot;
+            &gt;
+              Add
+            &lt;/button&gt;
+          &lt;/div&gt;
+
+          {/* Selected User Details */}
+          &lt;div&gt;
+            &lt;h3 className=&quot;text-sm font-bold text-gray-500 uppercase tracking-wider mb-4&quot;&gt;
+              Selected User Details
+            &lt;/h3&gt;
+            {selectedId ? (
+              &lt;div className=&quot;bg-gray-50 p-6 rounded-xl border border-gray-200&quot;&gt;
+                &lt;div className=&quot;mb-4&quot;&gt;
+                  &lt;span className=&quot;text-xs font-semibold text-gray-500 uppercase&quot;&gt;
+                    ID
+                  &lt;/span&gt;
+                  &lt;p className=&quot;text-lg font-mono text-gray-800&quot;&gt;
+                    {selectedId}
+                  &lt;/p&gt;
+                &lt;/div&gt;
+                &lt;div className=&quot;mb-4&quot;&gt;
+                  &lt;span className=&quot;text-xs font-semibold text-gray-500 uppercase&quot;&gt;
+                    Name
+                  &lt;/span&gt;
+                  &lt;p className=&quot;text-lg font-mono text-gray-800&quot;&gt;
+                    {currentUserName}
+                  &lt;/p&gt;
+                &lt;/div&gt;
+                &lt;div className=&quot;mb-6&quot;&gt;
+                  &lt;span className=&quot;text-xs font-semibold text-gray-500 uppercase&quot;&gt;
+                    Current Role
+                  &lt;/span&gt;
+                  &lt;p className=&quot;text-lg font-medium text-indigo-700 flex items-center gap-2&quot;&gt;
+                    {String(role)}
+                    &lt;span
+                      className={`inline-block w-2 h-2 rounded-full ${
+                        String(role) === &#x27;admin&#x27;
+                          ? &#x27;bg-purple-500&#x27;
+                          : String(role) === &#x27;user&#x27;
+                            ? &#x27;bg-indigo-500&#x27;
+                            : &#x27;bg-gray-400&#x27;
+                      }`}
+                    &gt;&lt;/span&gt;
+                  &lt;/p&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+            ) : (
+              &lt;div className=&quot;h-full flex items-center justify-center bg-gray-50 rounded-xl border border-dashed border-gray-300 p-8&quot;&gt;
+                &lt;p className=&quot;text-gray-400&quot;&gt;Select a user to view details&lt;/p&gt;
+              &lt;/div&gt;
+            )}
+          &lt;/div&gt;
+        &lt;/div&gt;
+
+        {/* Right Column: List */}
+        &lt;div className=&quot;sm:col-span-1 border-t sm:border-t-0 sm:border-l border-gray-100 pt-8 sm:pt-0 sm:pl-6&quot;&gt;
+          &lt;h3 className=&quot;text-sm font-bold text-gray-500 uppercase tracking-wider mb-4&quot;&gt;
+            Users List
+          &lt;/h3&gt;
+          {items.length === 0 &amp;&amp; (
+            &lt;p className=&quot;text-gray-400 italic text-sm&quot;&gt;No users&lt;/p&gt;
+          )}
+          &lt;div className=&quot;space-y-2&quot;&gt;
+            {items.map((id) =&gt; (
+              &lt;UserItem
+                key={id}
+                id={id}
+                selectedId={selectedId}
+                onSelect={select}
+                onPromote={promote}
+                onKick={kick}
+              /&gt;
+            ))}
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+</textarea
+      >
+      <pre id="annotations" style="display: none">
+[{&quot;file&quot;:&quot;src/app/UserDemo.tsx&quot;,&quot;line&quot;:39,&quot;character&quot;:15,&quot;text&quot;:&quot;facet&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/UserDemo.tsx&quot;,&quot;line&quot;:39,&quot;character&quot;:30,&quot;text&quot;:&quot;facet&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/app/UserDemo.tsx&quot;,&quot;line&quot;:39,&quot;character&quot;:36,&quot;text&quot;:&quot;$role&quot;,&quot;kind&quot;:1}]</pre
+      >
+    </div>
+    <p class="footer-text">
+      TypeScript Coverage Report generated by
+      <a href="https://github.com/plantain-00/type-coverage">type-coverage</a>
+      and
+      <a href="https://github.com/alexcanessa/typescript-coverage-report"
+        >typescript-coverage-report</a
+      >
+      at Sun, 18 Jan 2026 04:55:48 GMT
+    </p>
+  </body>
+</html>

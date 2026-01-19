@@ -1,0 +1,2151 @@
+{
+  "fileCounts": {
+    "src/game/facets.ts": {
+      "correctCount": 7,
+      "totalCount": 7
+    },
+    "src/game/model.ts": {
+      "correctCount": 63,
+      "totalCount": 63
+    },
+    "src/stats/model.ts": {
+      "correctCount": 40,
+      "totalCount": 51
+    },
+    "src/game/instance.ts": {
+      "correctCount": 25,
+      "totalCount": 25
+    },
+    "src/app/GameDemo.tsx": {
+      "correctCount": 69,
+      "totalCount": 73
+    },
+    "src/user/facets.ts": {
+      "correctCount": 18,
+      "totalCount": 18
+    },
+    "src/user/guest.model.ts": {
+      "correctCount": 17,
+      "totalCount": 20
+    },
+    "src/user/member.model.ts": {
+      "correctCount": 32,
+      "totalCount": 46
+    },
+    "src/user/index.ts": {
+      "correctCount": 14,
+      "totalCount": 14
+    },
+    "src/user/logic.ts": {
+      "correctCount": 164,
+      "totalCount": 186
+    },
+    "src/app/UserDemo.tsx": {
+      "correctCount": 329,
+      "totalCount": 332
+    },
+    "src/tree/facets.ts": {
+      "correctCount": 38,
+      "totalCount": 38
+    },
+    "src/tree/model.ts": {
+      "correctCount": 113,
+      "totalCount": 156
+    },
+    "src/tree/view.tsx": {
+      "correctCount": 226,
+      "totalCount": 287
+    },
+    "src/app/TreeDemo.tsx": {
+      "correctCount": 211,
+      "totalCount": 296
+    },
+    "src/app/App.tsx": {
+      "correctCount": 50,
+      "totalCount": 50
+    },
+    "src/main.tsx": {
+      "correctCount": 14,
+      "totalCount": 14
+    },
+    "src/tree/__tests__/model.test.ts": {
+      "correctCount": 288,
+      "totalCount": 335
+    },
+    "src/tree/__tests__/view.test.tsx": {
+      "correctCount": 332,
+      "totalCount": 334
+    }
+  },
+  "anys": [
+    {
+      "file": "src/stats/model.ts",
+      "line": 9,
+      "character": 9,
+      "text": "game",
+      "kind": 1
+    },
+    {
+      "file": "src/stats/model.ts",
+      "line": 18,
+      "character": 6,
+      "text": "clock",
+      "kind": 1
+    },
+    {
+      "file": "src/stats/model.ts",
+      "line": 18,
+      "character": 13,
+      "text": "game",
+      "kind": 1
+    },
+    {
+      "file": "src/stats/model.ts",
+      "line": 18,
+      "character": 18,
+      "text": "variant",
+      "kind": 1
+    },
+    {
+      "file": "src/stats/model.ts",
+      "line": 18,
+      "character": 26,
+      "text": "losing",
+      "kind": 1
+    },
+    {
+      "file": "src/stats/model.ts",
+      "line": 18,
+      "character": 33,
+      "text": "enter",
+      "kind": 1
+    },
+    {
+      "file": "src/stats/model.ts",
+      "line": 23,
+      "character": 6,
+      "text": "clock",
+      "kind": 1
+    },
+    {
+      "file": "src/stats/model.ts",
+      "line": 23,
+      "character": 13,
+      "text": "game",
+      "kind": 1
+    },
+    {
+      "file": "src/stats/model.ts",
+      "line": 23,
+      "character": 18,
+      "text": "variant",
+      "kind": 1
+    },
+    {
+      "file": "src/stats/model.ts",
+      "line": 23,
+      "character": 26,
+      "text": "losing",
+      "kind": 1
+    },
+    {
+      "file": "src/stats/model.ts",
+      "line": 23,
+      "character": 33,
+      "text": "leave",
+      "kind": 1
+    },
+    {
+      "file": "src/app/GameDemo.tsx",
+      "line": 5,
+      "character": 8,
+      "text": "color",
+      "kind": 1
+    },
+    {
+      "file": "src/app/GameDemo.tsx",
+      "line": 6,
+      "character": 8,
+      "text": "totalLosingTime",
+      "kind": 1
+    },
+    {
+      "file": "src/app/GameDemo.tsx",
+      "line": 6,
+      "character": 49,
+      "text": "$totalLosingTime",
+      "kind": 1
+    },
+    {
+      "file": "src/app/GameDemo.tsx",
+      "line": 7,
+      "character": 8,
+      "text": "activeVariant",
+      "kind": 1
+    },
+    {
+      "file": "src/user/guest.model.ts",
+      "line": 11,
+      "character": 9,
+      "text": "nickname",
+      "kind": 1
+    },
+    {
+      "file": "src/user/guest.model.ts",
+      "line": 13,
+      "character": 6,
+      "text": "$nickname",
+      "kind": 1
+    },
+    {
+      "file": "src/user/guest.model.ts",
+      "line": 13,
+      "character": 17,
+      "text": "nickname",
+      "kind": 1
+    },
+    {
+      "file": "src/user/member.model.ts",
+      "line": 13,
+      "character": 9,
+      "text": "nickname",
+      "kind": 1
+    },
+    {
+      "file": "src/user/member.model.ts",
+      "line": 13,
+      "character": 19,
+      "text": "role",
+      "kind": 1
+    },
+    {
+      "file": "src/user/member.model.ts",
+      "line": 13,
+      "character": 29,
+      "text": "nickname",
+      "kind": 1
+    },
+    {
+      "file": "src/user/member.model.ts",
+      "line": 13,
+      "character": 44,
+      "text": "role",
+      "kind": 1
+    },
+    {
+      "file": "src/user/member.model.ts",
+      "line": 18,
+      "character": 6,
+      "text": "source",
+      "kind": 1
+    },
+    {
+      "file": "src/user/member.model.ts",
+      "line": 18,
+      "character": 14,
+      "text": "role",
+      "kind": 1
+    },
+    {
+      "file": "src/user/member.model.ts",
+      "line": 19,
+      "character": 11,
+      "text": "currentRole",
+      "kind": 1
+    },
+    {
+      "file": "src/user/member.model.ts",
+      "line": 20,
+      "character": 9,
+      "text": "currentRole",
+      "kind": 1
+    },
+    {
+      "file": "src/user/member.model.ts",
+      "line": 21,
+      "character": 6,
+      "text": "target",
+      "kind": 1
+    },
+    {
+      "file": "src/user/member.model.ts",
+      "line": 21,
+      "character": 14,
+      "text": "role",
+      "kind": 1
+    },
+    {
+      "file": "src/user/member.model.ts",
+      "line": 26,
+      "character": 8,
+      "text": "$nickname",
+      "kind": 1
+    },
+    {
+      "file": "src/user/member.model.ts",
+      "line": 26,
+      "character": 19,
+      "text": "nickname",
+      "kind": 1
+    },
+    {
+      "file": "src/user/member.model.ts",
+      "line": 30,
+      "character": 8,
+      "text": "$role",
+      "kind": 1
+    },
+    {
+      "file": "src/user/member.model.ts",
+      "line": 30,
+      "character": 15,
+      "text": "role",
+      "kind": 1
+    },
+    {
+      "file": "src/user/logic.ts",
+      "line": 45,
+      "character": 12,
+      "text": "role",
+      "kind": 1
+    },
+    {
+      "file": "src/user/logic.ts",
+      "line": 45,
+      "character": 30,
+      "text": "membership",
+      "kind": 1
+    },
+    {
+      "file": "src/user/logic.ts",
+      "line": 45,
+      "character": 42,
+      "text": "$role",
+      "kind": 1
+    },
+    {
+      "file": "src/user/logic.ts",
+      "line": 46,
+      "character": 13,
+      "text": "role",
+      "kind": 1
+    },
+    {
+      "file": "src/user/logic.ts",
+      "line": 72,
+      "character": 13,
+      "text": "memberScope",
+      "kind": 1
+    },
+    {
+      "file": "src/user/logic.ts",
+      "line": 76,
+      "character": 8,
+      "text": "target",
+      "kind": 1
+    },
+    {
+      "file": "src/user/logic.ts",
+      "line": 76,
+      "character": 16,
+      "text": "memberScope",
+      "kind": 1
+    },
+    {
+      "file": "src/user/logic.ts",
+      "line": 76,
+      "character": 28,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/user/logic.ts",
+      "line": 76,
+      "character": 35,
+      "text": "membership",
+      "kind": 1
+    },
+    {
+      "file": "src/user/logic.ts",
+      "line": 76,
+      "character": 46,
+      "text": "promote",
+      "kind": 1
+    },
+    {
+      "file": "src/user/logic.ts",
+      "line": 79,
+      "character": 12,
+      "text": "_",
+      "kind": 1
+    },
+    {
+      "file": "src/user/logic.ts",
+      "line": 79,
+      "character": 20,
+      "text": "trigger",
+      "kind": 1
+    },
+    {
+      "file": "src/user/logic.ts",
+      "line": 80,
+      "character": 6,
+      "text": "trigger",
+      "kind": 1
+    },
+    {
+      "file": "src/user/logic.ts",
+      "line": 80,
+      "character": 14,
+      "text": "watch",
+      "kind": 1
+    },
+    {
+      "file": "src/user/logic.ts",
+      "line": 91,
+      "character": 9,
+      "text": "facet",
+      "kind": 1
+    },
+    {
+      "file": "src/user/logic.ts",
+      "line": 91,
+      "character": 24,
+      "text": "facet",
+      "kind": 1
+    },
+    {
+      "file": "src/user/logic.ts",
+      "line": 91,
+      "character": 30,
+      "text": "$role",
+      "kind": 1
+    },
+    {
+      "file": "src/user/logic.ts",
+      "line": 96,
+      "character": 9,
+      "text": "facet",
+      "kind": 1
+    },
+    {
+      "file": "src/user/logic.ts",
+      "line": 96,
+      "character": 24,
+      "text": "facet",
+      "kind": 1
+    },
+    {
+      "file": "src/user/logic.ts",
+      "line": 96,
+      "character": 30,
+      "text": "$nickname",
+      "kind": 1
+    },
+    {
+      "file": "src/user/logic.ts",
+      "line": 110,
+      "character": 2,
+      "text": "target",
+      "kind": 1
+    },
+    {
+      "file": "src/user/logic.ts",
+      "line": 123,
+      "character": 2,
+      "text": "target",
+      "kind": 1
+    },
+    {
+      "file": "src/app/UserDemo.tsx",
+      "line": 39,
+      "character": 15,
+      "text": "facet",
+      "kind": 1
+    },
+    {
+      "file": "src/app/UserDemo.tsx",
+      "line": 39,
+      "character": 30,
+      "text": "facet",
+      "kind": 1
+    },
+    {
+      "file": "src/app/UserDemo.tsx",
+      "line": 39,
+      "character": 36,
+      "text": "$role",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 17,
+      "character": 9,
+      "text": "name",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 17,
+      "character": 15,
+      "text": "id",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 17,
+      "character": 19,
+      "text": "$selectedId",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 17,
+      "character": 36,
+      "text": "name",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 17,
+      "character": 47,
+      "text": "id",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 17,
+      "character": 56,
+      "text": "$selectedId",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 23,
+      "character": 6,
+      "text": "target",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 23,
+      "character": 14,
+      "text": "name",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 28,
+      "character": 6,
+      "text": "source",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 28,
+      "character": 14,
+      "text": "id",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 29,
+      "character": 6,
+      "text": "target",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 29,
+      "character": 14,
+      "text": "$selectedId",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 33,
+      "character": 6,
+      "text": "$selectedId",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 34,
+      "character": 6,
+      "text": "id",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 35,
+      "character": 7,
+      "text": "selected",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 35,
+      "character": 17,
+      "text": "myId",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 35,
+      "character": 26,
+      "text": "selected",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 35,
+      "character": 39,
+      "text": "myId",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 40,
+      "character": 8,
+      "text": "$name",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 40,
+      "character": 15,
+      "text": "name",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 71,
+      "character": 4,
+      "text": "name",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 72,
+      "character": 4,
+      "text": "id",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 73,
+      "character": 4,
+      "text": "$selectedId",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 74,
+      "character": 4,
+      "text": "children",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 76,
+      "character": 4,
+      "text": "name",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 77,
+      "character": 4,
+      "text": "id",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 78,
+      "character": 4,
+      "text": "$selectedId",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 79,
+      "character": 4,
+      "text": "children",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 88,
+      "character": 6,
+      "text": "target",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 88,
+      "character": 14,
+      "text": "name",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 93,
+      "character": 6,
+      "text": "source",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 93,
+      "character": 14,
+      "text": "id",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 94,
+      "character": 6,
+      "text": "target",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 94,
+      "character": 14,
+      "text": "$selectedId",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 102,
+      "character": 6,
+      "text": "$selectedId",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 103,
+      "character": 6,
+      "text": "id",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 104,
+      "character": 7,
+      "text": "selected",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 104,
+      "character": 17,
+      "text": "myId",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 104,
+      "character": 26,
+      "text": "selected",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 104,
+      "character": 39,
+      "text": "myId",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 109,
+      "character": 8,
+      "text": "$name",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 109,
+      "character": 15,
+      "text": "name",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/model.ts",
+      "line": 117,
+      "character": 8,
+      "text": "children",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 7,
+      "character": 2,
+      "text": "instance",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 10,
+      "character": 2,
+      "text": "instance",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 15,
+      "character": 21,
+      "text": "instance",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 15,
+      "character": 30,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 15,
+      "character": 37,
+      "text": "folder",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 18,
+      "character": 23,
+      "text": "instance",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 18,
+      "character": 33,
+      "text": "instance",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 20,
+      "character": 19,
+      "text": "instance",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 20,
+      "character": 29,
+      "text": "instance",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 23,
+      "character": 20,
+      "text": "instance",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 23,
+      "character": 40,
+      "text": "instance",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 25,
+      "character": 4,
+      "text": "instance",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 25,
+      "character": 13,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 25,
+      "character": 20,
+      "text": "node",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 25,
+      "character": 25,
+      "text": "$name",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 26,
+      "character": 4,
+      "text": "instance",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 26,
+      "character": 13,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 26,
+      "character": 20,
+      "text": "visual",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 26,
+      "character": 27,
+      "text": "$backgroundColor",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 27,
+      "character": 4,
+      "text": "instance",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 27,
+      "character": 13,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 27,
+      "character": 20,
+      "text": "node",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 27,
+      "character": 25,
+      "text": "select",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 28,
+      "character": 4,
+      "text": "instance",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 28,
+      "character": 13,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 28,
+      "character": 20,
+      "text": "node",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 28,
+      "character": 25,
+      "text": "rename",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 87,
+      "character": 22,
+      "text": "instance",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 87,
+      "character": 42,
+      "text": "instance",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 89,
+      "character": 4,
+      "text": "instance",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 89,
+      "character": 13,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 89,
+      "character": 20,
+      "text": "node",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 89,
+      "character": 25,
+      "text": "$name",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 90,
+      "character": 4,
+      "text": "instance",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 90,
+      "character": 13,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 90,
+      "character": 20,
+      "text": "folder",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 90,
+      "character": 27,
+      "text": "$isOpen",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 91,
+      "character": 4,
+      "text": "instance",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 91,
+      "character": 13,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 91,
+      "character": 20,
+      "text": "folder",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 91,
+      "character": 27,
+      "text": "toggle",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 92,
+      "character": 4,
+      "text": "instance",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 92,
+      "character": 13,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 92,
+      "character": 20,
+      "text": "folder",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 92,
+      "character": 27,
+      "text": "children",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 96,
+      "character": 26,
+      "text": "instance",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 96,
+      "character": 35,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 96,
+      "character": 42,
+      "text": "visual",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 96,
+      "character": 49,
+      "text": "$backgroundColor",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 97,
+      "character": 25,
+      "text": "instance",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 97,
+      "character": 34,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 97,
+      "character": 41,
+      "text": "node",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 97,
+      "character": 46,
+      "text": "select",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 98,
+      "character": 25,
+      "text": "instance",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 98,
+      "character": 34,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 98,
+      "character": 41,
+      "text": "node",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 98,
+      "character": 46,
+      "text": "rename",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 168,
+      "character": 29,
+      "text": "map",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 168,
+      "character": 34,
+      "text": "child",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 171,
+      "character": 14,
+      "text": "instance",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/view.tsx",
+      "line": 171,
+      "character": 24,
+      "text": "child",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 100,
+      "character": 18,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 101,
+      "character": 8,
+      "text": "rootId",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 101,
+      "character": 17,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 101,
+      "character": 22,
+      "text": "input",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 101,
+      "character": 28,
+      "text": "id",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 101,
+      "character": 31,
+      "text": "getState",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 102,
+      "character": 6,
+      "text": "rootId",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 102,
+      "character": 28,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 104,
+      "character": 6,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 104,
+      "character": 11,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 104,
+      "character": 18,
+      "text": "folder",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 105,
+      "character": 10,
+      "text": "children",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 105,
+      "character": 21,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 105,
+      "character": 26,
+      "text": "input",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 105,
+      "character": 32,
+      "text": "children",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 107,
+      "character": 10,
+      "text": "childrenArray",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 107,
+      "character": 40,
+      "text": "children",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 109,
+      "character": 8,
+      "text": "children",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 109,
+      "character": 17,
+      "text": "getState",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 110,
+      "character": 10,
+      "text": "children",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 110,
+      "character": 19,
+      "text": "getState",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 113,
+      "character": 15,
+      "text": "child",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 114,
+      "character": 12,
+      "text": "found",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 114,
+      "character": 29,
+      "text": "child",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 115,
+      "character": 10,
+      "text": "found",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 115,
+      "character": 24,
+      "text": "found",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 113,
+      "character": 24,
+      "text": "childrenArray",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 122,
+      "character": 18,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 123,
+      "character": 8,
+      "text": "rootId",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 123,
+      "character": 17,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 123,
+      "character": 22,
+      "text": "input",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 123,
+      "character": 28,
+      "text": "id",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 123,
+      "character": 31,
+      "text": "getState",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 124,
+      "character": 32,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 126,
+      "character": 6,
+      "text": "rootId",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 128,
+      "character": 6,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 128,
+      "character": 11,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 128,
+      "character": 18,
+      "text": "folder",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 129,
+      "character": 10,
+      "text": "children",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 129,
+      "character": 21,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 129,
+      "character": 26,
+      "text": "input",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 129,
+      "character": 32,
+      "text": "children",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 130,
+      "character": 10,
+      "text": "childrenArray",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 130,
+      "character": 40,
+      "text": "children",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 132,
+      "character": 8,
+      "text": "children",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 132,
+      "character": 17,
+      "text": "getState",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 133,
+      "character": 10,
+      "text": "children",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 133,
+      "character": 19,
+      "text": "getState",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 136,
+      "character": 15,
+      "text": "child",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 137,
+      "character": 30,
+      "text": "child",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 136,
+      "character": 24,
+      "text": "childrenArray",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 144,
+      "character": 23,
+      "text": "selectedId",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 144,
+      "character": 35,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 144,
+      "character": 45,
+      "text": "selectedId",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 144,
+      "character": 62,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 145,
+      "character": 21,
+      "text": "selectedId",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 148,
+      "character": 25,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 153,
+      "character": 18,
+      "text": "node",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 156,
+      "character": 26,
+      "text": "node",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 156,
+      "character": 32,
+      "text": "node",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 163,
+      "character": 26,
+      "text": "node",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 163,
+      "character": 36,
+      "text": "node",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 164,
+      "character": 23,
+      "text": "node",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 164,
+      "character": 28,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 164,
+      "character": 35,
+      "text": "node",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 164,
+      "character": 40,
+      "text": "$name",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 168,
+      "character": 23,
+      "text": "selectedId",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 168,
+      "character": 35,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 168,
+      "character": 45,
+      "text": "selectedId",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 168,
+      "character": 62,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 169,
+      "character": 21,
+      "text": "selectedId",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 172,
+      "character": 8,
+      "text": "node",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 172,
+      "character": 24,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 173,
+      "character": 7,
+      "text": "node",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 175,
+      "character": 22,
+      "text": "node",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 175,
+      "character": 28,
+      "text": "node",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 178,
+      "character": 23,
+      "text": "node",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 178,
+      "character": 33,
+      "text": "node",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 179,
+      "character": 23,
+      "text": "node",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 179,
+      "character": 28,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 179,
+      "character": 35,
+      "text": "node",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 179,
+      "character": 40,
+      "text": "$name",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 180,
+      "character": 15,
+      "text": "node",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 180,
+      "character": 20,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/app/TreeDemo.tsx",
+      "line": 180,
+      "character": 27,
+      "text": "folder",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 6,
+      "character": 18,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 7,
+      "character": 8,
+      "text": "rootId",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 7,
+      "character": 17,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 7,
+      "character": 22,
+      "text": "input",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 7,
+      "character": 28,
+      "text": "id",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 7,
+      "character": 31,
+      "text": "getState",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 8,
+      "character": 6,
+      "text": "rootId",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 8,
+      "character": 28,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 10,
+      "character": 6,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 10,
+      "character": 11,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 10,
+      "character": 18,
+      "text": "folder",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 11,
+      "character": 10,
+      "text": "children",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 11,
+      "character": 21,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 11,
+      "character": 26,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 11,
+      "character": 33,
+      "text": "folder",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 11,
+      "character": 40,
+      "text": "children",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 11,
+      "character": 49,
+      "text": "getState",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 12,
+      "character": 15,
+      "text": "child",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 13,
+      "character": 12,
+      "text": "found",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 13,
+      "character": 29,
+      "text": "child",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 14,
+      "character": 10,
+      "text": "found",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 14,
+      "character": 24,
+      "text": "found",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 12,
+      "character": 24,
+      "text": "children",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 21,
+      "character": 18,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 22,
+      "character": 8,
+      "text": "rootId",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 22,
+      "character": 17,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 22,
+      "character": 22,
+      "text": "input",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 22,
+      "character": 28,
+      "text": "id",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 22,
+      "character": 31,
+      "text": "getState",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 23,
+      "character": 32,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 25,
+      "character": 6,
+      "text": "rootId",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 27,
+      "character": 6,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 27,
+      "character": 11,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 27,
+      "character": 18,
+      "text": "folder",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 28,
+      "character": 10,
+      "text": "children",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 28,
+      "character": 21,
+      "text": "root",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 28,
+      "character": 26,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 28,
+      "character": 33,
+      "text": "folder",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 28,
+      "character": 40,
+      "text": "children",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 28,
+      "character": 49,
+      "text": "getState",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 29,
+      "character": 15,
+      "text": "child",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 30,
+      "character": 30,
+      "text": "child",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 29,
+      "character": 24,
+      "text": "children",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 121,
+      "character": 34,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 121,
+      "character": 41,
+      "text": "node",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 121,
+      "character": 46,
+      "text": "$name",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/model.test.ts",
+      "line": 121,
+      "character": 52,
+      "text": "getState",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/view.test.tsx",
+      "line": 13,
+      "character": 4,
+      "text": "$selectedId",
+      "kind": 1
+    },
+    {
+      "file": "src/tree/__tests__/view.test.tsx",
+      "line": 17,
+      "character": 4,
+      "text": "$selectedId",
+      "kind": 1
+    }
+  ],
+  "percentage": 87.42004264392324,
+  "total": 2345,
+  "covered": 2050,
+  "uncovered": 295
+}

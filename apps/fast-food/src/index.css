@@ -1,0 +1,79 @@
+#root {
+  display: contents;
+}
+
+.categories:not(:last-child):after {
+  content: ', ';
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.apps-container {
+  min-height: 100vh;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    'Noto Sans',
+    sans-serif,
+    'Apple Color Emoji',
+    'Segoe UI Emoji',
+    'Segoe UI Symbol',
+    'Noto Color Emoji';
+  color: #333;
+  background-color: #f9fafb; /* bg-gray-50 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  padding: 2rem;
+}
+
+@media (min-width: 900px) {
+  .apps-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: center;
+  }
+}
+
+.add-app-button {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background-color: #ff6900;
+  color: white;
+  border: none;
+  border-radius: 9999px;
+  width: 3.5rem;
+  height: 3.5rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+  z-index: 50;
+}
+
+.add-app-button:hover {
+  transform: scale(1.1);
+  background-color: #e05e00;
+}

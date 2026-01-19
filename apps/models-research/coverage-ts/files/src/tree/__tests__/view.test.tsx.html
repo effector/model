@@ -1,0 +1,278 @@
+<!doctype html>
+<html>
+  <head>
+    <title>view.test.tsx</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.js"
+      type="text/javascript"
+      charset="utf-8"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/mode/javascript/javascript.min.js"
+      type="text/javascript"
+      charset="utf-8"
+    ></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+    <script
+      src="../../../../assets/source-file.js"
+      type="text/javascript"
+      charset="utf-8"
+    ></script>
+    <link
+      href="../../../../assets/source-file.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div style="margin-top: 3em" class="ui container">
+      <h1 class="ui header">
+        <a href="../../../../index.html">TypeScript coverage report</a>
+      </h1>
+      <table style="margin-top: 2em" class="ui celled table">
+        <thead class="">
+          <tr class="">
+            <th class="">Filename</th>
+            <th class="">Percent</th>
+            <th class="">Threshold</th>
+            <th class="">Total</th>
+            <th class="">Covered</th>
+            <th class="">Uncovered</th>
+          </tr>
+        </thead>
+        <tbody class="">
+          <tr class="positive">
+            <td class="">src/tree/__tests__/view.test.tsx</td>
+            <td class="">99.40%</td>
+            <td class="">80%</td>
+            <td class="">334</td>
+            <td class="">332</td>
+            <td class="">2</td>
+          </tr>
+        </tbody>
+      </table>
+      <textarea id="editor" readonly="" style="margin-top: 3em">
+import { describe, it, expect } from &#x27;vitest&#x27;;
+import { render } from &#x27;vitest-browser-react&#x27;;
+import { page, userEvent } from &#x27;vitest/browser&#x27;;
+import { createStore } from &#x27;effector&#x27;;
+import { create } from &#x27;@effector-model/core-experimental&#x27;;
+import { fileModel, folderModel } from &#x27;../model&#x27;;
+import { RecursiveTreeView } from &#x27;../view&#x27;;
+import { TreeDemo } from &#x27;../../app/TreeDemo&#x27;;
+
+describe.skip(&#x27;Tree View Components (Browser Mode)&#x27;, () =&gt; {
+  const createBaseInput = (
+    nameVal: string,
+    idVal: string,
+    $selectedId: any,
+  ) =&gt; ({
+    name: createStore(nameVal),
+    id: createStore(idVal),
+    $selectedId,
+  });
+
+  it(&#x27;FileView: should render name and handle selection&#x27;, async () =&gt; {
+    const $selectedId = createStore&lt;string | null&gt;(null);
+    const file = create(fileModel, {
+      input: createBaseInput(&#x27;test.txt&#x27;, &#x27;file-1&#x27;, $selectedId),
+    });
+
+    await render(&lt;RecursiveTreeView instance={file} /&gt;);
+
+    const node = page.getByText(&#x27;test.txt&#x27;);
+    await expect.element(node).toBeInTheDocument();
+
+    await node.click();
+    expect($selectedId.getState()).toBe(&#x27;file-1&#x27;);
+  });
+
+  it(&#x27;FileView: should handle renaming workflow (Enter)&#x27;, async () =&gt; {
+    const $selectedId = createStore&lt;string | null&gt;(null);
+    const file = create(fileModel, {
+      input: createBaseInput(&#x27;old.txt&#x27;, &#x27;file-1&#x27;, $selectedId),
+    });
+
+    await render(&lt;RecursiveTreeView instance={file} /&gt;);
+
+    const node = page.getByText(&#x27;old.txt&#x27;);
+    await node.dblClick();
+
+    const input = page.getByRole(&#x27;textbox&#x27;);
+    await expect.element(input).toHaveValue(&#x27;old.txt&#x27;);
+
+    await input.fill(&#x27;new.txt&#x27;);
+    await userEvent.keyboard(&#x27;{Enter}&#x27;);
+
+    await expect.element(page.getByText(&#x27;new.txt&#x27;)).toBeInTheDocument();
+    expect(file.facets.node.$name.getState()).toBe(&#x27;new.txt&#x27;);
+  });
+
+  it(&#x27;FileView: should handle renaming cancellation (Escape)&#x27;, async () =&gt; {
+    const $selectedId = createStore&lt;string | null&gt;(null);
+    const file = create(fileModel, {
+      input: createBaseInput(&#x27;keep.txt&#x27;, &#x27;file-1&#x27;, $selectedId),
+    });
+
+    await render(&lt;RecursiveTreeView instance={file} /&gt;);
+
+    await page.getByText(&#x27;keep.txt&#x27;).dblClick();
+    const input = page.getByRole(&#x27;textbox&#x27;);
+    await input.fill(&#x27;change.txt&#x27;);
+    await userEvent.keyboard(&#x27;{Escape}&#x27;);
+
+    await expect.element(page.getByText(&#x27;keep.txt&#x27;)).toBeInTheDocument();
+    expect(file.facets.node.$name.getState()).toBe(&#x27;keep.txt&#x27;);
+  });
+
+  it(&#x27;FileView: should save on blur and stop propagation&#x27;, async () =&gt; {
+    const $selectedId = createStore&lt;string | null&gt;(null);
+    const file = create(fileModel, {
+      input: createBaseInput(&#x27;blur.txt&#x27;, &#x27;file-1&#x27;, $selectedId),
+    });
+
+    await render(&lt;RecursiveTreeView instance={file} /&gt;);
+
+    await page.getByText(&#x27;blur.txt&#x27;).dblClick();
+    const input = page.getByRole(&#x27;textbox&#x27;);
+    await input.fill(&#x27;saved.txt&#x27;);
+
+    // Click input itself - should NOT trigger selection or anything else because of stopPropagation
+    await input.click();
+    expect($selectedId.getState()).toBe(&#x27;file-1&#x27;); // Still &#x27;file-1&#x27; from dblClick, hasn&#x27;t changed
+
+    // To trigger blur, we can click somewhere else
+    await page.getByRole(&#x27;document&#x27;).click();
+
+    await expect.element(page.getByText(&#x27;saved.txt&#x27;)).toBeInTheDocument();
+  });
+
+  it(&#x27;FolderView: should toggle expansion on arrow click&#x27;, async () =&gt; {
+    const $selectedId = createStore&lt;string | null&gt;(null);
+    const childFile = create(fileModel, {
+      input: createBaseInput(&#x27;child.txt&#x27;, &#x27;file-c&#x27;, $selectedId),
+    });
+    const folder = create(folderModel, {
+      input: {
+        ...createBaseInput(&#x27;folder&#x27;, &#x27;folder-1&#x27;, $selectedId),
+        children: [childFile],
+      },
+    });
+
+    await render(&lt;RecursiveTreeView instance={folder} /&gt;);
+
+    await expect.element(page.getByText(&#x27;child.txt&#x27;)).toBeInTheDocument();
+
+    const arrow = page.getByText(&#x27;▶&#x27;);
+    await arrow.click();
+
+    await expect.element(page.getByText(&#x27;child.txt&#x27;)).not.toBeInTheDocument();
+    expect(folder.facets.folder.$isOpen.getState()).toBe(false);
+  });
+
+  it(&#x27;FolderView: should select on name click without toggling&#x27;, async () =&gt; {
+    const $selectedId = createStore&lt;string | null&gt;(null);
+    const folder = create(folderModel, {
+      input: {
+        ...createBaseInput(&#x27;folder&#x27;, &#x27;folder-1&#x27;, $selectedId),
+        children: [],
+      },
+    });
+
+    await render(&lt;RecursiveTreeView instance={folder} /&gt;);
+
+    const nameNode = page.getByText(&#x27;folder&#x27;);
+    await nameNode.click();
+
+    expect($selectedId.getState()).toBe(&#x27;folder-1&#x27;);
+    expect(folder.facets.folder.$isOpen.getState()).toBe(true); // Remained open
+  });
+
+  it(&#x27;FolderView: should handle renaming workflow (Enter/Escape/Blur)&#x27;, async () =&gt; {
+    const $selectedId = createStore&lt;string | null&gt;(null);
+    const folder = create(folderModel, {
+      input: {
+        ...createBaseInput(&#x27;old-folder&#x27;, &#x27;folder-1&#x27;, $selectedId),
+        children: [],
+      },
+    });
+
+    await render(&lt;RecursiveTreeView instance={folder} /&gt;);
+
+    const node = page.getByText(&#x27;old-folder&#x27;);
+    await node.dblClick();
+
+    let input = page.getByRole(&#x27;textbox&#x27;);
+    await expect.element(input).toHaveValue(&#x27;old-folder&#x27;);
+
+    // Test stopPropagation on input click
+    await input.click();
+    expect($selectedId.getState()).toBe(&#x27;folder-1&#x27;);
+
+    // Test Escape
+    await input.fill(&#x27;cancel-folder&#x27;);
+    await userEvent.keyboard(&#x27;{Escape}&#x27;);
+    await expect.element(page.getByText(&#x27;old-folder&#x27;)).toBeInTheDocument();
+
+    // Test Enter
+    await node.dblClick();
+    input = page.getByRole(&#x27;textbox&#x27;);
+    await input.fill(&#x27;new-folder&#x27;);
+    await userEvent.keyboard(&#x27;{Enter}&#x27;);
+    await expect.element(page.getByText(&#x27;new-folder&#x27;)).toBeInTheDocument();
+
+    // Test Blur
+    await page.getByText(&#x27;new-folder&#x27;).dblClick();
+    input = page.getByRole(&#x27;textbox&#x27;);
+    await input.fill(&#x27;blur-folder&#x27;);
+    await page.getByRole(&#x27;document&#x27;).click();
+    await expect.element(page.getByText(&#x27;blur-folder&#x27;)).toBeInTheDocument();
+  });
+
+  it(&#x27;TreeDemo: should render full tree and update breadcrumbs/details&#x27;, async () =&gt; {
+    await render(&lt;TreeDemo /&gt;);
+
+    // Initial state
+    await expect
+      .element(page.getByText(&#x27;project-root&#x27;).first())
+      .toBeInTheDocument();
+    await expect
+      .element(page.getByText(/Selected:.*project-root.*Folder/))
+      .toBeInTheDocument();
+
+    // Select a file
+    const appNodes = page.getByText(&#x27;app.tsx&#x27;);
+    const appNode = appNodes.first();
+    await appNode.click();
+
+    await expect
+      .element(page.getByText(/Selected:.*app.tsx.*File/))
+      .toBeInTheDocument();
+  });
+});
+</textarea
+      >
+      <pre id="annotations" style="display: none">
+[{&quot;file&quot;:&quot;src/tree/__tests__/view.test.tsx&quot;,&quot;line&quot;:13,&quot;character&quot;:4,&quot;text&quot;:&quot;$selectedId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/__tests__/view.test.tsx&quot;,&quot;line&quot;:17,&quot;character&quot;:4,&quot;text&quot;:&quot;$selectedId&quot;,&quot;kind&quot;:1}]</pre
+      >
+    </div>
+    <p class="footer-text">
+      TypeScript Coverage Report generated by
+      <a href="https://github.com/plantain-00/type-coverage">type-coverage</a>
+      and
+      <a href="https://github.com/alexcanessa/typescript-coverage-report"
+        >typescript-coverage-report</a
+      >
+      at Sun, 18 Jan 2026 04:55:48 GMT
+    </p>
+  </body>
+</html>

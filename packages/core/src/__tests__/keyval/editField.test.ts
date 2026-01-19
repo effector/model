@@ -52,7 +52,7 @@ test('derived stores are omitted', () => {
       },
     };
   });
-  //@ts-expect-error
+  //@ts-expect-error derived stores are not supported
   expect(entities.editField.idSize).toBe(undefined);
 });
 

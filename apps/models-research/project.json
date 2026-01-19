@@ -1,0 +1,43 @@
+{
+  "name": "models-research",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/models-research/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/vite:build",
+      "options": {
+        "outputPath": "dist/apps/models-research"
+      }
+    },
+    "serve": {
+      "executor": "@nrwl/vite:dev-server",
+      "options": {
+        "buildTarget": "models-research:build"
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/models-research/**/*.{ts,js}"]
+      }
+    },
+    "preview": {
+      "executor": "@nrwl/vite:preview-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "models-research:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "models-research:build:development"
+        },
+        "production": {
+          "buildTarget": "models-research:build:production"
+        }
+      }
+    }
+  },
+  "tags": []
+}

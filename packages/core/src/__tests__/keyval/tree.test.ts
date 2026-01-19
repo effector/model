@@ -1,4 +1,4 @@
-import { expect, test, describe, vi } from 'vitest';
+import { expect, test, vi } from 'vitest';
 import { keyval, lazy, KeyvalWithState } from '@effector/model';
 import { combine, createStore } from 'effector';
 

@@ -52,9 +52,9 @@
       }
     },
     "test": {
-      "executor": "@nrwl/vite:test",
+      "executor": "nx:run-commands",
       "options": {
-        "config": "packages/react/vite.config.mts",
+        "command": "vitest run --config packages/react/vite.config.mts",
         "passWithNoTests": true
       }
     },
@@ -67,9 +67,9 @@
       }
     },
     "typetest": {
-      "executor": "@nrwl/vite:test",
+      "executor": "nx:run-commands",
       "options": {
-        "mode": "typecheck"
+        "command": "tsc --noEmit -p packages/react/tsconfig.json"
       }
     },
     "size": {

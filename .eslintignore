@@ -4,6 +4,7 @@ node_modules
 # Build files
 build
 coverage
+coverage-ts
 typescript
 
 # IDE

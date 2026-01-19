@@ -1,0 +1,1208 @@
+{
+  "fileCounts": {
+    "src/define.ts": {
+      "correctCount": 64,
+      "totalCount": 64
+    },
+    "src/facet.ts": {
+      "correctCount": 79,
+      "totalCount": 79
+    },
+    "src/model.ts": {
+      "correctCount": 173,
+      "totalCount": 174
+    },
+    "src/instance.ts": {
+      "correctCount": 665,
+      "totalCount": 731
+    },
+    "src/lens.ts": {
+      "correctCount": 177,
+      "totalCount": 177
+    },
+    "src/keyval.ts": {
+      "correctCount": 1114,
+      "totalCount": 1136
+    },
+    "src/match.ts": {
+      "correctCount": 145,
+      "totalCount": 145
+    },
+    "src/serialize.ts": {
+      "correctCount": 39,
+      "totalCount": 43
+    },
+    "src/list.ts": {
+      "correctCount": 529,
+      "totalCount": 539
+    },
+    "src/index.ts": {
+      "correctCount": 0,
+      "totalCount": 0
+    },
+    "index.ts": {
+      "correctCount": 0,
+      "totalCount": 0
+    },
+    "src/__tests__/cursor.test.ts": {
+      "correctCount": 456,
+      "totalCount": 460
+    },
+    "src/__tests__/define.test.ts": {
+      "correctCount": 58,
+      "totalCount": 58
+    },
+    "src/__tests__/facet.test.ts": {
+      "correctCount": 52,
+      "totalCount": 52
+    },
+    "src/__tests__/index.test.ts": {
+      "correctCount": 42,
+      "totalCount": 42
+    },
+    "src/__tests__/instance.test.ts": {
+      "correctCount": 695,
+      "totalCount": 696
+    },
+    "src/__tests__/keyval.test.ts": {
+      "correctCount": 487,
+      "totalCount": 487
+    },
+    "src/__tests__/lens.test.ts": {
+      "correctCount": 249,
+      "totalCount": 251
+    },
+    "src/__tests__/match.test.ts": {
+      "correctCount": 256,
+      "totalCount": 256
+    },
+    "src/__tests__/model.test.ts": {
+      "correctCount": 71,
+      "totalCount": 74
+    },
+    "src/__tests__/ref.test.ts": {
+      "correctCount": 120,
+      "totalCount": 120
+    },
+    "src/__tests__/examples/game.test.ts": {
+      "correctCount": 317,
+      "totalCount": 338
+    },
+    "src/__tests__/examples/user.test.ts": {
+      "correctCount": 226,
+      "totalCount": 250
+    }
+  },
+  "anys": [
+    {
+      "file": "src/model.ts",
+      "line": 62,
+      "character": 4,
+      "text": "source",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 62,
+      "character": 10,
+      "text": "def",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 66,
+      "character": 15,
+      "text": "def",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 66,
+      "character": 19,
+      "text": "type",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 66,
+      "character": 39,
+      "text": "def",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 66,
+      "character": 43,
+      "text": "initial",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 67,
+      "character": 45,
+      "text": "def",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 67,
+      "character": 49,
+      "text": "initial",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 73,
+      "character": 10,
+      "text": "val",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 77,
+      "character": 13,
+      "text": "val",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 78,
+      "character": 6,
+      "text": "val",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 79,
+      "character": 19,
+      "text": "val",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 79,
+      "character": 45,
+      "text": "val",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 83,
+      "character": 47,
+      "text": "val",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 98,
+      "character": 14,
+      "text": "def",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 105,
+      "character": 12,
+      "text": "def",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 105,
+      "character": 16,
+      "text": "type",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 106,
+      "character": 16,
+      "text": "initialValue",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 109,
+      "character": 16,
+      "text": "def",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 109,
+      "character": 20,
+      "text": "initial",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 111,
+      "character": 44,
+      "text": "initialValue",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 113,
+      "character": 19,
+      "text": "def",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 113,
+      "character": 23,
+      "text": "type",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 115,
+      "character": 19,
+      "text": "def",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 115,
+      "character": 23,
+      "text": "type",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 138,
+      "character": 12,
+      "text": "source",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 147,
+      "character": 34,
+      "text": "val",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 148,
+      "character": 24,
+      "text": "check",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 151,
+      "character": 13,
+      "text": "check",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 151,
+      "character": 27,
+      "text": "val",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 227,
+      "character": 14,
+      "text": "def",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 247,
+      "character": 12,
+      "text": "def",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 247,
+      "character": 16,
+      "text": "type",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 247,
+      "character": 36,
+      "text": "def",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 247,
+      "character": 40,
+      "text": "type",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 250,
+      "character": 35,
+      "text": "implResult",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 259,
+      "character": 18,
+      "text": "val",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 260,
+      "character": 18,
+      "text": "val",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 260,
+      "character": 25,
+      "text": "val",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 260,
+      "character": 29,
+      "text": "type",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 261,
+      "character": 16,
+      "text": "val",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 261,
+      "character": 42,
+      "text": "val",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 261,
+      "character": 46,
+      "text": "initial",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 263,
+      "character": 27,
+      "text": "val",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 270,
+      "character": 14,
+      "text": "baseStore",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 272,
+      "character": 15,
+      "text": "baseStore",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 273,
+      "character": 12,
+      "text": "baseStore",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 276,
+      "character": 14,
+      "text": "baseStore",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 276,
+      "character": 27,
+      "text": "def",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 276,
+      "character": 31,
+      "text": "initial",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 276,
+      "character": 66,
+      "text": "baseStore",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 277,
+      "character": 12,
+      "text": "baseStore",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 277,
+      "character": 44,
+      "text": "baseStore",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 285,
+      "character": 31,
+      "text": "baseStore",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 308,
+      "character": 19,
+      "text": "def",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 308,
+      "character": 23,
+      "text": "type",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 318,
+      "character": 35,
+      "text": "implResult",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 360,
+      "character": 33,
+      "text": "destroy",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 361,
+      "character": 24,
+      "text": "destroy",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 368,
+      "character": 32,
+      "text": "destroy",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 369,
+      "character": 23,
+      "text": "destroy",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 371,
+      "character": 25,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 374,
+      "character": 20,
+      "text": "facetImpl",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 374,
+      "character": 43,
+      "text": "impl",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 375,
+      "character": 44,
+      "text": "facetImpl",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 372,
+      "character": 53,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/instance.ts",
+      "line": 33,
+      "character": 4,
+      "text": "source",
+      "kind": 1
+    },
+    {
+      "file": "src/keyval.ts",
+      "line": 228,
+      "character": 12,
+      "text": "actualVariant",
+      "kind": 1
+    },
+    {
+      "file": "src/keyval.ts",
+      "line": 228,
+      "character": 55,
+      "text": "type",
+      "kind": 1
+    },
+    {
+      "file": "src/keyval.ts",
+      "line": 230,
+      "character": 55,
+      "text": "actualVariant",
+      "kind": 1
+    },
+    {
+      "file": "src/keyval.ts",
+      "line": 234,
+      "character": 32,
+      "text": "type",
+      "kind": 1
+    },
+    {
+      "file": "src/keyval.ts",
+      "line": 236,
+      "character": 13,
+      "text": "actualVariant",
+      "kind": 1
+    },
+    {
+      "file": "src/keyval.ts",
+      "line": 236,
+      "character": 42,
+      "text": "models",
+      "kind": 1
+    },
+    {
+      "file": "src/keyval.ts",
+      "line": 236,
+      "character": 49,
+      "text": "actualVariant",
+      "kind": 1
+    },
+    {
+      "file": "src/keyval.ts",
+      "line": 237,
+      "character": 44,
+      "text": "actualVariant",
+      "kind": 1
+    },
+    {
+      "file": "src/keyval.ts",
+      "line": 240,
+      "character": 30,
+      "text": "models",
+      "kind": 1
+    },
+    {
+      "file": "src/keyval.ts",
+      "line": 240,
+      "character": 37,
+      "text": "actualVariant",
+      "kind": 1
+    },
+    {
+      "file": "src/keyval.ts",
+      "line": 245,
+      "character": 12,
+      "text": "modelExtraDef",
+      "kind": 1
+    },
+    {
+      "file": "src/keyval.ts",
+      "line": 246,
+      "character": 24,
+      "text": "extra",
+      "kind": 1
+    },
+    {
+      "file": "src/keyval.ts",
+      "line": 246,
+      "character": 49,
+      "text": "input",
+      "kind": 1
+    },
+    {
+      "file": "src/keyval.ts",
+      "line": 248,
+      "character": 24,
+      "text": "modelExtraDef",
+      "kind": 1
+    },
+    {
+      "file": "src/keyval.ts",
+      "line": 249,
+      "character": 14,
+      "text": "def",
+      "kind": 1
+    },
+    {
+      "file": "src/keyval.ts",
+      "line": 249,
+      "character": 20,
+      "text": "modelExtraDef",
+      "kind": 1
+    },
+    {
+      "file": "src/keyval.ts",
+      "line": 251,
+      "character": 12,
+      "text": "def",
+      "kind": 1
+    },
+    {
+      "file": "src/keyval.ts",
+      "line": 251,
+      "character": 16,
+      "text": "type",
+      "kind": 1
+    },
+    {
+      "file": "src/keyval.ts",
+      "line": 251,
+      "character": 36,
+      "text": "def",
+      "kind": 1
+    },
+    {
+      "file": "src/keyval.ts",
+      "line": 251,
+      "character": 40,
+      "text": "initial",
+      "kind": 1
+    },
+    {
+      "file": "src/keyval.ts",
+      "line": 298,
+      "character": 30,
+      "text": "models",
+      "kind": 1
+    },
+    {
+      "file": "src/keyval.ts",
+      "line": 478,
+      "character": 47,
+      "text": "models",
+      "kind": 1
+    },
+    {
+      "file": "src/serialize.ts",
+      "line": 11,
+      "character": 21,
+      "text": "val",
+      "kind": 1
+    },
+    {
+      "file": "src/serialize.ts",
+      "line": 12,
+      "character": 17,
+      "text": "val",
+      "kind": 1
+    },
+    {
+      "file": "src/serialize.ts",
+      "line": 16,
+      "character": 19,
+      "text": "val",
+      "kind": 1
+    },
+    {
+      "file": "src/serialize.ts",
+      "line": 18,
+      "character": 26,
+      "text": "val",
+      "kind": 1
+    },
+    {
+      "file": "src/list.ts",
+      "line": 234,
+      "character": 12,
+      "text": "value",
+      "kind": 1
+    },
+    {
+      "file": "src/list.ts",
+      "line": 237,
+      "character": 8,
+      "text": "value",
+      "kind": 1
+    },
+    {
+      "file": "src/list.ts",
+      "line": 238,
+      "character": 15,
+      "text": "value",
+      "kind": 1
+    },
+    {
+      "file": "src/list.ts",
+      "line": 239,
+      "character": 23,
+      "text": "value",
+      "kind": 1
+    },
+    {
+      "file": "src/list.ts",
+      "line": 244,
+      "character": 13,
+      "text": "value",
+      "kind": 1
+    },
+    {
+      "file": "src/list.ts",
+      "line": 252,
+      "character": 12,
+      "text": "value",
+      "kind": 1
+    },
+    {
+      "file": "src/list.ts",
+      "line": 255,
+      "character": 8,
+      "text": "value",
+      "kind": 1
+    },
+    {
+      "file": "src/list.ts",
+      "line": 256,
+      "character": 15,
+      "text": "value",
+      "kind": 1
+    },
+    {
+      "file": "src/list.ts",
+      "line": 257,
+      "character": 23,
+      "text": "value",
+      "kind": 1
+    },
+    {
+      "file": "src/list.ts",
+      "line": 262,
+      "character": 29,
+      "text": "value",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/cursor.test.ts",
+      "line": 242,
+      "character": 13,
+      "text": "b",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/cursor.test.ts",
+      "line": 242,
+      "character": 15,
+      "text": "$value",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/cursor.test.ts",
+      "line": 242,
+      "character": 24,
+      "text": "a",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/cursor.test.ts",
+      "line": 242,
+      "character": 26,
+      "text": "$value",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/instance.test.ts",
+      "line": 44,
+      "character": 15,
+      "text": "$val",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/lens.test.ts",
+      "line": 15,
+      "character": 11,
+      "text": "$val",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/lens.test.ts",
+      "line": 15,
+      "character": 17,
+      "text": "$v",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/model.test.ts",
+      "line": 19,
+      "character": 17,
+      "text": "i",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/model.test.ts",
+      "line": 19,
+      "character": 28,
+      "text": "i",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/model.test.ts",
+      "line": 19,
+      "character": 30,
+      "text": "$score",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/game.test.ts",
+      "line": 30,
+      "character": 22,
+      "text": "$score",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/game.test.ts",
+      "line": 30,
+      "character": 46,
+      "text": "$score",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/game.test.ts",
+      "line": 44,
+      "character": 15,
+      "text": "$score",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/game.test.ts",
+      "line": 44,
+      "character": 27,
+      "text": "$score",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/game.test.ts",
+      "line": 45,
+      "character": 12,
+      "text": "$intensity",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/game.test.ts",
+      "line": 45,
+      "character": 25,
+      "text": "$score",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/game.test.ts",
+      "line": 45,
+      "character": 32,
+      "text": "map",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/game.test.ts",
+      "line": 48,
+      "character": 12,
+      "text": "$dynamicRed",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/game.test.ts",
+      "line": 48,
+      "character": 26,
+      "text": "$intensity",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/game.test.ts",
+      "line": 48,
+      "character": 37,
+      "text": "map",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/game.test.ts",
+      "line": 54,
+      "character": 10,
+      "text": "$color",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/game.test.ts",
+      "line": 54,
+      "character": 18,
+      "text": "$dynamicRed",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/game.test.ts",
+      "line": 66,
+      "character": 9,
+      "text": "game",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/game.test.ts",
+      "line": 100,
+      "character": 13,
+      "text": "game",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/game.test.ts",
+      "line": 100,
+      "character": 18,
+      "text": "variant",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/game.test.ts",
+      "line": 100,
+      "character": 26,
+      "text": "losing",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/game.test.ts",
+      "line": 100,
+      "character": 33,
+      "text": "enter",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/game.test.ts",
+      "line": 105,
+      "character": 13,
+      "text": "game",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/game.test.ts",
+      "line": 105,
+      "character": 18,
+      "text": "variant",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/game.test.ts",
+      "line": 105,
+      "character": 26,
+      "text": "losing",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/game.test.ts",
+      "line": 105,
+      "character": 33,
+      "text": "leave",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/user.test.ts",
+      "line": 35,
+      "character": 9,
+      "text": "nickname",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/user.test.ts",
+      "line": 37,
+      "character": 6,
+      "text": "$nickname",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/user.test.ts",
+      "line": 37,
+      "character": 17,
+      "text": "nickname",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/user.test.ts",
+      "line": 52,
+      "character": 9,
+      "text": "nickname",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/user.test.ts",
+      "line": 52,
+      "character": 19,
+      "text": "role",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/user.test.ts",
+      "line": 54,
+      "character": 6,
+      "text": "$nickname",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/user.test.ts",
+      "line": 54,
+      "character": 17,
+      "text": "nickname",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/user.test.ts",
+      "line": 58,
+      "character": 6,
+      "text": "$role",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/user.test.ts",
+      "line": 58,
+      "character": 13,
+      "text": "role",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/user.test.ts",
+      "line": 97,
+      "character": 13,
+      "text": "memberScope",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/user.test.ts",
+      "line": 100,
+      "character": 16,
+      "text": "memberScope",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/user.test.ts",
+      "line": 100,
+      "character": 28,
+      "text": "facets",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/user.test.ts",
+      "line": 100,
+      "character": 35,
+      "text": "membership",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/user.test.ts",
+      "line": 100,
+      "character": 46,
+      "text": "promote",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/user.test.ts",
+      "line": 103,
+      "character": 12,
+      "text": "_",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/user.test.ts",
+      "line": 103,
+      "character": 20,
+      "text": "trigger",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/user.test.ts",
+      "line": 105,
+      "character": 8,
+      "text": "clock",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/user.test.ts",
+      "line": 105,
+      "character": 15,
+      "text": "trigger",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/user.test.ts",
+      "line": 118,
+      "character": 9,
+      "text": "facet",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/user.test.ts",
+      "line": 118,
+      "character": 24,
+      "text": "facet",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/user.test.ts",
+      "line": 118,
+      "character": 30,
+      "text": "$role",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/user.test.ts",
+      "line": 123,
+      "character": 9,
+      "text": "facet",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/user.test.ts",
+      "line": 123,
+      "character": 24,
+      "text": "facet",
+      "kind": 1
+    },
+    {
+      "file": "src/__tests__/examples/user.test.ts",
+      "line": 123,
+      "character": 30,
+      "text": "$nickname",
+      "kind": 1
+    }
+  ],
+  "percentage": 97.4400518470512,
+  "total": 6172,
+  "covered": 6014,
+  "uncovered": 158
+}

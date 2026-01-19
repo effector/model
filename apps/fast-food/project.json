@@ -1,0 +1,43 @@
+{
+  "name": "fast-food",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/fast-food/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/vite:build",
+      "options": {
+        "outputPath": "dist/apps/fast-food"
+      }
+    },
+    "serve": {
+      "executor": "@nrwl/vite:dev-server",
+      "options": {
+        "buildTarget": "fast-food:build"
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/fast-food/**/*.{ts,js}"]
+      }
+    },
+    "preview": {
+      "executor": "@nrwl/vite:preview-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "fast-food:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "fast-food:build:development"
+        },
+        "production": {
+          "buildTarget": "fast-food:build:production"
+        }
+      }
+    }
+  },
+  "tags": []
+}

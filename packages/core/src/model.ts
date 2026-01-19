@@ -41,7 +41,7 @@ export function model<
   },
   Api extends {
     [key: string]: Event<unknown> | Effect<unknown, unknown, unknown>;
-  } = {},
+  } = Record<string, never>,
 >({
   create,
   isClone,
@@ -57,6 +57,7 @@ export function model<
 }): Model<
   Input,
   Show<{
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [K in keyof Output]: Output[K] extends Keyval<any, infer V, any, any>
       ? Store<V[]>
       : Output[K];
@@ -113,12 +114,14 @@ export function model<
     isKeyval(state[field]),
   ) as Array<keyof Output>;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const shape = {} as any;
   const structShape: StructShape = {
     type: 'structShape',
     shape: {},
   };
   for (const key in state) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     shape[key] = define.store<any>();
     structShape.shape[key] =
       // TODO cloned keyvals are omitted because of infinite recursion
@@ -127,14 +130,17 @@ export function model<
         : {
             type: 'structUnit',
             unit: 'store',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             derived: !is.targetable(state[key] as any),
           };
   }
   for (const key in api) {
     const value = api[key];
     shape[key] = is.event(value)
-      ? define.event<any>()
-      : define.effect<any, any, any>();
+      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        define.event<any>()
+      : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        define.effect<any, any, any>();
     structShape.shape[key] = {
       type: 'structUnit',
       unit: is.event(value) ? 'event' : 'effect',
@@ -142,6 +148,7 @@ export function model<
   }
 
   clearNode(region);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let defaultState: any;
   return {
     type: 'model',
@@ -152,6 +159,7 @@ export function model<
     apiFields: Object.keys(api),
     factoryStatePaths,
     shape,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     __lens: {} as any,
     __struct: structShape,
     defaultState() {
@@ -162,8 +170,10 @@ export function model<
         );
         defaultState = {};
         for (const key in state) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           defaultState[key] = is.store((state as any)[key])
-            ? (state as any)[key].getState()
+            ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (state as any)[key].getState()
             : [];
         }
         clearNode(region);

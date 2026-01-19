@@ -1,0 +1,205 @@
+<!doctype html>
+<html>
+  <head>
+    <title>logic.ts</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.js"
+      type="text/javascript"
+      charset="utf-8"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/mode/javascript/javascript.min.js"
+      type="text/javascript"
+      charset="utf-8"
+    ></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+    <script
+      src="../../../assets/source-file.js"
+      type="text/javascript"
+      charset="utf-8"
+    ></script>
+    <link
+      href="../../../assets/source-file.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div style="margin-top: 3em" class="ui container">
+      <h1 class="ui header">
+        <a href="../../../index.html">TypeScript coverage report</a>
+      </h1>
+      <table style="margin-top: 2em" class="ui celled table">
+        <thead class="">
+          <tr class="">
+            <th class="">Filename</th>
+            <th class="">Percent</th>
+            <th class="">Threshold</th>
+            <th class="">Total</th>
+            <th class="">Covered</th>
+            <th class="">Uncovered</th>
+          </tr>
+        </thead>
+        <tbody class="">
+          <tr class="positive">
+            <td class="">src/user/logic.ts</td>
+            <td class="">88.17%</td>
+            <td class="">80%</td>
+            <td class="">186</td>
+            <td class="">164</td>
+            <td class="">22</td>
+          </tr>
+        </tbody>
+      </table>
+      <textarea id="editor" readonly="" style="margin-top: 3em">
+import {
+  createEvent,
+  createStore,
+  sample,
+  Event,
+  createEffect,
+  Store,
+} from &#x27;effector&#x27;;
+import { usersList } from &#x27;./index&#x27;;
+import { select, match } from &#x27;@effector-model/core-experimental&#x27;;
+
+// --- Внешние события ---
+export const kickUser = createEvent&lt;string&gt;(); // payload: userId
+export const promoteUser = createEvent&lt;string&gt;(); // payload: userId
+export const selectUser = createEvent&lt;string&gt;();
+export const $selectedUserId = createStore&lt;string | null&gt;(null).on(
+  selectUser,
+  (_, id) =&gt; id,
+);
+
+// --- Потребление: Поток Управления ---
+
+// 1. ОБЩЕЕ ДЕЙСТВИЕ (Кик)
+const userToKick = usersList.getItem(kickUser);
+
+// Note: We cannot use select() on proxies returned for events (kickUser)
+// because they don&#x27;t have a stable $id store.
+// We must manually implement the guard for the kick action.
+
+const kickAllowedFx = createEffect(
+  ({
+    state,
+    variants,
+    id,
+  }: {
+    state: Record&lt;string, any&gt;;
+    variants: Record&lt;string, string | null&gt;;
+    id: string;
+  }) =&gt; {
+    const variant = variants[id];
+    if (!variant) return true; // Maybe guest or just created?
+
+    if (variant === &#x27;member&#x27;) {
+      // Check role in state
+      // Path: membership -&gt; $role
+      const role = state[id]?.membership?.$role;
+      return role !== &#x27;admin&#x27;;
+    }
+
+    return true; // Guests can be kicked
+  },
+);
+
+sample({
+  clock: kickUser,
+  source: { state: usersList.$state, variants: usersList.$activeVariants },
+  fn: ({ state, variants }, id) =&gt; ({ state, variants, id }),
+  target: kickAllowedFx,
+});
+
+sample({
+  clock: kickAllowedFx.done,
+  filter: ({ result }: { result: boolean }) =&gt; result === true,
+  fn: ({ params }: { params: { id: string } }) =&gt; params.id,
+  target: [userToKick.facets.user.kick, usersList.remove],
+});
+
+// 2. СПЕЦИФИЧНОЕ ДЕЙСТВИЕ (Повышение)
+const userToPromote = usersList.getItem(promoteUser);
+match({
+  source: userToPromote.activeVariant,
+  cases: {
+    member: (memberScope: any, trigger: Event&lt;unknown&gt;) =&gt; {
+      // Explicitly wire the trigger to the method
+      sample({
+        clock: trigger,
+        target: memberScope.facets.membership.promote as any,
+      });
+    },
+    guest: (_: any, trigger: any) =&gt; {
+      trigger.watch(() =&gt; console.error(&#x27;Нельзя повысить гостя!&#x27;));
+    },
+  },
+});
+
+// --- Потребление: Доступ к Данным ---
+const $currentUser = usersList.getItem($selectedUserId);
+
+export const $currentUserRole = select($currentUser)
+  .variant(&#x27;member&#x27;)
+  .facet(&#x27;membership&#x27;)
+  .path((facet: any) =&gt; facet.$role)
+  .fallback(&#x27;guest&#x27;) as Store&lt;string&gt;;
+
+export const $currentUserName = select($currentUser)
+  .facet(&#x27;user&#x27;)
+  .path((facet: any) =&gt; facet.$nickname)
+  .fallback(&#x27;&#x27;) as Store&lt;string&gt;;
+
+// Helper to add users
+export const addGuest = createEvent&lt;string&gt;();
+export const addMember = createEvent&lt;{ name: string; role: string }&gt;();
+
+sample({
+  clock: addGuest,
+  fn: (name: string) =&gt; ({
+    id: Math.random().toString(36).substr(2, 9),
+    variant: &#x27;guest&#x27;,
+    input: { nickname: createStore(name) },
+  }),
+  target: usersList.add as any,
+});
+
+sample({
+  clock: addMember,
+  fn: ({ name, role }: { name: string; role: string }) =&gt; ({
+    id: Math.random().toString(36).substr(2, 9),
+    variant: &#x27;member&#x27;,
+    input: {
+      nickname: createStore(name),
+      role: createStore(role),
+    },
+  }),
+  target: usersList.add as any,
+});
+</textarea
+      >
+      <pre id="annotations" style="display: none">
+[{&quot;file&quot;:&quot;src/user/logic.ts&quot;,&quot;line&quot;:45,&quot;character&quot;:12,&quot;text&quot;:&quot;role&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/user/logic.ts&quot;,&quot;line&quot;:45,&quot;character&quot;:30,&quot;text&quot;:&quot;membership&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/user/logic.ts&quot;,&quot;line&quot;:45,&quot;character&quot;:42,&quot;text&quot;:&quot;$role&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/user/logic.ts&quot;,&quot;line&quot;:46,&quot;character&quot;:13,&quot;text&quot;:&quot;role&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/user/logic.ts&quot;,&quot;line&quot;:72,&quot;character&quot;:13,&quot;text&quot;:&quot;memberScope&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/user/logic.ts&quot;,&quot;line&quot;:76,&quot;character&quot;:8,&quot;text&quot;:&quot;target&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/user/logic.ts&quot;,&quot;line&quot;:76,&quot;character&quot;:16,&quot;text&quot;:&quot;memberScope&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/user/logic.ts&quot;,&quot;line&quot;:76,&quot;character&quot;:28,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/user/logic.ts&quot;,&quot;line&quot;:76,&quot;character&quot;:35,&quot;text&quot;:&quot;membership&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/user/logic.ts&quot;,&quot;line&quot;:76,&quot;character&quot;:46,&quot;text&quot;:&quot;promote&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/user/logic.ts&quot;,&quot;line&quot;:79,&quot;character&quot;:12,&quot;text&quot;:&quot;_&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/user/logic.ts&quot;,&quot;line&quot;:79,&quot;character&quot;:20,&quot;text&quot;:&quot;trigger&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/user/logic.ts&quot;,&quot;line&quot;:80,&quot;character&quot;:6,&quot;text&quot;:&quot;trigger&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/user/logic.ts&quot;,&quot;line&quot;:80,&quot;character&quot;:14,&quot;text&quot;:&quot;watch&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/user/logic.ts&quot;,&quot;line&quot;:91,&quot;character&quot;:9,&quot;text&quot;:&quot;facet&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/user/logic.ts&quot;,&quot;line&quot;:91,&quot;character&quot;:24,&quot;text&quot;:&quot;facet&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/user/logic.ts&quot;,&quot;line&quot;:91,&quot;character&quot;:30,&quot;text&quot;:&quot;$role&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/user/logic.ts&quot;,&quot;line&quot;:96,&quot;character&quot;:9,&quot;text&quot;:&quot;facet&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/user/logic.ts&quot;,&quot;line&quot;:96,&quot;character&quot;:24,&quot;text&quot;:&quot;facet&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/user/logic.ts&quot;,&quot;line&quot;:96,&quot;character&quot;:30,&quot;text&quot;:&quot;$nickname&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/user/logic.ts&quot;,&quot;line&quot;:110,&quot;character&quot;:2,&quot;text&quot;:&quot;target&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/user/logic.ts&quot;,&quot;line&quot;:123,&quot;character&quot;:2,&quot;text&quot;:&quot;target&quot;,&quot;kind&quot;:1}]</pre
+      >
+    </div>
+    <p class="footer-text">
+      TypeScript Coverage Report generated by
+      <a href="https://github.com/plantain-00/type-coverage">type-coverage</a>
+      and
+      <a href="https://github.com/alexcanessa/typescript-coverage-report"
+        >typescript-coverage-report</a
+      >
+      at Sun, 18 Jan 2026 04:55:48 GMT
+    </p>
+  </body>
+</html>

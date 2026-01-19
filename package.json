@@ -9,14 +9,15 @@
     "test:types": "nx run-many --target=typetest --all",
     "lint": "nx run-many --target=lint --all",
     "lint:format": "nx format:check --all",
-    "lint:workspace": "nx workspace-lint",
     "lint:changes": "changeset status",
     "build": "nx run-many --target=build --all",
     "format": "nx format:write",
     "size": "nx run-many --target=size --all",
-    "changes": "changeset"
+    "changes": "changeset",
+    "dev": "nx serve fast-food --port=3000"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@typescript-eslint/eslint-plugin": "^8.0.1",
     "@typescript-eslint/parser": "^8.0.1",
     "clsx": "^2.1.1",
@@ -25,6 +26,9 @@
     "patronum": "^2.3.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
+  },
+  "optionalDependencies": {
+    "@rolldown/binding-linux-x64-gnu": "1.0.0-beta.60"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
@@ -47,7 +51,10 @@
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
-    "@vitest/ui": "^2.0.5",
+    "@vitest/browser": "^4.0.17",
+    "@vitest/browser-playwright": "^4.0.17",
+    "@vitest/coverage-v8": "^4.0.17",
+    "@vitest/ui": "^4.0.17",
     "bytes-iec": "^3.1.1",
     "dotenv": "^16.0.1",
     "effector": "^23.3.0",
@@ -68,6 +75,7 @@
     "eslint-plugin-unicorn": "^55.0.0",
     "micromatch": "^4.0.5",
     "nx": "19.5.7",
+    "playwright": "^1.57.0",
     "postcss-normalize": "^10.0.1",
     "prettier": "^3.3.3",
     "rollup": "^4.20.0",
@@ -86,9 +94,11 @@
     "stylelint-scss": "^6.5.0",
     "typescript": "^5.5.4",
     "typescript-coverage-report": "^1.0.0",
-    "vite": "^5.4.0",
+    "vite": "8.0.0-beta.8",
+    "vite-plugin-singlefile": "^2.3.0",
     "vite-tsconfig-paths": "^5.0.1",
-    "vitest": "^2.0.5"
+    "vitest": "^4.0.17",
+    "vitest-browser-react": "^2.0.2"
   },
   "keywords": [],
   "packageManager": "pnpm@9.7.0+sha512.dc09430156b427f5ecfc79888899e1c39d2d690f004be70e05230b72cb173d96839587545d09429b55ac3c429c801b4dc3c0e002f653830a420fa2dd4e3cf9cf"

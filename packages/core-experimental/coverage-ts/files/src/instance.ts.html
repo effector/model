@@ -1,0 +1,487 @@
+<!doctype html>
+<html>
+  <head>
+    <title>instance.ts</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.js"
+      type="text/javascript"
+      charset="utf-8"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/mode/javascript/javascript.min.js"
+      type="text/javascript"
+      charset="utf-8"
+    ></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+    <script
+      src="../../assets/source-file.js"
+      type="text/javascript"
+      charset="utf-8"
+    ></script>
+    <link
+      href="../../assets/source-file.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div style="margin-top: 3em" class="ui container">
+      <h1 class="ui header">
+        <a href="../../index.html">TypeScript coverage report</a>
+      </h1>
+      <table style="margin-top: 2em" class="ui celled table">
+        <thead class="">
+          <tr class="">
+            <th class="">Filename</th>
+            <th class="">Percent</th>
+            <th class="">Threshold</th>
+            <th class="">Total</th>
+            <th class="">Covered</th>
+            <th class="">Uncovered</th>
+          </tr>
+        </thead>
+        <tbody class="">
+          <tr class="positive">
+            <td class="">src/instance.ts</td>
+            <td class="">90.97%</td>
+            <td class="">80%</td>
+            <td class="">731</td>
+            <td class="">665</td>
+            <td class="">66</td>
+          </tr>
+        </tbody>
+      </table>
+      <textarea id="editor" readonly="" style="margin-top: 3em">
+import {
+  createStore,
+  createEvent,
+  combine,
+  sample,
+  Store,
+  Event,
+  is,
+  clearNode,
+  StoreWritable,
+  EventCallable,
+} from &#x27;effector&#x27;;
+import { Model, InferConfigInput, InferInput, InferFacets } from &#x27;./model&#x27;;
+import { isRef, StoreDef, EventDef, ArrayDef } from &#x27;./define&#x27;;
+import { FacetShape, Facet } from &#x27;./facet&#x27;;
+
+type WritableStore&lt;T&gt; = StoreWritable&lt;T&gt; &amp; { rehydrate: EventCallable&lt;T&gt; };
+
+function createWritableStore&lt;T&gt;(
+  initial: T,
+  config?: { skipVoid?: boolean },
+): WritableStore&lt;T&gt; {
+  const $store = createStore(initial, config);
+  const rehydrate = createEvent&lt;T&gt;();
+  $store.on(rehydrate, (_, payload) =&gt; payload);
+  ($store as unknown as { rehydrate: EventCallable&lt;T&gt; }).rehydrate = rehydrate;
+  return $store as WritableStore&lt;T&gt;;
+}
+
+export function create&lt;
+  Input extends Record&lt;string, unknown&gt;,
+  Facets extends Record&lt;string, unknown&gt;,
+  Variants extends {
+    source: any;
+    cases: Record&lt;string, any&gt;;
+  },
+&gt;(
+  modelDef: Model&lt;Input, Facets, Variants&gt;,
+  config: {
+    input?: InferConfigInput&lt;Input&gt;;
+    state?: Record&lt;string, unknown&gt;;
+  } = {},
+): Model&lt;Input, Facets, Variants&gt;[&#x27;_InstanceType&#x27;] {
+  const { config: modelConfig } = modelDef;
+
+  // 1. Process Input -&gt; Extra
+  const input = { ...config.input } as Record&lt;string, unknown&gt;;
+  const extraStores: Record&lt;string, any&gt; = {};
+
+  // Support &#x27;extra&#x27; or &#x27;input&#x27; definition for metadata
+  // type-coverage:ignore-next-line
+  const modelExtraDef = (modelConfig.extra ||
+    modelConfig.input ||
+    {}) as Record&lt;
+    string,
+    // type-coverage:ignore-next-line
+    any
+  &gt;;
+
+  for (const key in modelExtraDef) {
+    // type-coverage:ignore-next-line
+    const val = input[key];
+    const def = modelExtraDef[key];
+
+    if (val !== undefined) {
+      extraStores[key] = val;
+    } else if (def.type === &#x27;store&#x27; &amp;&amp; def.initial !== undefined) {
+      extraStores[key] = createWritableStore(def.initial, { skipVoid: false });
+    }
+  }
+
+  const reactiveExtra: Record&lt;string, unknown&gt; = {};
+  for (const key in extraStores) {
+    const val = extraStores[key];
+    if (is.unit(val)) {
+      reactiveExtra[key] = val;
+    } else if (
+      typeof val === &#x27;object&#x27; &amp;&amp;
+      val !== null &amp;&amp;
+      (&#x27;facets&#x27; in val || &#x27;activeVariant&#x27; in val)
+    ) {
+      reactiveExtra[key] = val;
+    } else {
+      reactiveExtra[key] = createWritableStore(val, { skipVoid: false });
+    }
+  }
+  // 2. Pre-allocate Facets (Thermodynamic Runtime)
+  const preAllocatedFacets: Record&lt;string, Record&lt;string, unknown&gt;&gt; = {};
+  const initialState = config.state || {};
+
+  if (modelConfig.facets) {
+    for (const [facetName, facetDef] of Object.entries(modelConfig.facets)) {
+      const facetShape = (facetDef as Facet&lt;FacetShape&gt;).shape;
+      const facetInstance: Record&lt;string, unknown&gt; = {};
+      const facetState =
+        (initialState[facetName] as Record&lt;string, unknown&gt;) || {};
+
+      for (const [fieldName, fieldDef] of Object.entries(facetShape)) {
+        const def = fieldDef as
+          | StoreDef&lt;unknown&gt;
+          | EventDef&lt;unknown&gt;
+          | ArrayDef&lt;unknown&gt;
+          | Facet&lt;FacetShape&gt;
+          | any;
+
+        if (def.type === &#x27;store&#x27;) {
+          const initialValue =
+            facetState[fieldName] !== undefined
+              ? facetState[fieldName]
+              : def.initial;
+
+          const $base = createWritableStore(initialValue, { skipVoid: false });
+          facetInstance[fieldName] = $base;
+        } else if (def.type === &#x27;event&#x27;) {
+          facetInstance[fieldName] = createEvent();
+        } else if (def.type === &#x27;array&#x27;) {
+          const initialValue =
+            facetState[fieldName] !== undefined ? facetState[fieldName] : [];
+          const $base = createWritableStore(initialValue, { skipVoid: false });
+          facetInstance[fieldName] = $base;
+        }
+      }
+      preAllocatedFacets[facetName] = facetInstance;
+    }
+  }
+
+  // 3. Variants Logic
+  let $activeVariant: Store&lt;string | null&gt; = createStore(null, {
+    skipVoid: false,
+  });
+  const variantEvents: Record&lt;
+    string,
+    { enter: Event&lt;void&gt;; leave: Event&lt;void&gt; }
+  &gt; = {};
+  // type-coverage:ignore-next-line
+  const variantImpls: Record&lt;string, any&gt; = {};
+
+  if (modelConfig.variant) {
+    const { source, cases } = modelConfig.variant;
+
+    const sourceValue = (source as (input: unknown) =&gt; unknown)(reactiveExtra);
+    const $source = is.store(sourceValue)
+      ? sourceValue
+      : createStore(sourceValue, { skipVoid: false });
+
+    // type-coverage:ignore-next-line
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    $activeVariant = $source.map((val: any) =&gt; {
+      for (const [name, check] of Object.entries(cases)) {
+        // type-coverage:ignore-next-line
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((check as any)(val)) return name;
+      }
+      return null;
+    });
+
+    const $prevVariant = createStore&lt;string | null&gt;(null, { skipVoid: false });
+
+    const variantTransition = sample({
+      clock: $activeVariant,
+      source: $prevVariant,
+      fn: (prev, current) =&gt; ({ prev, current }),
+    });
+
+    sample({
+      clock: variantTransition,
+      fn: ({ current }) =&gt; current,
+      target: $prevVariant,
+    });
+
+    for (const caseName of Object.keys(cases)) {
+      const enter = createEvent&lt;void&gt;();
+      const leave = createEvent&lt;void&gt;();
+      variantEvents[caseName] = { enter, leave };
+
+      sample({
+        clock: variantTransition,
+        filter: ({ current }) =&gt; current === caseName,
+        target: enter,
+      });
+
+      sample({
+        clock: variantTransition,
+        filter: ({ prev, current }) =&gt;
+          prev === caseName &amp;&amp; current !== caseName,
+        target: leave,
+      });
+    }
+  }
+
+  // 4. Run Implementations
+  let fnResult: Record&lt;string, unknown&gt; = {};
+  if (modelConfig.fn) {
+    fnResult =
+      (modelConfig.fn(
+        reactiveExtra as unknown as InferInput&lt;Input&gt;,
+        preAllocatedFacets as unknown as InferFacets&lt;Facets&gt;,
+      ) as Record&lt;string, unknown&gt;) || {};
+  }
+
+  if (modelConfig.impl) {
+    if (typeof modelConfig.impl === &#x27;function&#x27;) {
+      const implResult = modelConfig.impl(
+        reactiveExtra as unknown as InferInput&lt;Input&gt;,
+        preAllocatedFacets as unknown as InferFacets&lt;Facets&gt;,
+      ) as Record&lt;string, unknown&gt;;
+      fnResult = { ...fnResult, ...implResult };
+    } else {
+      for (const [variantName, implFn] of Object.entries(modelConfig.impl)) {
+        variantImpls[variantName] = implFn(
+          reactiveExtra as unknown as InferInput&lt;Input&gt;,
+          preAllocatedFacets as unknown as InferFacets&lt;Facets&gt;,
+        );
+      }
+    }
+  }
+
+  // 6. Post-Process Facets
+  const facets: Record&lt;string, Record&lt;string, unknown&gt;&gt; = {};
+
+  if (modelConfig.facets) {
+    for (const [facetName, facetDef] of Object.entries(modelConfig.facets)) {
+      const facetShape = (facetDef as Facet&lt;FacetShape&gt;).shape;
+      const facetInstance: Record&lt;string, unknown&gt; = {};
+      const preAllocated = preAllocatedFacets[facetName];
+
+      for (const [fieldName, fieldDef] of Object.entries(facetShape)) {
+        const def = fieldDef as
+          | StoreDef&lt;unknown&gt;
+          | EventDef&lt;unknown&gt;
+          | ArrayDef&lt;unknown&gt;
+          | Facet&lt;FacetShape&gt;
+          | any;
+
+        if (isRef(def)) {
+          if (def.kind === &#x27;tag&#x27; &amp;&amp; def.name) {
+            if (reactiveExtra[def.name]) {
+              facetInstance[fieldName] = reactiveExtra[def.name];
+              continue;
+            }
+            if (fnResult[def.name]) {
+              facetInstance[fieldName] = fnResult[def.name];
+              continue;
+            }
+          }
+        }
+
+        if (def.type === &#x27;store&#x27; || def.type === &#x27;array&#x27;) {
+          const variantsForField: Record&lt;string, Store&lt;unknown&gt;&gt; = {};
+
+          for (const [variantName, implResult] of Object.entries(
+            variantImpls,
+          )) {
+            const implRes = implResult as Record&lt;string, unknown&gt;;
+            const facetRes = implRes[facetName] as Record&lt;string, unknown&gt;;
+            const variantFacetImpl =
+              (facetRes?.impl as Record&lt;string, unknown&gt;) || facetRes;
+
+            if (variantFacetImpl &amp;&amp; variantFacetImpl[fieldName]) {
+              let val = variantFacetImpl[fieldName] as any;
+              if (val &amp;&amp; val.type === &#x27;store&#x27;) {
+                val = createWritableStore(val.initial, { skipVoid: false });
+              }
+              if (is.store(val)) variantsForField[variantName] = val;
+            }
+          }
+
+          const fnResFacet = fnResult[facetName] as Record&lt;string, unknown&gt;;
+          const fnResFacetImpl =
+            (fnResFacet?.impl as Record&lt;string, unknown&gt;) || fnResFacet;
+          let baseStore = fnResFacetImpl?.[fieldName] as any;
+
+          if (!baseStore) {
+            baseStore = preAllocated[fieldName];
+          }
+
+          if (baseStore &amp;&amp; def.initial !== undefined &amp;&amp; !is.store(baseStore)) {
+            baseStore = createWritableStore(baseStore, { skipVoid: false });
+          }
+
+          const stores = Object.values(variantsForField);
+          const names = Object.keys(variantsForField);
+
+          if (stores.length &gt; 0) {
+            facetInstance[fieldName] = combine(
+              [$activeVariant, baseStore, ...stores],
+              ([active, base, ...vals]: unknown[]) =&gt; {
+                const idx = names.indexOf(active as string);
+                if (idx !== -1) return vals[idx];
+                return base;
+              },
+              { skipVoid: false },
+            );
+          } else {
+            facetInstance[fieldName] = baseStore;
+          }
+
+          if ((baseStore as { rehydrate?: unknown }).rehydrate) {
+            const rehydrate = createEvent();
+            (
+              facetInstance[fieldName] as { rehydrate: Event&lt;unknown&gt; }
+            ).rehydrate = rehydrate;
+            sample({
+              clock: rehydrate,
+              target: (baseStore as { rehydrate: EventCallable&lt;unknown&gt; })
+                .rehydrate,
+            });
+          }
+        } else if (def.type === &#x27;event&#x27;) {
+          const fnResFacet = fnResult[facetName] as Record&lt;string, unknown&gt;;
+          const fnResFacetImpl =
+            (fnResFacet?.impl as Record&lt;string, unknown&gt;) || fnResFacet;
+          let mainEvent = fnResFacetImpl?.[fieldName] as Event&lt;unknown&gt;;
+
+          if (!mainEvent) {
+            mainEvent = preAllocated[fieldName] as Event&lt;unknown&gt;;
+          }
+
+          for (const [variantName, implResult] of Object.entries(
+            variantImpls,
+          )) {
+            const implRes = implResult as Record&lt;string, unknown&gt;;
+            const facetRes = implRes[facetName] as Record&lt;string, unknown&gt;;
+            const variantFacetImpl =
+              (facetRes?.impl as Record&lt;string, unknown&gt;) || facetRes;
+
+            if (variantFacetImpl &amp;&amp; variantFacetImpl[fieldName]) {
+              const val = variantFacetImpl[fieldName];
+              if (is.event(val)) {
+                sample({
+                  clock: mainEvent,
+                  filter: $activeVariant.map((v) =&gt; v === variantName),
+                  target: val as EventCallable&lt;unknown&gt;,
+                });
+              }
+            }
+          }
+          facetInstance[fieldName] = mainEvent;
+        }
+      }
+      facets[facetName] = facetInstance;
+
+      if (typeof (facetDef as Facet&lt;FacetShape&gt;)._linker === &#x27;function&#x27;) {
+        (facetDef as Facet&lt;FacetShape&gt;)._linker!(facetInstance);
+      }
+    }
+  }
+
+  const destroy = () =&gt; {
+    clearNode($activeVariant);
+    for (const e of Object.values(variantEvents)) {
+      clearNode(e.enter);
+      clearNode(e.leave);
+    }
+    for (const f of Object.values(facets)) {
+      for (const u of Object.values(f)) {
+        if (is.unit(u)) clearNode(u);
+      }
+    }
+    const inputs = new Set(Object.values(extraStores));
+    if (typeof (fnResult as any).destroy === &#x27;function&#x27;) {
+      (fnResult as any).destroy();
+    }
+    for (const val of Object.values(fnResult)) {
+      if (val &amp;&amp; typeof val === &#x27;object&#x27;) {
+        if (is.unit(val) &amp;&amp; !inputs.has(val)) {
+          clearNode(val);
+        }
+        if (typeof (val as any).destroy === &#x27;function&#x27;) {
+          (val as any).destroy();
+        }
+        if ((val as any).facets) {
+          for (const f of Object.values((val as any).facets)) {
+            if (f &amp;&amp; typeof f === &#x27;object&#x27;) {
+              const facetImpl = (f as any).impl || f;
+              for (const u of Object.values(facetImpl as any)) {
+                if (is.unit(u)) clearNode(u);
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+
+  const result: Record&lt;string, unknown&gt; = {
+    facets,
+    variant: variantEvents,
+    activeVariant: $activeVariant,
+    input: extraStores,
+    extra: extraStores, // Alias
+    __impls: variantImpls,
+    __fn: fnResult,
+    destroy,
+  };
+
+  for (const [key, value] of Object.entries(fnResult)) {
+    if (!(key in result)) result[key] = value;
+  }
+
+  for (const key in modelExtraDef) {
+    if (!(key in result)) result[key] = extraStores[key];
+  }
+  result.input = reactiveExtra;
+
+  return result as Model&lt;Input, Facets, Variants&gt;[&#x27;_InstanceType&#x27;];
+}
+</textarea
+      >
+      <pre id="annotations" style="display: none">
+[{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:62,&quot;character&quot;:10,&quot;text&quot;:&quot;def&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:66,&quot;character&quot;:15,&quot;text&quot;:&quot;def&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:66,&quot;character&quot;:19,&quot;text&quot;:&quot;type&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:66,&quot;character&quot;:39,&quot;text&quot;:&quot;def&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:66,&quot;character&quot;:43,&quot;text&quot;:&quot;initial&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:67,&quot;character&quot;:45,&quot;text&quot;:&quot;def&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:67,&quot;character&quot;:49,&quot;text&quot;:&quot;initial&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:73,&quot;character&quot;:10,&quot;text&quot;:&quot;val&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:77,&quot;character&quot;:13,&quot;text&quot;:&quot;val&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:78,&quot;character&quot;:6,&quot;text&quot;:&quot;val&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:79,&quot;character&quot;:19,&quot;text&quot;:&quot;val&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:79,&quot;character&quot;:45,&quot;text&quot;:&quot;val&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:83,&quot;character&quot;:47,&quot;text&quot;:&quot;val&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:98,&quot;character&quot;:14,&quot;text&quot;:&quot;def&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:105,&quot;character&quot;:12,&quot;text&quot;:&quot;def&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:105,&quot;character&quot;:16,&quot;text&quot;:&quot;type&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:106,&quot;character&quot;:16,&quot;text&quot;:&quot;initialValue&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:109,&quot;character&quot;:16,&quot;text&quot;:&quot;def&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:109,&quot;character&quot;:20,&quot;text&quot;:&quot;initial&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:111,&quot;character&quot;:44,&quot;text&quot;:&quot;initialValue&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:113,&quot;character&quot;:19,&quot;text&quot;:&quot;def&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:113,&quot;character&quot;:23,&quot;text&quot;:&quot;type&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:115,&quot;character&quot;:19,&quot;text&quot;:&quot;def&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:115,&quot;character&quot;:23,&quot;text&quot;:&quot;type&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:138,&quot;character&quot;:12,&quot;text&quot;:&quot;source&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:147,&quot;character&quot;:34,&quot;text&quot;:&quot;val&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:148,&quot;character&quot;:24,&quot;text&quot;:&quot;check&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:151,&quot;character&quot;:13,&quot;text&quot;:&quot;check&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:151,&quot;character&quot;:27,&quot;text&quot;:&quot;val&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:227,&quot;character&quot;:14,&quot;text&quot;:&quot;def&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:247,&quot;character&quot;:12,&quot;text&quot;:&quot;def&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:247,&quot;character&quot;:16,&quot;text&quot;:&quot;type&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:247,&quot;character&quot;:36,&quot;text&quot;:&quot;def&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:247,&quot;character&quot;:40,&quot;text&quot;:&quot;type&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:250,&quot;character&quot;:35,&quot;text&quot;:&quot;implResult&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:259,&quot;character&quot;:18,&quot;text&quot;:&quot;val&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:260,&quot;character&quot;:18,&quot;text&quot;:&quot;val&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:260,&quot;character&quot;:25,&quot;text&quot;:&quot;val&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:260,&quot;character&quot;:29,&quot;text&quot;:&quot;type&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:261,&quot;character&quot;:16,&quot;text&quot;:&quot;val&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:261,&quot;character&quot;:42,&quot;text&quot;:&quot;val&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:261,&quot;character&quot;:46,&quot;text&quot;:&quot;initial&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:263,&quot;character&quot;:27,&quot;text&quot;:&quot;val&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:270,&quot;character&quot;:14,&quot;text&quot;:&quot;baseStore&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:272,&quot;character&quot;:15,&quot;text&quot;:&quot;baseStore&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:273,&quot;character&quot;:12,&quot;text&quot;:&quot;baseStore&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:276,&quot;character&quot;:14,&quot;text&quot;:&quot;baseStore&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:276,&quot;character&quot;:27,&quot;text&quot;:&quot;def&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:276,&quot;character&quot;:31,&quot;text&quot;:&quot;initial&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:276,&quot;character&quot;:66,&quot;text&quot;:&quot;baseStore&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:277,&quot;character&quot;:12,&quot;text&quot;:&quot;baseStore&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:277,&quot;character&quot;:44,&quot;text&quot;:&quot;baseStore&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:285,&quot;character&quot;:31,&quot;text&quot;:&quot;baseStore&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:308,&quot;character&quot;:19,&quot;text&quot;:&quot;def&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:308,&quot;character&quot;:23,&quot;text&quot;:&quot;type&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:318,&quot;character&quot;:35,&quot;text&quot;:&quot;implResult&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:360,&quot;character&quot;:33,&quot;text&quot;:&quot;destroy&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:361,&quot;character&quot;:24,&quot;text&quot;:&quot;destroy&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:368,&quot;character&quot;:32,&quot;text&quot;:&quot;destroy&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:369,&quot;character&quot;:23,&quot;text&quot;:&quot;destroy&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:371,&quot;character&quot;:25,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:374,&quot;character&quot;:20,&quot;text&quot;:&quot;facetImpl&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:374,&quot;character&quot;:43,&quot;text&quot;:&quot;impl&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:375,&quot;character&quot;:44,&quot;text&quot;:&quot;facetImpl&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:372,&quot;character&quot;:53,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/instance.ts&quot;,&quot;line&quot;:33,&quot;character&quot;:4,&quot;text&quot;:&quot;source&quot;,&quot;kind&quot;:1}]</pre
+      >
+    </div>
+    <p class="footer-text">
+      TypeScript Coverage Report generated by
+      <a href="https://github.com/plantain-00/type-coverage">type-coverage</a>
+      and
+      <a href="https://github.com/alexcanessa/typescript-coverage-report"
+        >typescript-coverage-report</a
+      >
+      at Sun, 18 Jan 2026 04:50:29 GMT
+    </p>
+  </body>
+</html>

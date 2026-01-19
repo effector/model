@@ -5,7 +5,7 @@ import {
   type EventCallable,
   sample,
 } from 'effector';
-import { KeyOrKeys, keyval, lazy, type Keyval } from '@effector/model';
+import { keyval, lazy, type Keyval } from '@effector/model';
 import { createAction } from 'effector-action';
 
 type InputTodo = {

@@ -1,0 +1,208 @@
+<!doctype html>
+<html>
+  <head>
+    <title>model.ts</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.js"
+      type="text/javascript"
+      charset="utf-8"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/mode/javascript/javascript.min.js"
+      type="text/javascript"
+      charset="utf-8"
+    ></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+    <script
+      src="../../../assets/source-file.js"
+      type="text/javascript"
+      charset="utf-8"
+    ></script>
+    <link
+      href="../../../assets/source-file.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div style="margin-top: 3em" class="ui container">
+      <h1 class="ui header">
+        <a href="../../../index.html">TypeScript coverage report</a>
+      </h1>
+      <table style="margin-top: 2em" class="ui celled table">
+        <thead class="">
+          <tr class="">
+            <th class="">Filename</th>
+            <th class="">Percent</th>
+            <th class="">Threshold</th>
+            <th class="">Total</th>
+            <th class="">Covered</th>
+            <th class="">Uncovered</th>
+          </tr>
+        </thead>
+        <tbody class="">
+          <tr class="negative">
+            <td class="">src/tree/model.ts</td>
+            <td class="">72.44%</td>
+            <td class="">80%</td>
+            <td class="">156</td>
+            <td class="">113</td>
+            <td class="">43</td>
+          </tr>
+        </tbody>
+      </table>
+      <textarea id="editor" readonly="" style="margin-top: 3em">
+import { model, define, ref } from &#x27;@effector-model/core-experimental&#x27;;
+import { createEvent, createStore, sample, combine, Store } from &#x27;effector&#x27;;
+import { nodeFacet, folderFacet, visualFacet } from &#x27;./facets&#x27;;
+
+/**
+ * File Model
+ */
+export const fileModel = model({
+  input: {
+    name: define.store&lt;string&gt;(),
+    id: define.store&lt;string&gt;(),
+    $selectedId: define.store&lt;string | null&gt;(null),
+  },
+  facets: {
+    node: nodeFacet,
+    visual: visualFacet,
+  },
+  fn: ({ name, id, $selectedId }: { name: any; id: any; $selectedId: any }) =&gt; {
+    const select = createEvent();
+    const rename = createEvent&lt;string&gt;();
+
+    sample({
+      clock: rename,
+      target: name,
+    });
+
+    sample({
+      clock: select,
+      source: id,
+      target: $selectedId,
+    });
+
+    const $isSelected = combine(
+      $selectedId,
+      id,
+      (selected, myId) =&gt; selected === myId,
+    );
+
+    return {
+      node: {
+        $name: name,
+        $isSelected,
+        select,
+        rename,
+      },
+      visual: {
+        $backgroundColor: $isSelected.map((s) =&gt;
+          s ? &#x27;#e0e7ff&#x27; : &#x27;transparent&#x27;,
+        ),
+        _selectionSource: $isSelected,
+      },
+    };
+  },
+});
+
+/**
+ * Folder Model (Recursive)
+ */
+export const folderModel = model({
+  input: {
+    name: define.store&lt;string&gt;(),
+    id: define.store&lt;string&gt;(),
+    $selectedId: define.store&lt;string | null&gt;(null),
+    children: define.array(ref.self), // Recursive definition
+  },
+  facets: {
+    node: nodeFacet,
+    folder: folderFacet,
+    visual: visualFacet,
+  },
+  fn: ({
+    name,
+    id,
+    $selectedId,
+    children,
+  }: {
+    name: any;
+    id: any;
+    $selectedId: any;
+    children: any;
+  }) =&gt; {
+    const toggle = createEvent();
+    const $isOpen = createStore(true).on(toggle, (open) =&gt; !open);
+    const select = createEvent();
+    const rename = createEvent&lt;string&gt;();
+
+    sample({
+      clock: rename,
+      target: name,
+    });
+
+    sample({
+      clock: select,
+      source: id,
+      target: $selectedId, // Updates global selection
+    });
+
+    // Toggle logic: if already selected, deselect?
+    // User requirement: &quot;It should also unselect node by one-clicking (select/unselect toggling). There should be only one selection.&quot;
+    // If we click an already selected node, we should set $selectedId to null.
+
+    const $isSelected = combine(
+      $selectedId,
+      id,
+      (selected, myId) =&gt; selected === myId,
+    );
+
+    return {
+      node: {
+        $name: name,
+        $isSelected,
+        select,
+        rename,
+      },
+      folder: {
+        $isOpen,
+        toggle,
+        children, // Pass the children instances
+      },
+      visual: {
+        $backgroundColor: $isSelected.map((s) =&gt;
+          s ? &#x27;#e0e7ff&#x27; : &#x27;transparent&#x27;,
+        ),
+        _selectionSource: $isSelected,
+      },
+    };
+  },
+});
+</textarea
+      >
+      <pre id="annotations" style="display: none">
+[{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:17,&quot;character&quot;:9,&quot;text&quot;:&quot;name&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:17,&quot;character&quot;:15,&quot;text&quot;:&quot;id&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:17,&quot;character&quot;:19,&quot;text&quot;:&quot;$selectedId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:17,&quot;character&quot;:36,&quot;text&quot;:&quot;name&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:17,&quot;character&quot;:47,&quot;text&quot;:&quot;id&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:17,&quot;character&quot;:56,&quot;text&quot;:&quot;$selectedId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:23,&quot;character&quot;:6,&quot;text&quot;:&quot;target&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:23,&quot;character&quot;:14,&quot;text&quot;:&quot;name&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:28,&quot;character&quot;:6,&quot;text&quot;:&quot;source&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:28,&quot;character&quot;:14,&quot;text&quot;:&quot;id&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:29,&quot;character&quot;:6,&quot;text&quot;:&quot;target&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:29,&quot;character&quot;:14,&quot;text&quot;:&quot;$selectedId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:33,&quot;character&quot;:6,&quot;text&quot;:&quot;$selectedId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:34,&quot;character&quot;:6,&quot;text&quot;:&quot;id&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:35,&quot;character&quot;:7,&quot;text&quot;:&quot;selected&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:35,&quot;character&quot;:17,&quot;text&quot;:&quot;myId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:35,&quot;character&quot;:26,&quot;text&quot;:&quot;selected&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:35,&quot;character&quot;:39,&quot;text&quot;:&quot;myId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:40,&quot;character&quot;:8,&quot;text&quot;:&quot;$name&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:40,&quot;character&quot;:15,&quot;text&quot;:&quot;name&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:71,&quot;character&quot;:4,&quot;text&quot;:&quot;name&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:72,&quot;character&quot;:4,&quot;text&quot;:&quot;id&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:73,&quot;character&quot;:4,&quot;text&quot;:&quot;$selectedId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:74,&quot;character&quot;:4,&quot;text&quot;:&quot;children&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:76,&quot;character&quot;:4,&quot;text&quot;:&quot;name&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:77,&quot;character&quot;:4,&quot;text&quot;:&quot;id&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:78,&quot;character&quot;:4,&quot;text&quot;:&quot;$selectedId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:79,&quot;character&quot;:4,&quot;text&quot;:&quot;children&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:88,&quot;character&quot;:6,&quot;text&quot;:&quot;target&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:88,&quot;character&quot;:14,&quot;text&quot;:&quot;name&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:93,&quot;character&quot;:6,&quot;text&quot;:&quot;source&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:93,&quot;character&quot;:14,&quot;text&quot;:&quot;id&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:94,&quot;character&quot;:6,&quot;text&quot;:&quot;target&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:94,&quot;character&quot;:14,&quot;text&quot;:&quot;$selectedId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:102,&quot;character&quot;:6,&quot;text&quot;:&quot;$selectedId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:103,&quot;character&quot;:6,&quot;text&quot;:&quot;id&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:104,&quot;character&quot;:7,&quot;text&quot;:&quot;selected&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:104,&quot;character&quot;:17,&quot;text&quot;:&quot;myId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:104,&quot;character&quot;:26,&quot;text&quot;:&quot;selected&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:104,&quot;character&quot;:39,&quot;text&quot;:&quot;myId&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:109,&quot;character&quot;:8,&quot;text&quot;:&quot;$name&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:109,&quot;character&quot;:15,&quot;text&quot;:&quot;name&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/model.ts&quot;,&quot;line&quot;:117,&quot;character&quot;:8,&quot;text&quot;:&quot;children&quot;,&quot;kind&quot;:1}]</pre
+      >
+    </div>
+    <p class="footer-text">
+      TypeScript Coverage Report generated by
+      <a href="https://github.com/plantain-00/type-coverage">type-coverage</a>
+      and
+      <a href="https://github.com/alexcanessa/typescript-coverage-report"
+        >typescript-coverage-report</a
+      >
+      at Sun, 18 Jan 2026 04:55:48 GMT
+    </p>
+  </body>
+</html>

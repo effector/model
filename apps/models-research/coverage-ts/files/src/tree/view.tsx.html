@@ -1,0 +1,260 @@
+<!doctype html>
+<html>
+  <head>
+    <title>view.tsx</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.js"
+      type="text/javascript"
+      charset="utf-8"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/mode/javascript/javascript.min.js"
+      type="text/javascript"
+      charset="utf-8"
+    ></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.58.2/codemirror.min.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+    <script
+      src="../../../assets/source-file.js"
+      type="text/javascript"
+      charset="utf-8"
+    ></script>
+    <link
+      href="../../../assets/source-file.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div style="margin-top: 3em" class="ui container">
+      <h1 class="ui header">
+        <a href="../../../index.html">TypeScript coverage report</a>
+      </h1>
+      <table style="margin-top: 2em" class="ui celled table">
+        <thead class="">
+          <tr class="">
+            <th class="">Filename</th>
+            <th class="">Percent</th>
+            <th class="">Threshold</th>
+            <th class="">Total</th>
+            <th class="">Covered</th>
+            <th class="">Uncovered</th>
+          </tr>
+        </thead>
+        <tbody class="">
+          <tr class="negative">
+            <td class="">src/tree/view.tsx</td>
+            <td class="">78.75%</td>
+            <td class="">80%</td>
+            <td class="">287</td>
+            <td class="">226</td>
+            <td class="">61</td>
+          </tr>
+        </tbody>
+      </table>
+      <textarea id="editor" readonly="" style="margin-top: 3em">
+import { useUnit } from &#x27;effector-react&#x27;;
+import { useState } from &#x27;react&#x27;;
+
+/**
+ * Recursive Tree View Component
+ */
+export function RecursiveTreeView({
+  instance,
+  path = &#x27;&#x27;,
+}: {
+  instance: any;
+  path?: string;
+}) {
+  // We need to determine if it&#x27;s a File or Folder.
+  // We can check for the existence of the &#x27;folder&#x27; facet.
+  const isFolder = !!instance.facets.folder;
+
+  if (isFolder) {
+    return &lt;FolderView instance={instance} path={path} /&gt;;
+  }
+  return &lt;FileView instance={instance} path={path} /&gt;;
+}
+
+function FileView({ instance, path }: { instance: any; path: string }) {
+  const [name, bgColor, select, rename] = useUnit([
+    instance.facets.node.$name,
+    instance.facets.visual.$backgroundColor,
+    instance.facets.node.select,
+    instance.facets.node.rename,
+  ]);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(name);
+
+  const fullPath = path ? `${path} &gt; ${name}` : name;
+
+  const handleDoubleClick = (e: React.MouseEvent) =&gt; {
+    e.stopPropagation();
+    setIsEditing(true);
+    setEditName(name);
+    (select as any)();
+  };
+
+  const handleSave = () =&gt; {
+    (rename as any)(editName);
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) =&gt; {
+    if (e.key === &#x27;Enter&#x27;) {
+      handleSave();
+    } else if (e.key === &#x27;Escape&#x27;) {
+      setIsEditing(false);
+      setEditName(name);
+    }
+  };
+
+  if (isEditing) {
+    return (
+      &lt;div className=&quot;flex items-center p-2 rounded bg-white shadow-sm border border-indigo-200&quot;&gt;
+        &lt;span className=&quot;mr-2 text-gray-400&quot;&gt;📄&lt;/span&gt;
+        &lt;input
+          autoFocus
+          value={editName as string}
+          onChange={(e) =&gt; setEditName(e.target.value)}
+          onBlur={handleSave}
+          onKeyDown={handleKeyDown}
+          onClick={(e) =&gt; e.stopPropagation()}
+          className=&quot;w-full outline-none text-gray-700 bg-transparent&quot;
+        /&gt;
+      &lt;/div&gt;
+    );
+  }
+
+  return (
+    &lt;div
+      onClick={() =&gt; (select as any)()}
+      onDoubleClick={handleDoubleClick}
+      className=&quot;flex items-center p-2 rounded cursor-pointer hover:bg-gray-100 transition-colors group&quot;
+      style={{ backgroundColor: bgColor as any }}
+    &gt;
+      &lt;span className=&quot;mr-2 text-gray-400&quot;&gt;📄&lt;/span&gt;
+      &lt;span className=&quot;text-gray-700&quot;&gt;{name as any}&lt;/span&gt;
+    &lt;/div&gt;
+  );
+}
+
+function FolderView({ instance, path }: { instance: any; path: string }) {
+  const [name, isOpen, toggle, children] = useUnit([
+    instance.facets.node.$name,
+    instance.facets.folder.$isOpen,
+    instance.facets.folder.toggle,
+    instance.facets.folder.children,
+  ]);
+
+  // For visual facet
+  const bgColor = useUnit(instance.facets.visual.$backgroundColor);
+  const select = useUnit(instance.facets.node.select);
+  const rename = useUnit(instance.facets.node.rename);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(name);
+
+  const fullPath = path ? `${path} &gt; ${name}` : name;
+
+  const handleDoubleClick = (e: React.MouseEvent) =&gt; {
+    e.stopPropagation();
+    setIsEditing(true);
+    setEditName(name);
+    (select as any)();
+  };
+
+  const handleSave = () =&gt; {
+    (rename as any)(editName);
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) =&gt; {
+    if (e.key === &#x27;Enter&#x27;) {
+      handleSave();
+    } else if (e.key === &#x27;Escape&#x27;) {
+      setIsEditing(false);
+      setEditName(name);
+    }
+  };
+
+  return (
+    &lt;div className=&quot;select-none&quot;&gt;
+      {isEditing ? (
+        &lt;div className=&quot;flex items-center p-2 rounded bg-white shadow-sm border border-indigo-200&quot;&gt;
+          &lt;span className=&quot;mr-2 text-yellow-500&quot;&gt;📁&lt;/span&gt;
+          &lt;input
+            autoFocus
+            value={editName as string}
+            onChange={(e) =&gt; setEditName(e.target.value)}
+            onBlur={handleSave}
+            onKeyDown={handleKeyDown}
+            onClick={(e) =&gt; e.stopPropagation()}
+            className=&quot;w-full outline-none text-gray-800 font-medium bg-transparent&quot;
+          /&gt;
+        &lt;/div&gt;
+      ) : (
+        &lt;div
+          onClick={(e) =&gt; {
+            e.stopPropagation();
+            (select as any)();
+          }}
+          onDoubleClick={handleDoubleClick}
+          className=&quot;flex items-center p-2 rounded cursor-pointer hover:bg-gray-100 transition-colors&quot;
+          style={{ backgroundColor: bgColor as any }}
+        &gt;
+          &lt;span
+            onClick={(e) =&gt; {
+              e.stopPropagation();
+              (toggle as any)();
+            }}
+            className=&quot;mr-2 text-gray-500 transform transition-transform duration-200 hover:text-gray-700 p-1&quot;
+            style={{ transform: isOpen ? &#x27;rotate(90deg)&#x27; : &#x27;rotate(0deg)&#x27; }}
+          &gt;
+            ▶
+          &lt;/span&gt;
+          &lt;span className=&quot;mr-2 text-yellow-500&quot;&gt;📁&lt;/span&gt;
+          &lt;span className=&quot;font-medium text-gray-800&quot;&gt;{name as any}&lt;/span&gt;
+        &lt;/div&gt;
+      )}
+
+      {Boolean(isOpen) &amp;&amp; (
+        &lt;div className=&quot;ml-6 pl-2 border-l border-gray-200&quot;&gt;
+          {(children as any).map((child: any, i: number) =&gt; (
+            &lt;RecursiveTreeView
+              key={i}
+              instance={child}
+              path={fullPath as string}
+            /&gt;
+          ))}
+        &lt;/div&gt;
+      )}
+    &lt;/div&gt;
+  );
+}
+</textarea
+      >
+      <pre id="annotations" style="display: none">
+[{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:7,&quot;character&quot;:2,&quot;text&quot;:&quot;instance&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:10,&quot;character&quot;:2,&quot;text&quot;:&quot;instance&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:15,&quot;character&quot;:21,&quot;text&quot;:&quot;instance&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:15,&quot;character&quot;:30,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:15,&quot;character&quot;:37,&quot;text&quot;:&quot;folder&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:18,&quot;character&quot;:23,&quot;text&quot;:&quot;instance&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:18,&quot;character&quot;:33,&quot;text&quot;:&quot;instance&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:20,&quot;character&quot;:19,&quot;text&quot;:&quot;instance&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:20,&quot;character&quot;:29,&quot;text&quot;:&quot;instance&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:23,&quot;character&quot;:20,&quot;text&quot;:&quot;instance&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:23,&quot;character&quot;:40,&quot;text&quot;:&quot;instance&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:25,&quot;character&quot;:4,&quot;text&quot;:&quot;instance&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:25,&quot;character&quot;:13,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:25,&quot;character&quot;:20,&quot;text&quot;:&quot;node&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:25,&quot;character&quot;:25,&quot;text&quot;:&quot;$name&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:26,&quot;character&quot;:4,&quot;text&quot;:&quot;instance&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:26,&quot;character&quot;:13,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:26,&quot;character&quot;:20,&quot;text&quot;:&quot;visual&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:26,&quot;character&quot;:27,&quot;text&quot;:&quot;$backgroundColor&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:27,&quot;character&quot;:4,&quot;text&quot;:&quot;instance&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:27,&quot;character&quot;:13,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:27,&quot;character&quot;:20,&quot;text&quot;:&quot;node&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:27,&quot;character&quot;:25,&quot;text&quot;:&quot;select&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:28,&quot;character&quot;:4,&quot;text&quot;:&quot;instance&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:28,&quot;character&quot;:13,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:28,&quot;character&quot;:20,&quot;text&quot;:&quot;node&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:28,&quot;character&quot;:25,&quot;text&quot;:&quot;rename&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:87,&quot;character&quot;:22,&quot;text&quot;:&quot;instance&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:87,&quot;character&quot;:42,&quot;text&quot;:&quot;instance&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:89,&quot;character&quot;:4,&quot;text&quot;:&quot;instance&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:89,&quot;character&quot;:13,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:89,&quot;character&quot;:20,&quot;text&quot;:&quot;node&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:89,&quot;character&quot;:25,&quot;text&quot;:&quot;$name&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:90,&quot;character&quot;:4,&quot;text&quot;:&quot;instance&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:90,&quot;character&quot;:13,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:90,&quot;character&quot;:20,&quot;text&quot;:&quot;folder&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:90,&quot;character&quot;:27,&quot;text&quot;:&quot;$isOpen&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:91,&quot;character&quot;:4,&quot;text&quot;:&quot;instance&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:91,&quot;character&quot;:13,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:91,&quot;character&quot;:20,&quot;text&quot;:&quot;folder&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:91,&quot;character&quot;:27,&quot;text&quot;:&quot;toggle&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:92,&quot;character&quot;:4,&quot;text&quot;:&quot;instance&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:92,&quot;character&quot;:13,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:92,&quot;character&quot;:20,&quot;text&quot;:&quot;folder&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:92,&quot;character&quot;:27,&quot;text&quot;:&quot;children&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:96,&quot;character&quot;:26,&quot;text&quot;:&quot;instance&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:96,&quot;character&quot;:35,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:96,&quot;character&quot;:42,&quot;text&quot;:&quot;visual&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:96,&quot;character&quot;:49,&quot;text&quot;:&quot;$backgroundColor&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:97,&quot;character&quot;:25,&quot;text&quot;:&quot;instance&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:97,&quot;character&quot;:34,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:97,&quot;character&quot;:41,&quot;text&quot;:&quot;node&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:97,&quot;character&quot;:46,&quot;text&quot;:&quot;select&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:98,&quot;character&quot;:25,&quot;text&quot;:&quot;instance&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:98,&quot;character&quot;:34,&quot;text&quot;:&quot;facets&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:98,&quot;character&quot;:41,&quot;text&quot;:&quot;node&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:98,&quot;character&quot;:46,&quot;text&quot;:&quot;rename&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:168,&quot;character&quot;:29,&quot;text&quot;:&quot;map&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:168,&quot;character&quot;:34,&quot;text&quot;:&quot;child&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:171,&quot;character&quot;:14,&quot;text&quot;:&quot;instance&quot;,&quot;kind&quot;:1},{&quot;file&quot;:&quot;src/tree/view.tsx&quot;,&quot;line&quot;:171,&quot;character&quot;:24,&quot;text&quot;:&quot;child&quot;,&quot;kind&quot;:1}]</pre
+      >
+    </div>
+    <p class="footer-text">
+      TypeScript Coverage Report generated by
+      <a href="https://github.com/plantain-00/type-coverage">type-coverage</a>
+      and
+      <a href="https://github.com/alexcanessa/typescript-coverage-report"
+        >typescript-coverage-report</a
+      >
+      at Sun, 18 Jan 2026 04:55:48 GMT
+    </p>
+  </body>
+</html>

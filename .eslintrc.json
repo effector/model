@@ -1,6 +1,6 @@
 {
   "root": true,
-  "ignorePatterns": ["**/*"],
+  "ignorePatterns": ["dist", "node_modules"],
   "plugins": ["@nrwl/nx"],
   "overrides": [
     {
@@ -34,6 +34,19 @@
       "files": ["*.js", "*.jsx"],
       "extends": ["plugin:@nrwl/nx/javascript"],
       "rules": {}
+    },
+    {
+      "files": ["apps/**/*.ts", "apps/**/*.tsx"],
+      "extends": ["plugin:react-hooks/recommended"],
+      "rules": {
+        "no-restricted-syntax": [
+          "error",
+          {
+            "selector": "CallExpression[callee.name='useUnit'] > MemberExpression[property.name='facets']",
+            "message": "Do not pass a Facet to useUnit. Use 'useLens' instead."
+          }
+        ]
+      }
     }
   ]
 }

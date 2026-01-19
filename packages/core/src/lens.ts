@@ -21,7 +21,9 @@ function createPathReaderStore(
   struct: StructKeyval,
   pathDecl: PathDecl[],
   path: Array<KeyStore | string | number>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   $items: Store<any[]>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   defaultValue?: any,
 ) {
   const isHas =
@@ -30,17 +32,20 @@ function createPathReaderStore(
     [$items, ...path],
     ([items, ...pathKeysRaw]) => {
       const pathKeys = pathKeysRaw as Array<string | number>;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let value: any = items;
       for (const segment of pathDecl) {
         if (value === undefined) return defaultValue;
         switch (segment.type) {
           case 'index': {
             const id = pathKeys[segment.pathIndex];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             value = value.find((e: any) => struct.getKey(e) === id);
             break;
           }
           case 'has': {
             const id = pathKeys[segment.pathIndex];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             value = value.findIndex((e: any) => struct.getKey(e) === id) !== -1;
             break;
           }
@@ -63,9 +68,12 @@ function createLensStruct(
   struct: StructKeyval,
   pathDecl: PathDecl[],
   path: Array<KeyStore | string | number>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   $items: Store<any[]>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   itemDefaultValue: any,
 ) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const shape = {} as any;
   for (const key in struct.shape) {
     const item = struct.shape[key];
@@ -74,6 +82,7 @@ function createLensStruct(
         case 'store': {
           shape[key] = {
             __type: 'lensStore',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             store(...args: [defaultValue?: any]) {
               const defaultValue = args.length === 0 ? null : args[0];
               const $value = createPathReaderStore(
@@ -85,6 +94,7 @@ function createLensStruct(
               );
               return $value;
             },
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
           } as LensStore<any>;
           break;
         }
@@ -92,6 +102,7 @@ function createLensStruct(
           shape[key] = {
             __type: 'lensEvent',
             __value: null,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
           } as LensEvent<any>;
           break;
         }
@@ -143,10 +154,12 @@ function createLensStruct(
 }
 
 export function lens<Shape>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   keyval: Keyval<any, any, any, Shape>,
   key: KeyStore | string | number,
 ): Shape;
 export function lens<T, Shape>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   keyval: Keyval<any, T, any, Shape>,
 ): {
   item(key: KeyStore): Shape;
@@ -154,6 +167,7 @@ export function lens<T, Shape>(
   has(key: KeyStore): Store<boolean>;
 };
 export function lens<T, Shape>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   keyval: Keyval<any, T, any, Shape>,
   key?: KeyStore | string | number,
 ) {
